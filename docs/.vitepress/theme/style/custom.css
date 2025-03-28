@@ -1,0 +1,13 @@
+/* 自定义 CSS */
+/* https://vitepress.dev/zh/guide/extending-default-theme */
+:root {
+  --vp-c-brand-1: #18794e;
+  --vp-c-brand-2: #299764;
+  --vp-c-brand-3: #30a46c;
+}
+
+.dark {
+  --vp-c-brand-1: #3dd68c;
+  --vp-c-brand-2: #30a46c;
+  --vp-c-brand-3: #298459;
+}
