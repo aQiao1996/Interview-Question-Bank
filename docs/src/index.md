@@ -3,23 +3,19 @@
 layout: home
 
 hero:
-  name: "interview-question-bank"
-  text: "前端面试宝典"
-  tagline: My great project tagline
+  name: 前端面试宝典
+  text: 
+  tagline: 前端面试大全
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
-    - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: 面试题库
+      link: /html
+    # - theme: alt
+    #   text: 还没想好
+    #   link: /api-examples
 
-features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+# features:
+#   - title: Feature A
+#     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
 
