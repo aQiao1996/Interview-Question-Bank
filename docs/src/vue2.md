@@ -42,7 +42,7 @@ export default {
 ```
 上述代码展示了一个输入框，当用户输入内容的时候，输入框下面的计算值会随之变化。在这个示例中， `message` 变量属于 `Model` ，它包含了应用的核心数据。输入框与页面展示就属于 `View`，负责展示数据和用户交互。 `computed` 和 `v-model` 语法糖 作为 `ViewModel` ，用于更新视图和数据。
 
-![alt text](assets/images/vue2/image-mvvm.png)
+![alt text](assets/images/vue2//image-mvvm.png)
 :::
 
 ## 2、 vue 中 v-if 和 v-show 的区别是什么
@@ -917,4 +917,138 @@ MyComponent.mounted(); // 输出: 我是胖虎
 ![alt text](assets/images/vue2/image-8.png)
 
 因此，当我们通过 `this.xxx` `访问数据时，Vue` 会自动处理数据访问，实际上我们访问的是 `this._data.xxx`，但通过代理机制，我们可以直接使用 `this.xxx` 来访问数据。
+:::
+
+## 21、动态给 vue2 的 data 添加一个新的属性时丢失了数据响应，什么原因
+Vue 2 使用 `Object.defineProperty` 来实现响应式系统，这意味着只有 `data` 对象在**初始化时声明的属性**才会被 `Vue` 转换为响应式属性。如果你在组件实例创建后动态添加属性，Vue 不会自动将其转换为响应式属性。
+::: details 详情
+```js
+const obj = {};
+// 动态添加响应式属性
+Object.defineProperty(obj, 'name', {
+  get() {
+    console.log(`get name`);
+    return obj._name; // 使用内部存储的值
+  },
+  set(newVal) {
+    if (newVal !== obj._name) {
+      console.log(`set name: ${newVal}`);
+      obj._name = newVal; // 更新内部存储的值
+    }
+  },
+  enumerable: true,
+  configurable: true
+});
+// 测试 getter 和 setter
+obj.name = 'Vue'; // 输出: set name: Vue
+console.log(obj.name); // 输出: get name \n Vue
+obj.name = 'Vue'; // 不会重复触发 setter，因为值未改变
+```
+解决方案：
+- `Vue.set() / vm.$set()`：用于向响应式对象添加新属性，并确保这个属性是响应式的。
+  ```js
+  // Vue.set
+  Vue.set(obj, 'name', 'Vue');
+
+  // 或者在 Vue 实例中使用 vm.$set
+  this.$set(obj, 'name', 'Vue');
+  ```
+- vm.$forceUpdate()：用于强制组件重新渲染，但不适用于添加响应式属性，如果你实在不知道怎么操作时，可采取 $forceUpdate() 进行强制刷新 (`不建议`)。
+:::
+
+## 22、vue 模板编译的过程
+::: details 详情
+Vue 的模板编译过程是将开发者编写的模板语法转换为 js 代码的过程。它主要分为三个阶段：`模板解析`、`AST优化` 和 `代码生成`：
+
+1️⃣ 模板解析
+
+Vue 使用其解析器将 HTML 模板转换为 抽象语法树（AST）。在这个阶段，Vue 会分析模板中的标签、属性和指令，生成一颗树形结构。每个节点表示模板中的一个元素或属性。
+
+如：
+```html
+<div>
+  <p>{{ message }}</p>
+  <button @click="handleClick">点击</button>
+</div>
+```
+被解析成的 AST 类似于下面的结构：
+```js
+{
+    type: 1, // 节点类型：1 表示元素节点
+    tag: 'div', // 元素的标签名
+    children: [ // 子节点（嵌套的 HTML 元素）
+        {
+            type: 1, // 子节点是一个元素节点
+            tag: 'p',
+            children: [{
+                type: 2, // 2 表示插值表达式节点
+                expression: 'message' // 表达式 'message'
+            }]
+        },
+        {
+            type: 1, // 另一个元素节点
+            tag: 'button',
+            events: { // 事件监听
+                click: 'handleClick' // 绑定 click 事件，执行 handleClick 方法
+            },
+            children: [{
+                type: 3, // 文本节点
+                text: '点击' // 按钮文本
+            }]
+        }
+    ]
+}
+```
+
+2️⃣ AST优化
+
+Vue 在生成渲染函数前，会对 AST 进行优化。优化的核心目标是标记 静态节点，在渲染时，Vue 可以跳过这些静态节点，提升性能。
+- 静态节点：
+  - 指所有的渲染过程中都不变化的内容，比如 某个div标签内的静态文本。
+- 优化过程：
+  - Vue 会遍历 AST 树，为每个节点添加 `static` 和 `staticRoot` 标记。
+  - 如果一个节点及其子节点都是静态的，则标记为 `static`。
+  - 如果一个节点是静态根节点（即其子节点中有动态节点），则标记为 `staticRoot`。
+
+3️⃣ 代码生成
+
+生成渲染函数是编译的最终阶段，这个阶段会将优化后的 AST 转换成 js 渲染函数。
+
+最终会生成类似这样的渲染函数：
+```js
+function render(h) {
+  return h('div', {}, [
+    h('p', {}, this.message),
+    h('button', {
+      onClick: this.handleClick
+    }, '点击')
+  ]);
+}
+```
+渲染过程：
+- 渲染函数返回`虚拟 DOM 树`。
+- Vue 根据`虚拟 DOM 树`更新实际的 `DOM`。
+- 当数据变化时，渲染函数会重新执行，生成新的`虚拟 DOM 树`。
+- Vue 使用 `Diff 算法` 比较新旧虚拟 DOM 树，最小化 DOM 更新。
+:::
+
+## 23、谈谈 vue 的 diff 算法的理解
+Vue 的 `diff` 算法是虚拟 DOM 的核心，用于高效地比较新旧虚拟 DOM 树的差异，并生成最小的 DOM 更新操作。它的目标是通过**最小化 DOM 操作**来提升性能。
+::: details 详情
+Vue 的 `diff` 算法执行，依赖数据的的响应式系统：当数据发生改变时， `setter` 方法会让调用 `Dep.notify` 通知所有订阅者 `Watcher` ，订阅者会重新执行渲染函数，渲染函数内部通过 `diff` 算法用于比较新旧虚拟 DOM 树的差异，并计算出最小的更新操作，最终更新相应的视图。
+
+![alt text](assets/images/vue2/diff-image-1.png)
+
+diff 算法的核心算法流程如下：
+- 节点对比： 
+  - 如果新旧节点类型相同，则继续比较它们的属性。
+  - 如果节点类型不同（如元素和文本节点不同），则直接替换整个节点。
+- 属性更新： 
+  - 如果节点类型相同，接下来检查节点的属性。对于不同的属性值进行更新，移除旧属性，添加新属性。
+- 子节点比对： 
+  - 对于有子节点的元素（如 div），Vue 会使用不同的策略来优化子节点更新。 
+  - 文本节点的更新：如果新旧子节点都是文本节点，直接更新文本内容。 
+  - 数组类型子节点的比对：如果新旧子节点都是数组，Vue 会通过 `LIS 算法` 来优化节点的重新排列，避免过多的 DOM 操作。
+
+![alt text](assets/images/vue2/diff-image-2.png)
 :::
