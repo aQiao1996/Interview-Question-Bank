@@ -20,7 +20,7 @@ export default defineConfig({
     search: { provider: "local" },
     // 大纲中显示的标题级别 (右侧目录)
     outline: {
-      label: "本页目录",
+      label: "目录",
     },
   },
 });
