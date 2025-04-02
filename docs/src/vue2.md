@@ -203,16 +203,17 @@ watch 是 Vue 中用于监听数据变化并执行副作用的机制，而 compu
 生命周期钩子函数是 Vue 组件的几个重要阶段，它们在组件的创建、更新和销毁时触发，允许开发者在特定的阶段执行特定的代码逻辑。以下是 Vue的生命周期钩子函数及其触发时机：
 |​钩子函数|触发时机|
 |---|---|
-|beforeCreate|组件实例创建之前，在数据观测(data observer) 和 event/watcher 事件配置之前。|
-|created|组件实例已经创建完成，数据观测(data observer) 和 event/watcher 事件配置已经完成。|
-|beforeMount|组件挂载开始之前，在 render 函数中，对组件的 template 进行编译，但是还没有挂载到 DOM 上。|
-|mounted|组件挂载结束之后，模板编译完成，挂载到 DOM 上。|
-|beforeUpdate|组件更新之前，在 render 函数中，对组件的 template 进行编译，但是还没有挂载到 DOM 上。|
-|updated|组件更新完成，模板编译完成，挂载到 DOM 上。|
-|beforeDestroy|组件销毁之前，在调用 unmounted 之前。|
-|destroyed|组件销毁完成，调用 unmounted 之后。|
-|activated|keep-alive 组件激活时调用。|
-|deactivated|keep-alive 组件停用时调用。|
+|`beforeCreate`|组件实例创建之前，在数据观测(data observer) 和 event/watcher 事件配置之前。|
+|`created`|组件实例已经创建完成，数据观测(data observer) 和 event/watcher 事件配置已经完成。|
+|`beforeMount`|组件挂载开始之前，在 render 函数中，对组件的 template 进行编译，但是还没有挂载到 DOM 上。|
+|`mounted`|组件挂载结束之后，模板编译完成，挂载到 DOM 上。|
+|`beforeUpdate`|组件更新之前，在 render 函数中，对组件的 template 进行编译，但是还没有挂载到 DOM 上。|
+|`updated`|组件更新完成，模板编译完成，挂载到 DOM 上。|
+|`beforeDestroy`|组件销毁之前，在调用 unmounted 之前。|
+|`destroyed`|组件销毁完成，调用 unmounted 之后。|
+|`activated`|keep-alive 组件激活时调用。|
+|`deactivated`|keep-alive 组件停用时调用。|
+|`errorCaptured`（2.5.0+ 新增）|在捕获一个来自后代组件的错误时被调用。|
 
 ## 9、 vue 中父子组件生命周期调用顺序
 父 beforeCreate → 父 created → 子 beforeCreate → 子 created → 子 beforeMount → 子 mounted → 父 mounted → 父 beforeUpdate → 子 beforeUpdate → 子 updated → 父 updated → 父 beforeDestroy → 子 beforeDestroy → 子 destroyed → 父 destroyed
@@ -247,6 +248,9 @@ watch 是 Vue 中用于监听数据变化并执行副作用的机制，而 compu
 - 父组件：destroyed
 - 顺序： 父 beforeDestroy → 子 beforeDestroy → 子 destroyed → 父 destroyed
 - 原因：父组件销毁前需要先销毁所有子组件，确保子组件的资源释放和事件解绑，避免内存泄漏。
+::: tip 注
+vue3 中，`setup()` 替代了 `beforeCreate` 和 `created`，但父子组件的生命周期顺序不变。
+:::
 :::
 
 ## 10、 vue 中为什么data属性是一个函数而不是一个对象
@@ -1051,4 +1055,42 @@ diff 算法的核心算法流程如下：
   - 数组类型子节点的比对：如果新旧子节点都是数组，Vue 会通过 `LIS 算法` 来优化节点的重新排列，避免过多的 DOM 操作。
 
 ![alt text](assets/images/vue2/diff-image-2.png)
+:::
+
+## 24、vue2 中 何统一监听组件报错
+::: details 详情
+在 vue3 中，可以通过 全局错误处理器 （`errorHandler`） 和 生命周期钩子（例如 `onErrorCaptured` ）来统一监听和处理组件中的错误。
+- 通过全局错误处理器 `Vue.config.errorHandler`
+```js
+import Vue from 'vue';
+
+// 设置全局错误处理器
+Vue.config.errorHandler = (err, vm, info) => {
+  console.error('捕获到组件错误: ', err);
+  console.log('发生错误的组件实例: ', vm);
+  console.log('错误信息: ', info);
+};
+```
+- 通过生命周期钩子 `errorCaptured` 局部捕获错误
+```vue
+<template>
+  <div>
+    <h2>局部错误捕获示例</h2>
+    <ErrorProneComponent />
+  </div>
+</template>
+
+<script>
+export default {
+  errorCaptured(err, vm, info) {
+    console.error('局部捕获到错误: ', err);
+    console.log('错误来源组件: ', vm);
+    console.log('错误信息: ', info);
+
+    // 返回 false 可以阻止错误继续向上传递
+    return false; // 如果需要让错误冒泡到全局，省略或返回 true
+  },
+};
+</script>
+```
 :::
