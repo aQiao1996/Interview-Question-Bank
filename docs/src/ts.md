@@ -1059,7 +1059,7 @@ doSomething("Hello");
     > 1. 对于静态成员来说是类的构造函数，对于实例成员来说是类的原型对象。
     > 2. 成员的名字。
     > 3. 参数在参数列表中的索引。
-    
+
     > **注意**：​ 参数装饰器无法直接修改参数，通常用于与反射元数据结合使用，以获取参数的元信息。
   ```ts
   // 定义一个参数装饰器，用于在控制台输出参数的索引和名称
@@ -1080,4 +1080,331 @@ doSomething("Hello");
   // 方法 add 的第 0 个参数被装饰。
   // 方法 add 的第 1 个参数被装饰。
   ```
+:::
+
+## 13、请简述 ts 中的 infer
+在 ts 中，`infer` 是一个关键字，常用于条件类型中，用来推断类型变量的具体类型。它的作用是从某些类型中提取或推断出具体的类型信息。
+::: details 详情
+- `infer` 语法
+```ts
+T extends U ? infer R : never
+```
+- `infer` 使用场景
+  - 提取函数的返回类型
+  ```ts
+  type GetReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+  // 示例
+  type Fn = () => string;
+  type ReturnTypeOfFn = GetReturnType<Fn>; // 推断为 string
+  ```
+  - 提取数组元素的类型
+  ```ts
+  type ElementType<T> = T extends (infer U)[] ? U : never;
+
+  // 示例
+  type ArrayType = number[];
+  type ItemType = ElementType<ArrayType>; // 推断为 number
+  ```
+  - 提取 Promise 的返回类型
+  ```ts
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+  // 示例
+  type P = Promise<string>;
+  type ResolvedType = UnwrapPromise<P>; // 推断为 string
+  ```
+  - 提取构造函数的实例类型
+  ```ts
+  type InstanceType<T> = T extends new (...args: any[]) => infer R ? R : never;
+
+  // 示例
+  class Person {
+    name: string = "John";
+  }
+
+  type PersonInstance = InstanceType<typeof Person>; // 推断为 Person
+  ```
+- `infer` 注意事项
+  - 只能在条件类型中使用，不能在普通类型中使用。
+    ```ts
+    // 错误用法
+    // type Invalid = infer T;
+    ```
+  - 推断失败时返回 never。
+    ```ts
+    type Test<T> = T extends string ? infer U : never;
+    type Result = Test<number>; // 推断为 never
+    ```
+:::
+
+## 14、ts 中什么是协变与逆变
+协变（Covariance）和逆变（Contravariance）是类型系统中的一个概念，用于描述在继承关系中，子类型是否可以替换父类型。
+::: details 详情
+- 协变
+  > 协变表示子类型关系在某种上下文中保持一致的方向。具体来说，如果类型 A 是类型 B 的子类型，那么在协变的情况下，A 的对应类型也是 B 对应类型的子类型。
+
+示例：数组的协变
+
+在 ts 中，数组是协变的。这意味着如果 `Dog` 是 `Animal` 的子类型，那么 `Dog[]` 也是 `Animal[]` 的子类型。
+```ts
+class Animal {}
+class Dog extends Animal {}
+
+const dogs: Dog[] = [new Dog()];
+const animals: Animal[] = dogs; // 协变，Dog[] 可以赋值给 Animal[]
+```
+注意：虽然数组是协变的，但在某些情况下可能会导致运行时错误，因为你可以向 animals 数组添加一个 Cat 实例，而这会破坏 dogs 数组的类型安全。
+
+- 逆变
+  > 逆变表示子类型关系在某种上下文中反转方向。具体来说，如果类型 A 是类型 B 的子类型，那么在逆变的情况下，B 的对应类型是 A 对应类型的子类型。
+
+示例：函数参数的逆变
+
+在 ts 中，函数的参数类型是逆变的。这意味着如果 `Dog` 是 `Animal` 的子类型，那么 `(animal: Animal) => void` 可以赋值给 `(dog: Dog) => void`。
+```ts
+type Handler<T> = (animal: T) => void;
+
+const animalHandler: Handler<Animal> = (animal) => {
+  console.log(animal);
+};
+
+const dogHandler: Handler<Dog> = animalHandler; // 逆变，Handler<Animal> 可以赋值给 Handler<Dog>
+```
+:::
+
+## 15、如何实现 ts 中的 Partial
+描述：`Partial` 是一个类型工具，用于将一个类型的所有属性变为可选的。
+::: details 详情
+```ts
+// 1. keyof T：获取类型 T 的所有键（属性名称）的联合类型。
+// 2. P in keyof T：遍历 T 的每一个属性名 P。
+// 3. ?：在映射类型中，通过在属性名后添加 ?，将每个属性变为可选的。
+// 4. T[P]：对于每一个属性 P，其类型仍然是 T[P]，即原类型 T 中对应属性的类型。
+type Partial<T> = {
+  [P in keyof T]?: T[P];
+}
+```
+:::
+
+## 16、如何实现 ts 中的 Required
+描述：`Required` 是一个类型工具，用于将一个类型的所有属性变为必填的。
+::: details 详情
+```ts
+// 1. keyof T：获取类型 T 的所有键（属性名称）的联合类型。
+// 2. P in keyof T：遍历类型 T 的每一个属性名 P。
+// 3. -?：在映射类型中，通过 -? 移除可选属性标记，将属性变为必选。
+// 4. T[P]：对于每一个属性 P，其类型仍然是 T[P]，即原类型 T 中对应属性的类型。
+type Required<T> = {
+  [P in keyof T]-?: T[P];
+};
+```
+:::
+
+## 17、如何实现 ts 中的 Readonly
+描述：`Readonly` 是一个类型工具，用于将一个类型的所有属性变为只读的。
+::: details 详情
+```ts
+// 1. keyof T：获取类型 T 的所有键（属性名称）的联合类型。
+// 2. P in keyof T：遍历 T 的每一个属性名 P。
+// 3. readonly：在映射类型中，通过在属性名前添加 readonly，将每个属性变为只读。
+// 4. T[P]：对于每一个属性 P，其类型仍然是 T[P]，即原类型 T 中对应属性的类型。
+type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+```
+:::
+
+## 18、如何实现 ts 中的 Record
+描述：`Record` 是一个类型工具，用于创建一个对象类型，该对象类型具有一组键（属性名称）和值（属性类型）的组合。
+::: details 详情
+```ts
+// 1. K extends keyof any：确保 K 是一个可以作为对象键的类型（如 string、number 或 symbol）。
+// 2. P in K：遍历 K 中的每一个键。
+// 3. T：将每个键的值类型设置为 T。
+type Record<K extends keyof any, T> = {
+  [P in K]: T;
+};
+```
+:::
+
+## 19、如何实现 ts 中的 Pick
+描述：`Pick` 是一个类型工具，用于从类型 T 中选择一组键（属性名称）并创建一个新的类型。
+::: details 详情
+```ts
+// 1. T：表示原始类型。
+// 2. K extends keyof T：确保 K 是 T 的键的子集。
+// 3. P in K：遍历 K 中的每一个属性名。
+// 4. T[P]：对于每一个属性 P，其类型仍然是 T[P]，即原类型 T 中对应属性的类型。
+type Pick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+```
+:::
+
+## 20、如何实现 ts 中的 Omit
+描述：`Omit` 是一个类型工具，用于从类型 T 中排除一组键（属性名称）并创建一个新的类型。
+::: details 详情
+```ts
+// 1. T：表示原始类型。
+// 2. K extends keyof T：确保 K 是 T 的键的子集。
+// 3. Exclude<keyof T, K>：从 T 的键中排除 K，得到剩余的键。
+// 4. P in Exclude<keyof T, K>：遍历排除后的键集合。
+// 5. T[P]：对于每一个属性 P，其类型仍然是 T[P]，即原类型 T 中对应属性的类型。
+type Omit<T, K extends keyof T> = {
+  [P in Exclude<keyof T, K>]: T[P];
+};
+```
+:::
+
+## 21、如何实现 ts 中的 Exclude
+描述：`Exclude` 是一个类型工具，用于从类型 T 中排除一组类型（类型别名）并创建一个新的类型。
+::: details 详情
+```ts
+// 1. T：表示原始类型。
+// 2. U：表示需要排除的类型。
+// 3. T extends U ? never : T：遍历 T 中的每个类型，如果该类型可以分配给 U，则排除（返回 never）；否则保留（返回 T）。
+type Exclude<T, U> = T extends U ? never : T;
+```
+:::
+
+## 22、如何实现 ts 中的 Extract
+描述：`Extract` 是一个类型工具，用于从类型 `T` 中提取出可以分配给类型 `U` 的部分，并创建一个新的类型。
+::: details 详情
+```ts
+// 1. T：表示原始类型。
+// 2. U：表示需要提取的类型。
+// 3. T extends U ? T : never：遍历 T 中的每个类型，如果该类型可以分配给 U，则保留（返回 T）；否则排除（返回 never）。
+type Extract<T, U> = T extends U ? T : never;
+```
+:::
+
+## 23、如何实现 ts 中的 NonNullable
+描述：`NonNullable` 是一个类型工具，用于从类型 `T` 中排除 `null` 和 `undefined`，并创建一个新的类型。
+::: details 详情
+```ts
+// 1. T：表示原始类型。
+// 2. null 和 undefined：需要排除的类型。
+// 3. T extends null | undefined ? never : T：遍历 T 中的每个类型，如果该类型是 null 或 undefined，则排除（返回 never）；否则保留（返回 T）。
+type NonNullable<T> = T extends null | undefined ? never : T;
+```
+:::
+
+## 24、如何实现 ts 中的 Parameters
+描述：`Parameters` 是一个类型工具，用于获取函数类型 `T` 的参数类型，并将其构造成一个元组类型。
+::: details 详情
+```ts
+// 1. T：表示函数类型。
+// 2. T extends (...args: infer P) => any：判断 T 是否为函数类型，并使用 infer 推断其参数类型 P。
+// 3. P：如果 T 是函数类型，则返回参数类型元组 P；否则返回 never。
+type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
+```
+:::
+
+## 25、如何实现 ts 中的 ConstructorParameters
+描述：`ConstructorParameters` 是一个类型工具，用于获取构造函数类型 `T` 的参数类型，并将其构造成一个元组类型。
+::: details 详情
+```ts
+// 1. T：表示构造函数类型。
+// 2. T extends abstract new (...args: infer P) => any：判断 T 是否为构造函数类型，并使用 infer 推断其参数类型 P。
+// 3. P：如果 T 是构造函数类型，则返回参数类型元组 P；否则返回 never。
+type ConstructorParameters<T extends abstract new (...args: any) => any> = T extends abstract new (...args: infer P) => any ? P : never;
+```
+:::
+
+## 26、如何实现 ts 中的 ReturnType
+描述：`ReturnType` 是一个类型工具，用于获取函数类型 `T` 的返回值类型。
+::: details 详情
+```ts
+// 1. T：表示函数类型。
+// 2. T extends (...args: any[]) => infer R：判断 T 是否为函数类型，并使用 infer 推断其返回值类型 R。
+// 3. R：如果 T 是函数类型，则返回其返回值类型 R；否则返回 never。
+type ReturnType<T extends (...args: any[]) => any> = T extends (...args: any[]) => infer R ? R : never;
+```
+:::
+
+## 27、如何实现 ts 中的 InstanceType
+描述：`InstanceType` 是一个类型工具，用于获取构造函数类型 `T` 的实例类型。
+::: details 详情
+```ts
+// 1. T：表示构造函数类型。
+// 2. T extends abstract new (...args: any[]) => infer R：判断 T 是否为构造函数类型，并使用 infer 推断其实例类型 R。
+// 3. R：如果 T 是构造函数类型，则返回其实例类型 R；否则返回 never。
+type InstanceType<T extends abstract new (...args: any[]) => any> = T extends abstract new (...args: any[]) => infer R ? R : never;
+```
+:::
+
+## 28、说说对 ts 中命名空间与模块的理解
+在 ts 中命名空间（Namespaces）​和模块（Modules）​都是用于组织和管理代码的工具。
+::: details 详情
+**命名空间**
+- 命名空间是一个用于组织代码的机制，它允许开发者将相关代码分组到一个命名空间中，并使用名称空间来避免命名冲突。
+  ```ts
+  namespace MyNamespace {
+    export class MyClass {
+      public static sayHello(): void {
+        console.log("Hello from MyClass!");
+      }
+    }
+
+    export interface MyInterface {
+      name: string;
+    }
+  }
+
+  // 使用命名空间中的成员
+  MyNamespace.MyClass.sayHello();
+
+  const obj: MyNamespace.MyInterface = { name: "Alice" };
+  ```
+- 特点
+  - 全局作用域：命名空间内的成员通过命名空间名称访问，避免了全局变量污染。
+  - 嵌套命名空间：可以在一个命名空间内嵌套另一个命名空间。
+  - 合并声明：同一个命名空间可以在多个文件中声明，ts 会自动将其合并。
+
+**模块**
+- 模块通过 `import` 和 `export` 关键字实现代码的封装和复用，每个模块都有自己的作用域，避免了全局命名冲突。
+
+  导出：
+  ```ts
+  // utils.ts
+  export function add(a: number, b: number): number {
+    return a + b;
+  }
+
+  export class Calculator {
+    public static multiply(a: number, b: number): number {
+      return a * b;
+    }
+  }
+
+  export default function greet(name: string): string {
+    return `Hello, ${name}!`;
+  }
+  ```
+  导入：
+  ```ts
+  // main.ts
+  // 在一个 import 语句中，默认导出必须放在前面，后面跟随命名导入，用逗号分隔 或者 分两条导入。
+  import greet, { add, Calculator } from './utils';
+
+  console.log(add(2, 3)); // 输出: 5
+  console.log(Calculator.multiply(2, 3)); // 输出: 6
+  console.log(greet("胖虎")); // 输出: Hello, 胖虎!
+  ```
+- 特点
+  - 作用域隔离：每个模块都有自己的作用域，内部的变量和函数不会污染全局作用域。
+  - 静态解析：模块的导入和导出在编译时静态解析，有利于优化和静态分析工具的支持。
+  - 支持默认导出：除了命名导出，模块还支持默认导出，允许模块导出一个主要的成员。
+
+**区别**
+|特性|命名空间（Namespaces）|模块（Modules）|
+|---|--------|--------|
+|​作用域|通过命名空间名称访问，避免全局污染|每个模块有独立的作用域，通过 import/export 管理依赖|
+|​语法|使用 `namespace` 关键字定义，通过 `export` 导出成员|	使用 `export` `导出成员，import` 导入其他模块的成员|
+|​组织方式|适用于将相关代码封装在一起，避免命名冲突|适用于大型项目，支持代码拆分、懒加载和按需导入|
+|​现代性|主要用于 ts 早期，逐渐被模块系统取代|现代 js 和 ts 推荐使用模块系统|
+|​工具支持|支持命名空间合并，但在模块化项目中不常用|完全支持 ES6 模块语法，与现代构建工具（如 Webpack）兼容|
+|​可维护性|在大型项目中，命名空间可能导致代码组织混乱|模块化有助于代码的清晰组织和维护，提高可读性和可维护性|
+|​兼容性|可以与 js 的 IIFE 等模式结合使用|与现代 js 模块系统（CommonJS、ES6 Modules）兼容|
 :::
