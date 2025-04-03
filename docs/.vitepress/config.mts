@@ -7,6 +7,10 @@ export default defineConfig({
   description: "前端面试宝典",
   srcDir: "./src", // 相对于项目根目录的 markdown 文件所在的文件夹 默认 .
   lang: "zh-CN",
+  head: [
+    // 添加图标
+    ["link", { rel: "icon", href: "/assets/images/common/logo.png" }],
+  ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: "assets/images/common/logo.png",
