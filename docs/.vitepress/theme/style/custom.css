@@ -21,7 +21,8 @@
   --vp-c-brand-3: #298459;
 }
 
-.VPHome {
+.VPHome,
+.VPNavBarTitle  {
   img {
     border-radius: 50%;
   }

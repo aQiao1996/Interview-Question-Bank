@@ -19,7 +19,7 @@ hero:
 
 features:
   - title: 全面覆盖
-    details: 涵盖 HTML、CSS、JavaScript、Vue、React、TypeScript 等前端核心知识点。
+    details: 涵盖 HTML、CSS、JavaScript、Vue、React、TypeScript 、Node 等前端核心知识点。
     icon:
       src: assets/images/common/logo.png
   - title: 深入解析
