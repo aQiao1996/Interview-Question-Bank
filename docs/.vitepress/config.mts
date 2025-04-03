@@ -9,7 +9,7 @@ export default defineConfig({
   lang: "zh-CN",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "./images/logo.png",
+    logo: "assets/images/common/logo.png",
     // 导航菜单项的配置
     nav: menu,
     // 侧边栏菜单项的配置

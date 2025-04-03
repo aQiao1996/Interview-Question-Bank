@@ -4,18 +4,30 @@ layout: home
 
 hero:
   name: 前端面试宝典
-  text: 
-  tagline: 前端面试大全
+  text: 你的前端面试指南
+  tagline: 前端面试大全，助你轻松拿Offer
+  image:
+    src: assets/images/common/logo.png
+    alt: logo
   actions:
     - theme: brand
-      text: 面试题库
+      text: 开始学习
       link: /html
-    # - theme: alt
-    #   text: 还没想好
-    #   link: /api-examples
+    - theme: alt
+      text: 关于本站
+      link: /about
 
-# features:
-#   - title: Feature A
-#     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+features:
+  - title: 全面覆盖
+    details: 涵盖 HTML、CSS、JavaScript、Vue、React、TypeScript 等前端核心知识点。
+    icon:
+      src: assets/images/common/logo.png
+  - title: 深入解析
+    details: 提供详细的答案解析，帮助你理解每一个知识点的核心原理。
+    icon:
+      src: assets/images/common/logo.png
+  - title: 持续更新
+    details: 内容持续更新，紧跟前端技术发展趋势，保持最新的知识储备。
+    icon:
+      src: assets/images/common/logo.png
 ---
-
