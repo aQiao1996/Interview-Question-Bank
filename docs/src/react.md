@@ -1149,3 +1149,258 @@ const element = _jsx('h1', { className: 'title', children: 'Hello, world!' })
   - 无需手动导入 React：编译器自动引入 `_jsx` 函数。
   - 更简洁的编译输出：减少代码体积，提升可读性。
 :::
+
+## 19、如何理解 React Fiber 架构
+::: details 详情
+**Fiber 架构的本质与设计目标**
+
+Fiber 是 React 16+ 的核心算法重写，本质是基于链表的增量式协调模型。其核心目标并非单纯提升性能，而是重构架构以实现：
+- 可中断的异步渲染
+  > 将同步递归的调和过程拆解为可暂停/恢复的异步任务。
+- 优先级调度
+  > 高优先级任务（如用户输入）可打断低优先级任务（如数据更新）。
+- 并发模式基础
+  > 为 `Suspense`、`useTransition` 等特性提供底层支持。
+
+**Fiber 节点的核心设计**
+
+每个组件对应一个 Fiber 节点，构成双向链表树结构，包含以下关键信息：
+- 组件类型
+  > 函数组件、类组件、原生组件等。
+- 状态和副作用
+  > Hooks 状态（如 `useState`）、生命周期标记（如 `useEffect`）。
+- 调度信息
+  > 任务优先级（`lane` 模型）、到期时间（`expirationTime`）。
+- 链表指针
+  > `child`（子节点）、`sibling`（兄弟节点）、`return`（父节点）。
+```js
+// Fiber 节点结构简化示例
+const fiberNode = {
+  tag: FunctionComponent, // 组件类型
+  stateNode: ComponentFunc, // 组件实例或 DOM 节点
+  memoizedState: {
+    /* Hooks 链表 */
+  },
+  pendingProps: {
+    /* 待处理 props */
+  },
+  lanes: Lanes.HighPriority, // 任务优先级
+  child: nextFiber, // 子节点
+  sibling: null, // 兄弟节点
+  return: parentFiber, // 父节点
+}
+```
+
+**Fiber 协调流程（两阶段提交）**
+
+阶段一：Reconciliation（协调/渲染阶段）
+- 可中断的增量计算
+  > React 将组件树遍历拆解为多个 Fiber 工作单元，通过循环（而非递归）逐个处理。
+  - 每次循环执行一个 Fiber 节点，生成子 Fiber 并连接成树。
+  - 通过 `requestIdleCallback`（或 `Scheduler` 包）在浏览器空闲时段执行，避免阻塞主线程。
+- 对比策略
+  > 根据 `key` 和 `type` 复用节点，标记 `Placement`（新增）、`Update`（更新）、`Deletion`（删除）等副作用。
+阶段二：Commit（提交阶段）
+- 不可中断的 DOM 更新
+  > 同步执行所有标记的副作用（如 DOM 操作、生命周期调用），确保 UI 一致性。
+- 副作用分类
+  - BeforeMutation：`getSnapshotBeforeUpdate`。
+  - Mutation：DOM 插入/更新/删除。
+  - Layout：`useLayoutEffect`、`componentDidMount`、`Update`。
+
+**优先级调度机制**
+
+React 通过 Lane 模型 管理任务优先级（共 31 个优先级车道）：
+- 事件优先级
+```
+// 优先级从高到低
+ImmediatePriority（用户输入）
+UserBlockingPriority（悬停、点击）
+NormalPriority（数据请求）
+LowPriority（分析日志）
+IdlePriority（非必要任务）
+```
+- 调度策略
+  - 高优先级任务可抢占低优先级任务的执行权。
+  - 过期任务（如 `Suspense` 回退）会被强制同步执行。
+
+**优势**
+
+- 流畅的用户体验
+  > 异步渲染避免主线程阻塞，保障高优先级任务即时响应。
+- 复杂场景优化
+  > 支持大规模组件树的高效更新（如虚拟滚动、动画串联）。
+- 未来特性基础
+  > 为并发模式（`Concurrent Mode）`、离线渲染（`SSR`）提供底层支持。
+
+**局限性**
+
+- 学习成本高
+  > 开发者需理解底层调度逻辑以优化性能。
+- 内存开销
+  > Fiber 树的双向链表结构比传统虚拟 DOM 占用更多内存。
+
+**与旧架构的关键差异**
+
+|特性|Stack Reconciler（React 15-）|Fiber Reconciler（React 16+）|
+|----|--------|-------|
+|遍历方式|递归（不可中断）|循环（可中断 + 恢复）|
+|任务调度|同步执行，阻塞主线程|异步分片，空闲时段执行|
+|优先级控制|无|基于 Lane 模型的优先级抢占|
+|数据结构|虚拟 DOM 树|Fiber 链表树（含调度信息）|
+:::
+
+## 20、简述 React diff 算法过程
+::: details 详情
+React Diff 算法通过 分层对比策略 和 启发式规则 减少树对比的时间复杂度（从 `O(n³)` 优化至 `O(n)`）。其核心流程如下：
+
+**1.分层对比策略**
+
+- React 仅对**同一层级的兄弟节点**进行对比，若节点跨层级移动（如从父节点 A 移动到父节点 B），则直接**销毁并重建**，而非移动。
+- 原因：跨层操作在真实 DOM 中成本极高（需递归遍历子树），而实际开发中跨层移动场景极少，此策略以概率换性能。
+
+**2.节点类型对比规则**
+
+- 元素类型不同
+  - 若新旧节点类型不同（如 `<div>` → `<span>` 或 `ComponentA` → `ComponentB`），则：
+    - 1.销毁旧节点及其子树。
+    - 2.创建新节点及子树，并插入 DOM。
+    ```jsx
+    // 旧树
+    <div>
+      <ComponentA />
+    </div>
+
+    // 新树 → 直接替换
+    <span>
+      <ComponentB />
+    </span>
+    ```
+  - 元素类型相同，若类型相同，则复用 DOM 节点并更新属性：
+    - 原生标签
+    > 更新 `className`、`style` 等属性。
+    - 组件类型
+      - 类组件
+      > 保留实例，触发 `componentWillReceiveProps` → `shouldComponentUpdate` 等生命周期。
+      - 函数组件
+      > 重新执行函数，通过 Hooks 状态判断是否需更新。
+      ```jsx
+      // 旧组件（保留实例并更新 props）
+      <Button className="old" onClick={handleClick} />
+
+      // 新组件 → 复用 DOM，更新 className 和 onClick
+      <Button className="new" onClick={newClick} />
+      ```
+
+**3.列表节点的 key 优化**
+
+处理子节点列表时，React 依赖 key 进行最小化更新：
+- 无 `key` 时的默认行为
+> 默认使用 索引匹配（index-based diff），可能导致性能问题：
+```jsx
+// 旧列表
+;[<div>A</div>, <div>B</div>][
+  // 新列表（首部插入）→ 索引对比导致 B 被误判更新
+  ((<div>C</div>), (<div>A</div>), (<div>B</div>))
+]
+// 此时 React 会认为索引 0 从 A → C（更新），索引 1 从 B → A（更新），并新增索引 2 的 B，实际应仅插入 C。
+```
+- 使用 `key` 的优化匹配
+  > 通过唯一 key 标识节点身份，React 可精准识别移动/新增/删除：
+  ```jsx
+  // 正确使用 key（如数据 ID）
+  <ul>
+    {items.map((item) => (
+      <li key={item.id}>{item.text}</li>
+    ))}
+  </ul>
+  ```
+  - 匹配规则：
+    - 遍历新列表，通过 key 查找旧节点：
+      - 找到且类型相同 → 复用节点。
+      - 未找到 → 新建节点。
+    - 记录旧节点中未被复用的节点 → 执行删除。
+- 节点移动优化
+> 若新旧列表节点仅顺序变化，React 通过 key 匹配后，仅执行 DOM 移动操作（非重建），例如：
+```jsx
+// 旧列表：A (key=1), B (key=2)
+// 新列表：B (key=2), A (key=1)
+// React 仅交换 DOM 顺序，而非销毁重建
+```
+
+**4.性能边界策略**
+
+- 子树跳过
+  > 若父节点类型变化，其子节点即使未变化也会被整体销毁。
+- 相同组件提前终止
+  > 若组件 `shouldComponentUpdate` 返回 `false`，则跳过其子树 Diff。
+:::
+
+## 21、React 和 Vue diff 算法的区别
+::: details 详情
+
+**Diff 算法的背景和意义**
+
+- 背景：
+  - 在现代前端框架中，频繁操作真实 DOM 是性能瓶颈。React 和 Vue 都通过虚拟 DOM 来优化性能。
+  - 虚拟 DOM 是真实 DOM 的轻量级表示，框架通过 Diff 算法比较新旧虚拟 DOM 的差异，并将最小的更新应用到真实 DOM。
+- 意义：
+  - Diff 算法的核心目标是提高性能，将复杂的树比较从 O(n³) 优化到 O(n)。
+  - React 和 Vue 的 Diff 算法在实现上有不同的策略和优化点。
+
+---
+
+**React 和 Vue Diff 算法的对比**
+
+|维度|React|Vue 2/3|
+|----|--------|--------|
+|遍历方式| 单向递归（同层顺序对比）|双端对比（头尾指针优化）|
+|节点复用| 类型相同则复用，否则销毁重建|类型相同则尝试复用，优先移动而非重建|
+|静态优化| 需手动优化（如 `React.memo`）| 编译阶段自动标记静态节点|
+|更新粒度| 组件级更新（默认）| 组件级 + 块级（Vue3 Fragments）|
+
+---
+
+**React 和 Vue Diff 算法的优缺点对比**
+
+|特性| React Diff 算法| Vue Diff 算法|
+|----|--------|--------|
+|实现复杂度|实现较简单，单向递归|实现较复杂，双端对比|
+|性能|对于大部分场景性能较优| 在列表节点频繁移动的场景性能更优|
+|灵活性|需要手动优化（如 `React.memo`）|编译阶段自动优化（如静态节点标记）|
+|开发者体验| 更依赖开发者的优化|编译器自动优化，开发者负担较小|
+|适用场景| 适合组件化开发，关注组件级别的更新| 适合模板驱动开发，关注模板的静态优化|
+
+---
+
+**Vue3 的静态节点优化**
+
+- 静态提升：
+  - 在编译阶段，Vue3 会将模板中的静态节点提升为常量，避免每次渲染时重新创建。
+  - 示例：
+    ```html
+    <div>
+      <p>静态内容</p>
+      <p>{{ 动态内容 }}</p>
+    </div>
+    ```
+    - Vue3 会将 `<p>静态内容</p>` 提升为常量，仅在初次渲染时创建。
+- PatchFlag：
+  - Vue3 在编译阶段为动态节点生成 PatchFlag，用于标记需要更新的部分。
+  - 通过 PatchFlag，Vue3 可以跳过静态节点的比较，进一步提升性能。
+
+---
+
+**总结**
+
+- React Diff 算法：
+  - 采用单向递归的方式，关注组件级别的更新。
+  - 需要开发者手动优化（如 `React.memo`）。
+- Vue Diff 算法：
+  - 采用双端对比的方式，关注模板的静态优化。
+  - 编译阶段自动标记静态节点，减少运行时的开销。
+- 选择适合的框架：
+  - 如果更关注组件化开发和灵活性，可以选择 React。
+  - 如果更关注模板驱动开发和性能优化，可以选择 Vue。
+
+:::
