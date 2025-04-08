@@ -1645,3 +1645,71 @@ function useEffect(callback, deps) {
 }
 ```
 :::
+
+## 26、React/Vue 中的 router 实现原理如何
+::: details 详情
+前端路由实现的本质是监听 `url` 变化，实现方式有两种：`Hash` 模式和 `History` 模式，无需刷新页面就能重新加载相应的页面。 `Hash url` 的格式为 `www.a.com/#/`，当 `#` 后的哈希值发生变化时，通过 `hashchange` 事件监听，然后页面跳转。 `History url` 通过 `history.pushState` 和 `history.replaceState` 改变 `url` 。 两种模式的区别：
+- `hash` 只能改变 `#` 后的值，而 `history` 模式可以随意设置同源 `url` 。
+- `hash` 只能添加字符串类的数据，而 `history` 可以通过 `API` 添加多种类型的数据。
+- `hash` 的历史记录只显示之前的 `www.a.com` 而不会显示 `hash` 值，而 `history` 的每条记录都会进入到历史记录。
+- `hash` 无需后端配置且兼容性好，而 `history` 需要配置 `index.html` 用于匹配不到资源的情况。
+
+**Hash 模式实现**
+```js
+class HashRouter {
+  constructor() {
+    this.routes = {};
+    window.addEventListener("hashchange", this.handleHashChange.bind(this));
+  }
+
+  handleHashChange() {
+    const hash = window.location.hash.slice(1); // 获取 # 后的路径
+    const route = this.routes[hash];
+    if (route) {
+      route(); // 执行对应的回调函数
+    }
+  }
+
+  register(path, callback) {
+    this.routes[path] = callback; // 注册路由
+  }
+}
+
+// 使用示例
+const router = new HashRouter();
+router.register("home", () => console.log("Home Page"));
+router.register("about", () => console.log("About Page"));
+```
+**History 模式实现**
+```js
+class HistoryRouter {
+  constructor() {
+    this.routes = {};
+    window.addEventListener("popstate", this.handlePopState.bind(this));
+  }
+
+  handlePopState() {
+    const path = window.location.pathname; // 获取当前路径
+    const route = this.routes[path];
+    if (route) {
+      route(); // 执行对应的回调函数
+    }
+  }
+
+  navigate(path) {
+    history.pushState({}, "", path); // 修改 URL
+    this.handlePopState(); // 手动触发路由处理
+  }
+
+  register(path, callback) {
+    this.routes[path] = callback; // 注册路由
+  }
+}
+
+// 使用示例
+const router = new HistoryRouter();
+router.register("/home", () => console.log("Home Page"));
+router.register("/about", () => console.log("About Page"));
+router.navigate("/home"); // 跳转到 Home 页面
+```
+:::
