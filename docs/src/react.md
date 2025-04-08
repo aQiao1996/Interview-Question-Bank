@@ -1471,7 +1471,7 @@ setName('胖虎') // 再次渲染
 React 的批处理机制通过合并更新减少了渲染次数，但在需要即时反馈的场景（如动画）中，可通过 `flushSync` 强制同步更新。
 :::
 
-## 23、理解 React concurrency 并发机制
+## 23、React 的并发机制（Concurrency）
 ::: details 详情
 React 的并发机制（Concurrency）是 React 18 引入的一项重要特性，旨在提升应用的响应性和性能。
 
