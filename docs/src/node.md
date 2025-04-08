@@ -268,7 +268,7 @@ setTimeout2
   > - `setTimeout` 和 `setImmediate` 的优先级取决于事件循环的阶段。
 :::
 
-## 4、说说对 Node.js 中的 process 的理解
+## 4、说说对 Node.js 中的 `process` 的理解
 `process` 是 Node.js 提供的一个全局对象，用于描述当前 Node.js 进程的状态和控制进程的行为。它无需引入，可以直接使用。
 ::: details 详情
 **`process` 的常见属性和方法**
@@ -298,4 +298,225 @@ setTimeout2
   - 推荐使用 `try-catch` 或全局错误处理工具。
 - 跨平台兼容性：
   - 使用 `process.platform` 判断运行平台时，注意不同平台的差异（如路径分隔符）。
+:::
+
+## 5、Node.js 中有哪些常用的内置模块
+::: details 详情
+**文件系统模块（`fs`）**
+- 用于创建、读取、更新和删除文件。
+- 常用方法
+  - `fs.readFile()`：异步读取文件内容。
+  - `fs.readFileSync()`：同步读取文件内容。
+  - `fs.writeFile()`：异步写入文件内容。
+  - `fs.writeFileSync()`：同步写入文件内容。
+  - `fs.mkdir()`：创建目录。
+  - `fs.mkdirSync()`：同步创建目录。
+  - `fs.readdir()`：读取目录内容。
+  - `fs.unlink()`：删除文件。
+  - `fs.stat()`：获取文件或目录的状态信息。
+  - `fs.watch()`：监听文件或目录的变化。
+
+---
+
+**HTTP 模块（`http`）**
+- 用于创建 HTTP 服务器和客户端。
+- 常用方法
+  - `http.createServer()`：创建 HTTP 服务器。
+  - `http.request()`：发送 HTTP 请求。
+  - `http.get()`：发送 GET 请求。
+
+---
+
+**路径模块（`path`）**
+- 提供用于处理和操作文件路径的工具。
+- 常用方法
+  - `path.join()`：将多个路径片段拼接成一个完整路径，自动处理路径分隔符。
+  - `path.resolve()`：将路径片段解析为绝对路径，从右到左依次处理，直到构造出一个绝对路径。
+  - `path.basename()`：获取文件名。
+  - `path.dirname()`：获取目录名。
+  - `path.extname()`：获取文件扩展名。
+  - `path.parse()`：解析路径为对象。
+  - `path.format()`：将路径对象格式化为字符串。
+
+---
+
+**URL 模块（`url`）**
+- 提供 URL 解析和格式化的工具。
+- 常用方法
+  - `url.parse()`：解析 URL。
+  - `url.format()`：将 URL 格式化为字符串。
+  - `url.resolve()`：解析相对路径。
+  - `url.resolveObject()`：解析相对路径为对象。
+
+---
+
+**操作系统模块（`os`）**
+- 提供与操作系统相关的信息，如 CPU、内存、文件系统等。
+- 常用方法
+  - `os.cpus()`：获取 CPU 信息。
+  - `os.freemem()`：获取可用内存。
+  - `os.totalmem()`：获取总内存。
+  - `os.homedir()`：获取用户主目录。
+  - `os.networkInterfaces()`：获取网络接口信息。
+  - `os.tmpdir()`：获取临时目录。
+  - `os.hostname()`：获取主机名。
+  - `os.platform()`：获取运行平台。
+  - `os.release()`：获取操作系统版本。
+  - `os.type()`：获取操作系统类型。
+  - `os.uptime()`：获取系统运行时间。
+  - `os.userInfo()`：获取用户信息。
+  - `os.arch()`：获取 CPU 架构。
+
+---
+
+**事件模块（`events`）**
+- 用于创建和监听事件。
+- 常用方法
+  - `EventEmitter.on()`：监听事件。
+  - `EventEmitter.emit()`：触发事件。
+  - `EventEmitter.once()`：监听一次性事件。
+  - `EventEmitter.removeListener()`：移除事件监听器。
+
+---
+
+**子进程模块（`child_process`）**
+- 用于创建子进程，并管理子进程的生命周期。
+- 常用方法
+  - `child_process.spawn()`：创建子进程。
+  - `child_process.exec()`：执行命令行命令。
+  - `child_process.execFile()`：执行文件命令。
+  - `child_process.fork()`：创建子进程并执行模块。
+
+---
+
+**流模块（`stream`）**
+- 提供处理流数据的接口，如文件流、网络流等。。
+- 常用方法
+  - `stream.Readable`：可读流。
+  - `stream.Writable`：可写流。
+  - `stream.pipe()`：将可读流连接到可写流。
+  - `stream.Transform`：转换流。
+
+---
+
+**加密模块（`crypto`）**
+- 用于加密和哈希数据。
+- 常用方法
+  - `crypto.createHash()`：创建哈希对象。
+  - `crypto.createCipher()`：创建加密对象。
+  - `crypto.createDecipher()`：创建解密对象。
+  - `crypto.randomBytes()`：生成随机字节。
+:::
+
+## 6、说说对 Node 中的 `path` 模块的理解
+`path` 模块提供了用于处理和操作文件路径的工具，能够跨平台处理路径分隔符差异（如 Windows 使用 `\`，而 POSIX 使用 `/`）。
+::: details 详情
+**常用方法**
+- `path.join([...paths])`
+  > 将多个路径片段拼接成一个完整路径，自动处理路径分隔符。
+  ```js
+  const path = require('path');
+  const fullPath = path.join('/users', 'john', 'docs', 'file.txt');
+  console.log(fullPath); // 输出: /users/john/docs/file.txt
+  ```
+- `path.resolve([...paths])`
+  > 将路径片段解析为绝对路径，从右到左依次处理，直到构造出一个绝对路径。
+  ```js
+  const path = require('path');
+  const absolutePath = path.resolve('docs', 'file.txt');
+  console.log(absolutePath); // 输出: /当前工作目录/docs/file.txt
+  ```
+- `path.basename(path[, ext])`
+  > 返回路径的最后一部分（文件名），可以选择移除扩展名。
+  ```js
+  const path = require('path');
+  const fileName = path.basename('/users/john/docs/file.txt');
+  console.log(fileName); // 输出: file.txt
+
+  const fileNameWithoutExt = path.basename('/users/john/docs/file.txt', '.txt');
+  console.log(fileNameWithoutExt); // 输出: file
+  ```
+- `path.dirname(path)`
+  > 返回路径的目录名（不包含文件名）。
+  ```js
+  const path = require('path');
+  const dirName = path.dirname('/users/john/docs/file.txt');
+  console.log(dirName); // 输出: /users/john/docs
+  ```
+- `path.extname(path)`
+  > 返回路径的扩展名。
+  ```js
+  const path = require('path');
+  const extName = path.extname('/users/john/docs/file.txt');
+  console.log(extName); // 输出: .txt
+  ```
+- `path.parse(path)`
+  > 将路径解析为对象，包含 `root`、`dir`、`base`、`name` 和 `ext` 属性。
+  ```js
+  const path = require('path');
+  const parsedPath = path.parse('/users/john/docs/file.txt');
+  console.log(parsedPath);
+  // 输出:
+  // {
+  //   root: '/',
+  //   dir: '/users/john/docs',
+  //   base: 'file.txt',
+  //   name: 'file',
+  //   ext: '.txt'
+  // }
+  ```
+- `path.format(pathObject)`
+  > 将路径对象格式化为字符串，效果与 `path.parse()` 相反。
+  ```js
+  const path = require('path');
+  const formattedPath = path.format({
+    root: '/',
+    dir: '/users/john/docs',
+    base: 'file.txt'
+  });
+  console.log(formattedPath); // 输出: /users/john/docs/file.txt
+  ```
+- `path.isAbsolute(path)`
+  > 判断路径是否为绝对路径。
+  ```js
+  const path = require('path');
+  console.log(path.isAbsolute('/users/john')); // 输出: true
+  console.log(path.isAbsolute('docs/file.txt')); // 输出: false
+  ```
+- `path.relative(from, to)`
+  > 返回从 `from` 到 `to` 的相对路径。
+  ```js
+  const path = require('path');
+  const relativePath = path.relative('/users/john/docs', '/users/john/images');
+  console.log(relativePath); // 输出: ../images
+  ```
+- `path.normalize(path)`
+  > 规范化路径。
+  ```js
+  const path = require('path');
+  const normalizedPath = path.normalize('/users/john/../docs/./file.txt');
+  console.log(normalizedPath); // 输出: /users/docs/file.txt
+  ```
+- `path.sep`
+  > 提供平台特定的路径分隔符（POSIX 为 `/`，Windows 为 `\`）。
+  ```js
+  const path = require('path');
+  console.log(path.sep); // POSIX 输出: /，Windows 输出: \
+  ```
+- `path.delimiter`
+  > 提供平台特定的路径分隔符（POSIX 为 `:`，Windows 为 `;`）。
+  ```js
+  const path = require('path');
+  console.log(path.delimiter); // POSIX 输出: :，Windows 输出: ;
+  ```
+
+---
+
+**路径模块的应用场景**
+- 跨平台路径处理
+  - 使用 `path.join()` 和 `path.resolve()` 处理路径，避免手动拼接路径分隔符。
+- 文件路径解析
+  - 使用 `path.parse()` 和 `path.basename()` 提取文件名、扩展名等信息。
+- 动态路径生成
+  - 使用 `path.join()` 和 `path.format()` 动态生成文件路径。
 :::
