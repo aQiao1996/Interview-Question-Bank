@@ -805,3 +805,103 @@ Node.js 默认的内存限制是约 **1.7GB**（64 位系统）或 **0.8GB**（3
 - 内存泄漏
   > 如果长时间持有 Buffer 对象，可能导致内存泄漏，需及时释放不再使用的 Buffer。
 :::
+
+## 12、说说对 Node.js 中的 Stream 的理解
+`Stream` 是 Node.js 中处理流式数据的 **抽象接口** ，适合处理大文件、网络数据流等场景。通过流的分块处理和实时传输机制，可以显著提高性能并节省内存。
+::: details 详情
+**Stream 的类型**
+- 可读流（Readable）
+  > 可读取数据的流。例如 `fs.createReadStream()` 可以从文件读取内容。
+- 可写流（Writable）
+  > 可写入数据的流。例如 `fs.createWriteStream()` 可以将数据写入文件。
+- 双工流（Duplex）
+  > 可读写数据的流。例如 `net.Socket` 可以用于网络通信。
+- 转换流（Transform）
+  > 可读写数据的流，并且可以进行数据转换。例如 `zlib.createGzip()` 可以将数据压缩。
+
+Node.js中很多对象都实现了流，总之它是会冒数据（以 `Buffer` 为单位），它的独特之处在于，它不像传统的程序那样一次将一个文件读入内存，而是逐块读取数据、处理其内容，而不是将其全部保存在内存中。
+
+流可以分成三部分：`source`、`dest`、`pipe`
+
+在 `source` 和 `dest` 之间有一个连接的管道 `pipe`，它的基本语法是 `source.pipe(dest)`，`source` 和 `dest` 就是通过 `pipe` 连接，让数据从 `source` 流向了 `dest`。
+
+:::
+
+## 13、JWT 是什么
+JWT（JSON Web Token）是一种开放标准（RFC 7519），用于在各方之间以 JSON 对象的形式安全地传输信息。它通常用于身份验证和信息交换。
+::: details 详情
+**JWT 的结构**
+
+JWT 分成了三部分，头部（Header）、载荷（Payload）、签名（Signature），并以.进行拼接。
+
+- 头部（Header）
+  > 描述 JWT 的元信息，包括类型和签名算法。
+  ```json
+  {
+    "alg": "HS256", // 签名算法，如 HMAC SHA256
+    "typ": "JWT"    // 类型，固定为 JWT
+  }
+  ```
+- 载荷（Payload）
+  > 包含需要传输的声明（claims），可以是用户信息或其他数据。
+  ```json
+  {
+    "sub": "1234567890", // 用户 ID
+    "name": "John Doe",  // 用户名
+    "iat": 1516239022    // 签发时间（时间戳）
+  }
+  ```
+- 签名（Signature）
+  > 用于验证数据的完整性，防止数据被篡改。
+  ```
+  HMACSHA256(
+    base64UrlEncode(header) + "." + base64UrlEncode(payload),
+    secret
+  )
+  ```
+
+---
+
+**JWT 的工作原理**
+
+1️⃣ 用户登录
+  > 用户通过用户名和密码登录，服务器验证用户身份。
+
+2️⃣ 生成 JWT
+  > 服务器根据用户信息生成 JWT，并将其返回给客户端。
+
+3️⃣ 客户端存储 JWT
+  > 客户端通常将 JWT 存储在 `localStorage` 或 `cookie` 中。
+
+4️⃣ 请求携带 JWT
+  > 客户端在后续请求中将 JWT 放入 `Authorization` 头中。
+
+5️⃣ 服务器验证 JWT
+  > 服务器通过验证 JWT 的签名和有效期，确认请求的合法性。
+
+---
+
+**JWT 的优缺点**
+- 优点
+  - 无状态：JWT 是自包含的，服务器无需存储会话信息，适合分布式系统。
+  - 跨语言支持：JWT 是基于 JSON 的，支持多种语言实现。
+  - 安全性：使用签名确保数据完整性，防止篡改。
+- 缺点
+  - 无法撤销：一旦 JWT 签发，无法轻易撤销，除非在服务器端实现黑名单。
+  - 大小：JWT 包含头部、载荷和签名，体积可能较大，影响传输效率。
+  - 安全性依赖于密钥：如果密钥泄露，JWT 的安全性将受到威胁。
+:::
+
+## 14、请简述重新登录 Refresh Token 的原理
+::: details 详情
+Refresh Token，将会话管理流程改进如下：
+- 客户端使用用户名密码进行认证。
+- 服务端生成有效时间较短的 `Access Token`（例如 10 分钟），和有效时间较长的 `Refresh Token`（例如 7 天）。
+- 客户端访问需要认证的接口时，携带 `Access Token`。
+- 如果 `Access Token` 没有过期，服务端鉴权后返回给客户端需要的数据
+- 如果携带 `Access Token` 访问需要认证的接口时鉴权失败（例如返回 401 错误），则客户端使用 `Refresh Token` 向刷新接口申请新的 `Access Token`。
+- 如果 `Refresh Token` 没有过期，服务端向客户端下发新的 `Access Token`。
+- 客户端使用新的 `Access Token` 访问需要认证的接口。
+
+Refresh Token提供了服务端禁用用户 Token 的方式，当用户需要登出或禁用用户时，只需要将服务端的 `Refresh Token` 禁用或删除，用户就会在 `Access Token` 过期后，由于无法获取到新的 `Access Token` 而再也无法访问需要认证的接口。这样的方式虽然会有一定的窗口期（取决于 `Access Token` 的失效时间），但是结合用户登出时客户端删除 `Access Token` 的操作，基本上可以适应常规情况下对用户认证鉴权的精度要求。
+:::
