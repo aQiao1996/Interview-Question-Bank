@@ -5,7 +5,8 @@ export default [
   { text: "ts", link: "/ts" },
   { text: "vue2", link: "/vue2" },
   { text: "vue3", link: "/vue3" },
-  { text: "uni-app", link: "/uni-app" },
   { text: "react", link: "/react" },
   { text: "node", link: "/node" },
+  { text: "http", link: "/http" },
+  { text: "场景题", link: "/scenario-based" },
 ];
