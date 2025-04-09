@@ -122,7 +122,7 @@ Node.js 在加载模块时，会将模块的代码包装在一个立即执行函
 ```
 :::
 
-## 3、说说对 Nodejs 中的事件循环机制（Event Loop）理解
+## 3、说说对 Node.js 中的事件循环机制（Event Loop）理解
 Node.js 的事件循环（Event Loop）是其核心机制之一，用于实现非阻塞 I/O 和高并发处理。它基于 JavaScript 的事件驱动模型，并结合了 `libuv` 库的多线程能力，管理异步任务的执行。
 ::: details 详情
 **事件循环的六个阶段**
@@ -408,7 +408,7 @@ setTimeout2
   - `crypto.randomBytes()`：生成随机字节。
 :::
 
-## 6、说说对 Node 中的 `path` 模块的理解
+## 6、说说对 Node.js 中的 `path` 模块的理解
 `path` 模块提供了用于处理和操作文件路径的工具，能够跨平台处理路径分隔符差异（如 Windows 使用 `\`，而 POSIX 使用 `/`）。
 ::: details 详情
 **常用方法**
@@ -519,4 +519,289 @@ setTimeout2
   - 使用 `path.parse()` 和 `path.basename()` 提取文件名、扩展名等信息。
 - 动态路径生成
   - 使用 `path.join()` 和 `path.format()` 动态生成文件路径。
+:::
+
+## 7、说说对 Node.js 中的 `fs` 模块的理解
+`fs` 模块是 Node.js 的内置模块，用于处理文件系统操作，支持文件和目录的创建、读取、写入、删除等操作。`fs` 模块支持同步和异步两种方式，异步方式更符合 Node.js 的非阻塞 I/O 特性。
+::: details 详情
+**常用方法**
+- `fs.readFile(path, options, callback)`
+  > 异步读取文件内容。
+  ```js
+  const fs = require('fs');
+  fs.readFile('example.txt', 'utf8', (err, data) => {
+    if (err) throw err;
+    console.log(data);
+  });
+  ```
+- `fs.readFileSync(path, options)`
+  > 同步读取文件内容。
+  ```js
+  const fs = require('fs');
+  const data = fs.readFileSync('example.txt', 'utf8');
+  console.log(data);
+  ```
+- `fs.createReadStream`
+  > 创建一个可读的流，用于从文件读取数据。
+  ```js
+  const fs = require('fs');
+  const readStream = fs.createReadStream('example.txt');
+  readStream.on('data', (chunk) => {
+    console.log(chunk);
+  })
+  readStream.on('end', () => {
+    console.log('读取完成');
+  })
+  readStream.on('error', (err) => {
+    console.log(err);
+  })
+  ```
+- `fs.writeFile(path, data, options, callback)`
+  > 异步写入文件内容。
+  ```js
+  const fs = require('fs');
+  fs.writeFile('example.txt', 'Hello, Node.js!', (err) => {
+    if (err) throw err;
+    console.log('File written successfully!');
+  });
+  ```
+- `fs.writeFileSync(path, data, options)`
+  > 同步写入文件内容。
+  ```js
+  const fs = require('fs');
+  fs.writeFileSync('example.txt', 'Hello, Node.js!');
+  console.log('File written successfully!');
+  ```
+- `fs.appendFile(path, data, options, callback)`
+  > 异步追加文件内容。
+  ```js
+  const fs = require('fs');
+  fs.appendFile('example.txt', 'Hello, Node.js!', (err) => {
+    if (err) throw err;
+    console.log('File appended successfully!');
+  })
+  ```
+- `fs.createWriteStream`
+  > 创建一个可写的流，用于向文件写入数据。
+  ```js
+  const fs = require('fs');
+  const writeStream = fs.createWriteStream('example.txt');
+  writeStream.write('Hello World');
+  writeStream.end();
+  writeStream.on('finish', () => {
+    console.log('写入完成');
+  })
+  writeStream.on('error', (err) => {
+    console.log(err);
+  })
+  ```
+- `fs.unlink(path, callback)`
+  > 异步删除文件。
+  ```js
+  const fs = require('fs');
+  fs.unlink('example.txt', (err) => {
+    if (err) throw err;
+    console.log('File deleted successfully!');
+  })
+  ```
+- `fs.stat(path, callback)`
+  > 异步获取文件信息。
+  ```js
+  const fs = require('fs');
+  fs.stat('example.txt', (err, stats) => {
+    if (err) throw err;
+    console.log(`File size: ${stats.size} bytes`);
+  })
+  ```
+- `fs.existsSync(path)`
+  > 同步检查文件是否存在。
+  ```js
+  const fs = require('fs');
+  if (fs.existsSync('example.txt')) {
+    console.log('File exists!');
+  }
+  ```
+- `fs.readdir(path, callback)`
+  > 异步读取目录内容。
+  ```js
+  const fs = require('fs');
+  fs.readdir('/path/to/directory', (err, files) => {
+    if (err) throw err;
+    console.log(files);
+  })
+  ```
+- `fs.watchFile(path, options, listener)`
+  > 监听文件变化。
+  ```js
+  const fs = require('fs');
+  fs.watchFile('/path/to/file', (curr, prev) => {
+    console.log(`the current mtime is: ${curr.mtime}`);
+  })
+  ```
+- `fs.watch(path, options, listener)`
+  > 监听文件或目录的变化。
+  ```js
+  const fs = require('fs');
+  fs.watch('example.txt', (eventType, filename) => {
+    console.log(`Event: ${eventType}, File: ${filename}`);
+  });
+  ```
+:::
+
+## 8、Node.js 中 require 时发生了什么
+`require` 是 Node.js 中用于引入模块的关键方法，它可以加载核心模块、第三方模块以及本地模块。`require` 的加载过程涉及模块的解析、编译和缓存机制。
+::: details 详情
+**`require` 的加载过程**
+
+1️⃣ 路径解析
+  - Node.js 首先根据传入的模块标识符（如模块名或路径）解析模块的路径。
+  - 核心模块（如 `fs`、`http`）优先加载，无需路径解析。
+  - 对于本地模块，Node.js 会根据文件路径解析模块的绝对路径。
+
+2️⃣ 文件定位
+  - 如果模块标识符是文件路径，Node.js 会尝试加载以下文件：
+    - 精确匹配的文件（如 `./module.js`）。
+    - 如果没有扩展名，会依次尝试 `.js`、`.json`、`.node`。
+  - 如果模块标识符是目录路径，Node.js 会尝试加载目录下的 `package.json` 中的 `main` 字段指定的文件。如果没有 `package.json`，会尝试加载 `index.js` 或 `index.node`。
+
+3️⃣ 模块编译
+  - 对于 `.js` 文件，Node.js 会将其包装在一个立即执行函数（IIFE） 中执行。
+  - 对于 `.json` 文件，Node.js 会使用 `JSON.parse` 解析文件内容。
+  - 对于 `.node` 文件（C++ 扩展），Node.js 会加载编译后的二进制文件。
+
+4️⃣ 模块缓存
+  - 加载完成的模块会被缓存到 `require.cache` 中，避免重复加载。
+  - 如果再次 `require` 相同的模块，Node.js 会直接从缓存中返回模块的导出对象。
+
+---
+
+**`require` 的加载顺序**
+
+1️⃣ 系统缓存
+  - Node.js 首先检查模块是否已经被加载过（即是否存在于 `require.cache` 中）。
+
+2️⃣ 系统模块
+  - 如果模块是 Node.js 的核心模块（如 `fs`、`http`），会直接加载核心模块。
+
+3️⃣ 文件模块
+  - 如果模块标识符是文件路径（如 `./module.js` 或 `../module`），Node.js 会尝试加载对应的文件。
+
+4️⃣ 目录模块
+  - 如果模块标识符是目录路径，Node.js 会尝试加载该目录下的 `package.json` 文件中 `main` 字段指定的文件。
+  - 如果没有 `package.json`，会尝试加载目录下的 `index.js` 或 `index.node` 文件。
+
+5️⃣ `node_modules` 目录
+  - 如果模块标识符是模块名（如 `express`），Node.js 会从当前模块所在目录开始，逐级向上查找 `node_modules` 目录，直到找到对应的模块。
+  - 如果在所有父级目录中都找不到模块，会抛出 `MODULE_NOT_FOUND` 错误。
+:::
+
+## 9、如何发布一个全局可执行命令的 npm package
+在 package.json 中增加 bin，对应脚本，脚本文件头部 `#!/usr/bin/env node`
+> `#!/usr/bin/env node` 是 shebang，用于指定脚本运行时使用 Node.js。
+
+## 10、Node.js 如何修改内存大小
+Node.js 默认的内存限制是约 **1.7GB**（64 位系统）或 **0.8GB**（32 位系统）。如果需要处理大数据集或内存密集型任务，可以通过 `node --max-old-space-size=4096` 修改内存大小。
+
+## 11、说说对 Node.js 中的 Buffer 的理解
+`Buffer` 是 Node.js 中用于处理二进制数据的类。它类似于浏览器中的 `TypedArray`，但功能更强大，专为处理二进制数据流设计。
+::: details 详情
+**创建 Buffer 的方式**
+- `Buffer.alloc(size)`
+  > 创建一个指定大小的 Buffer，并用 `0` 填充。
+  ```js
+  const buf = Buffer.alloc(10); // 创建一个大小为 10 字节的 Buffer
+  console.log(buf); // <Buffer 00 00 00 00 00 00 00 00 00 00>
+  ```
+- `Buffer.allocUnsafe(size)`
+  > 创建一个指定大小的 Buffer，但不初始化内容，可能包含旧数据。
+  ```js
+  const buf = Buffer.allocUnsafe(10);
+  console.log(buf); // 可能包含随机数据
+  ```
+- `Buffer.from(array)`
+  > 从数组创建 Buffer。
+  ```js
+  const buf = Buffer.from([1, 2, 3]);
+  console.log(buf); // <Buffer 01 02 03>
+  ```
+- `Buffer.from(string[, encoding])`
+  > 从字符串创建 Buffer，默认编码为 `utf8`。
+  ```js
+  const buf = Buffer.from('Hello, Node.js!');
+  console.log(buf); // <Buffer 48 65 6c 6c 6f 2c 20 4e 6f 64 65 2e 6a 73 21>
+  ```
+
+---
+
+**常用方法**
+- `buf.toString([encoding[, start[, end]]])`
+  > 将 Buffer 转换为字符串。
+  ```js
+  const buf = Buffer.from('Hello, Node.js!');
+  console.log(buf.toString('utf8')); // 输出: Hello, Node.js!
+  ```
+- `buf.length`
+  > 获取 Buffer 的长度（字节数）。
+  ```js
+  const buf = Buffer.from('Hello');
+  console.log(buf.length); // 输出: 5
+  ```
+- `buf.slice(start, end)`
+  > 截取 Buffer 的一部分，不会复制数据。
+  ```js
+  const buf = Buffer.from('Hello, Node.js!');
+  const slice = buf.slice(0, 5);
+  console.log(slice.toString()); // 输出: Hello
+  ```
+- `Buffer.concat(list[, totalLength])`
+  > 合并多个 Buffer。
+  ```js
+  const buf1 = Buffer.from('Hello, ');
+  const buf2 = Buffer.from('Node.js!');
+  const buf = Buffer.concat([buf1, buf2]);
+  console.log(buf.toString()); // 输出: Hello, Node.js!
+  ```
+- `buf.write(string[, offset[, length[, encoding]]])`
+  > 向 Buffer 中写入数据。
+  ```js
+  const buf = Buffer.alloc(10);
+  buf.write('Hello');
+  console.log(buf.toString()); // 输出: Hello
+  ```
+- `Buffer.isBuffer(obj)`
+  > 检查对象是否为 Buffer。
+  ```js
+  const buf = Buffer.from('Hello');
+  console.log(Buffer.isBuffer(buf)); // 输出: true
+  ```
+
+---
+
+**Buffer 的特点**
+- 固定大小
+  > Buffer 的大小在创建时确定，无法动态调整。
+- 高效操作
+  > Buffer 提供了直接操作内存的方法，适合处理高性能需求的场景。
+- 编码支持
+  > 支持多种编码格式，如 `utf8`、`ascii`、`base64`、`hex` 等。
+
+---
+
+**使用场景**
+- 处理网络数据流
+  > 如 `TCP` 数据流、`HTTP` 请求和响应。
+- 文件操作
+  > 读取和写入二进制文件。
+- 数据加密
+  > 处理加密算法中的二进制数据。
+- 图片、视频等多媒体数据
+  > 处理非文本数据
+
+---
+
+**注意事项**
+- `Buffer.allocUnsafe` 的风险
+  > 由于未初始化内容，可能包含旧数据，使用前需要手动清空。
+- 内存泄漏
+  > 如果长时间持有 Buffer 对象，可能导致内存泄漏，需及时释放不再使用的 Buffer。
 :::
