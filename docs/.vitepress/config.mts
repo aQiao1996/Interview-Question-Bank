@@ -19,7 +19,10 @@ export default defineConfig({
     // 侧边栏菜单项的配置
     sidebar: [{ text: "前端", items: menu }],
     // 可以定义此选项以在导航栏中展示带有图标的社交帐户链接
-    socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/vuejs/vitepress" },
+      { icon: "gitee", link: "https://gitee.com/yangyunqiao" },
+    ],
     // 使用浏览器内索引进行模糊全文搜索
     search: { provider: "local" },
     // 大纲中显示的标题级别 (右侧目录)
