@@ -20,7 +20,7 @@ export default defineConfig({
     sidebar: [{ text: "前端", items: menu }],
     // 可以定义此选项以在导航栏中展示带有图标的社交帐户链接
     socialLinks: [
-      { icon: "github", link: "https://github.com/vuejs/vitepress" },
+      { icon: "github", link: "https://github.com/aQiao1996" },
       { icon: "gitee", link: "https://gitee.com/yangyunqiao" },
     ],
     // 使用浏览器内索引进行模糊全文搜索
