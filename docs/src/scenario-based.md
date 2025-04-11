@@ -852,3 +852,153 @@ app.listen(PORT, () => {
 - 记录日志，确保错误信息可追踪。
 - 模拟生产环境，复现问题并定位根因。
 :::
+
+## 13、一次性渲染十万条数据，该怎么优化
+::: details 详情
+- 虚拟列表
+  > - 只渲染可视区域内的元素，其他元素在滚动时动态加载。
+  > - 使用现成的库（如 `react-window`、`react-virtualized`、`vue-virtual-scroller`）或自行实现。
+  ```jsx
+  // react-window 举例
+  import { FixedSizeList as List } from 'react-window';
+ 
+  const Row = ({ index, style }) => (
+    <div style={style}>Row {index}</div>
+  );
+  
+  const Example = () => (
+    <List
+      height={150}
+      itemCount={1000}
+      itemSize={35}
+      width={300}
+    >
+      {Row}
+    </List>
+  );
+  ```
+- `requestAnimationFrame` + `fragment`（时间分片）
+  > - 使用 `requestAnimationFrame` 将渲染任务分片，避免一次性渲染大量数据导致页面卡顿。
+  > - 使用 `fragment` 将数据分组，减少 DOM 操作次数，提高性能。
+  ```js
+  function renderLargeData(data) {
+    const container = document.getElementById('container');
+    const total = data.length;
+    const chunkSize = 100; // 每次渲染的条数
+    let index = 0;
+
+    function renderChunk() {
+      const fragment = document.createDocumentFragment(); // 使用 documentFragment 减少 DOM 操作
+      for (let i = 0; i < chunkSize && index < total; i++, index++) {
+        const div = document.createElement('div');
+        div.textContent = `Item ${data[index]}`;
+        fragment.appendChild(div);
+      }
+      container.appendChild(fragment);
+
+      if (index < total) {
+        requestAnimationFrame(renderChunk); // 下一帧继续渲染
+      }
+    }
+
+    renderChunk();
+  }
+
+  // 示例数据
+  const largeData = Array.from({ length: 100000 }, (_, i) => i + 1);
+  renderLargeData(largeData);
+  ```
+- `setTimeout` 分片
+  > - 简单易用，兼容性好。
+  > - 相比 `requestAnimationFrame` + `fragment`（时间分片）的方式性能稍差。
+  ```js
+  const total = 100000
+  let ul = document.getElementById('container')
+  let once = 20
+  let page = total / once
+
+  function loop(curTotal) {
+      if (curTotal <= 0) return 
+
+       let pageCount = Math.min(curTotal, once) // 最后一次渲染一定少于20条，因此取最小
+
+      setTimeout(() => {
+          for (let i = 0; i < pageCount; i++) {
+             let li = document.createElement('li')
+             li.innerHTML = ~~(Math.random() * total)
+             ul.appendChild(li)
+          }
+        loop(curTotal - pageCount)
+    }, 0)
+    }
+
+  loop(total)
+  ```
+
+**总结**
+推荐使用 **虚拟列表** 或 `requestAnimationFrame` + `fragment`（时间分片）的方式进行加载。
+
+:::
+
+## 14、应用上线以后，怎么通知用户刷新页面
+::: details 详情
+**思路**
+- 在构建时为静态资源生成唯一的版本哈希值（如 Webpack 的 `[hash]`）。
+- 前端定期向服务器请求最新的哈希值，与当前页面的哈希值进行对比，发现更新时通知用户刷新页面。
+
+---
+
+**实现方式**
+- 轮询实现
+  ```js
+  let currentHash = 'abc123'; // 当前页面的版本哈希
+
+  async function checkForUpdates() {
+    try {
+      const response = await fetch('/api/version');
+      const { hash } = await response.json();
+
+      if (hash !== currentHash) {
+        alert('有新版本发布，请刷新页面！');
+        location.reload(); // 刷新页面
+      }
+    } catch (error) {
+      console.error('检查更新失败:', error);
+    }
+  }
+
+  // 每隔 2 分钟检查一次
+  setInterval(checkForUpdates, 60 * 1000 * 2);
+  ```
+- WebSocket 实现
+  ```js
+  const socket = new WebSocket('wss://example.com');
+
+  socket.onmessage = (event) => {
+    const { hash } = JSON.parse(event.data);
+    if (hash !== currentHash) {
+      alert('有新版本发布，请刷新页面！');
+      location.reload();
+    }
+  };
+  ```
+- SSE 实现
+  ```js
+  const eventSource = new EventSource('/api/updates');
+
+  eventSource.onmessage = (event) => {
+    const { hash } = JSON.parse(event.data);
+    if (hash !== currentHash) {
+      alert('有新版本发布，请刷新页面！');
+      location.reload();
+    }
+  };
+  ```
+
+---
+
+**总结**
+- 轮询：实现简单，但会增加服务器压力，适合对实时性要求不高的场景。
+- WebSocket：双向通信，实时性强，适合需要频繁交互的场景。
+- SSE：单向通信，轻量级，适合只需要服务器推送更新的场景。
+:::
