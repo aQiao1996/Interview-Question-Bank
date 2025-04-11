@@ -22,8 +22,11 @@ Composition API
 新特性和改进
 - Teleport：可以将组件的DOM渲染到指定的DOM节点之外，例如模态框、通知等。
 - Fragment 支持：Vue3支持组件返回多个根节点，不再需要单一根节点。
+- Suspense：用于处理异步组件加载，允许在组件加载过程中显示一个加载状态，直到异步组件加载完成后再显示实际内容
 - Vue3 原生支持 `TypeScript`，提供更完善的类型推导和开发体验。
 - Vue3 支持为一个组件绑定多个 `v-model`，并且可以自定义 `prop` 和 `event` 名称。
+- Vue3 支持监听支持动态属性监听和更多数据类型（如 Map、Set），无需手动调用 Vue.set
+- provide 和 inject：提供了更灵活的依赖注入机制。
 :::
 
 ## 2、vue3 中为什么要使用 Proxy，它对比 Object.defineProperty 有什么改进
