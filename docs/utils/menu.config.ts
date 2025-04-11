@@ -9,4 +9,5 @@ export default [
   { text: "node", link: "/node" },
   { text: "http", link: "/http" },
   { text: "场景题", link: "/scenario-based" },
+  { text: "前端工程化", link: "/fe-engineering" },
 ];
