@@ -17,7 +17,7 @@ Composition API
 - 生命周期钩子名称变化。
 
 响应式系统改进
-- Vue3 使用 `Proxy` 实现响应式，解决了 Vue2使用 Object.defineProperty 实现响应式的一些局限性，如无法监听新增属性和数组索引变化。
+- Vue3 使用 `Proxy` + `Reflect` 实现响应式，解决了 Vue2使用 Object.defineProperty 实现响应式的一些局限性，如无法监听新增属性和数组索引变化。
 
 新特性和改进
 - Teleport：可以将组件的DOM渲染到指定的DOM节点之外，例如模态框、通知等。
