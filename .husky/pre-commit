@@ -1,27 +1,37 @@
 #!/bin/sh
 
-# 检查 Node.js 是否安装
 if ! type node >/dev/null 2>&1; then
-  echo "❌ Node.js 未安装，请执行以下命令安装 Node.js："
-  echo "nvm install --lts && corepack enable"
-  exit 1
-else
-  nodeVersion=$(node -v)
-  echo "✅ Node.js 已安装，版本: $nodeVersion"
-  echo "路径: $(which node)"
-fi
+  echo 'node 未安装'
+  if [ -d "$HOME/.nvm" ]; then
+    echo "有 .nvm 这个目录"
 
-# 检查 pnpm 是否安装
-if ! type pnpm >/dev/null 2>&1; then
-  echo "❌ pnpm 未安装，请执行以下命令安装 pnpm："
-  echo "corepack enable && corepack prepare pnpm@latest --activate"
-  exit 1
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+    matchNvmUseNodeVersion=$(nvm current)
+    if [ "$matchNvmUseNodeVersion" == "none" ]; then
+      echo "没有找到 nvm 设置的 Node 版本,请执行 nvm install --lts"
+      exit 1
+    else
+      echo "检测到 nvm 设置了有效的 Node 版本: $matchNvmUseNodeVersion"
+      export PATH="$NVM_DIR/versions/node/$matchNvmUseNodeVersion/bin:$PATH"
+    fi
+  fi
+
 else
-  pnpmVersion=$(pnpm -v)
-  echo "✅ pnpm 已安装，版本: $pnpmVersion"
-  echo "路径: $(which pnpm)"
+  echo 'node 已安装'
+  nodeVersion=$(node -v)
+  npmVersion=$(npm -v)
+  echo "✅ node 版本:$nodeVersion"
+  echo $(which node)
+  echo "✅ npm 版本:$npmVersion"
+  echo $(which npm)
 fi
 
 # 执行 lint-staged (这里不需要 lint-staged,因为这是以 .md 文件为主)
 # echo "🚀 正在执行 lint-staged..."
-# pnpm dlx lint-staged --verbose
+# npx lint-staged --verbose
+
+
+# 执行 commitlint
+npx --no -- commitlint --edit "$1"
