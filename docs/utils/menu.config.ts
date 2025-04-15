@@ -1,3 +1,4 @@
+// 默认路由表
 export default [
   { text: "html", link: "/html" },
   { text: "css", link: "/css" },
