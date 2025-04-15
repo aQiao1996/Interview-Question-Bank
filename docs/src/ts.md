@@ -1408,3 +1408,96 @@ type InstanceType<T extends abstract new (...args: any[]) => any> = T extends ab
 |​可维护性|在大型项目中，命名空间可能导致代码组织混乱|模块化有助于代码的清晰组织和维护，提高可读性和可维护性|
 |​兼容性|可以与 js 的 IIFE 等模式结合使用|与现代 js 模块系统（CommonJS、ES6 Modules）兼容|
 :::
+
+## 29、ts 中 `readonly` 和 `as const` 的区别
+::: details 详情
+|特性|`readonly`|`as const`|
+|----|--------|--------|
+|用途|类型层面的只读声明|变量层面的常量断言，使变量及其成员尽可能具体和只读|
+|应用范围|类属性、接口属性、类型别名|变量声明（常量、对象、数组等）|
+|赋值时机|只能在声明时或构造函数中赋值（对类属性而言）|必须在声明时初始化，之后不能更改|
+|影响深度|仅使属性标记为只读，不改变属性的类型推断|使整个对象或数组变为只读，并将类型细化为具体字面量类型|
+|类型推断|不改变变量的具体类型，只是限制赋值操作|精确推断变量及其成员的具体类型，生成最具体的字面量类型|
+|可变性控制|允许在声明后通过构造函数或其他授权方式赋初值|不允许任何形式的重新赋值或修改|
+|适用场景|需要在类型层面表达属性不可变的场景，如类和接口设计|需要将变量及其成员具体化，并确保其不可变的场景|
+
+**总结**
+- `readonly​​` 是一个类型修饰符，用于在类型层面表达属性的不可变性，适用于类、接口和类型别名，具有浅层只读的特性。
+- `as const`​​ 是一个常量断言，用于在变量声明时将变量及其嵌套成员具体化并标记为只读，具有深层只读和类型细化的特性。
+:::
+
+## 30、简述一下 ts 中函数重载
+::: details 详情
+**什么是函数重载**
+- 函数重载是指在 ts 中，允许为同一个函数定义多个函数签名（声明），以支持不同的参数类型或数量。
+- 函数重载的目的是让函数能够根据不同的调用方式执行不同的逻辑。
+
+---
+
+**函数重载的语法**
+- 函数重载由多个签名（声明）和一个通用实现组成。
+```ts
+function 函数名(参数1: 类型, 参数2: 类型): 返回值类型; // 签名1
+function 函数名(参数1: 类型): 返回值类型; // 签名2
+function 函数名(...args: any[]): any {
+   // 通用实现
+}
+```
+
+---
+
+**示例**
+- 函数示例：定义一个函数，根据参数类型返回不同的结果。
+```ts
+// 定义函数签名
+function add(a: number, b: number): number;
+function add(a: string, b: string): string;
+
+// 通用实现
+function add(a: any, b: any): any {
+  return a + b;
+}
+
+// 使用
+console.log(add(1, 2)); // 输出: 3
+console.log(add("Hello, ", "World!")); // 输出: Hello, World!
+```
+- 类方法重载
+```ts
+class Calculator {
+  // 方法签名
+  calculate(a: number, b: number): number;
+  calculate(a: string, b: string): string;
+
+  // 通用实现
+  calculate(a: any, b: any): any {
+    if (typeof a === "number" && typeof b === "number") {
+      return a + b;
+    } else if (typeof a === "string" && typeof b === "string") {
+      return a.concat(b);
+    }
+  }
+}
+
+const calc = new Calculator();
+console.log(calc.calculate(10, 20)); // 输出: 30
+console.log(calc.calculate("Hello, ", "TypeScript!")); // 输出: Hello, TypeScript!
+```
+
+---
+
+**注意事项**
+- 签名顺序
+  > 重载签名的顺序很重要，最具体的签名应该放在最前面，最通用的签名放在最后。
+```ts
+function example(a: number): number;
+function example(a: any): any; // 通用签名
+function example(a: any): any {
+  return a;
+}
+```
+- 实现必须兼容所有签名
+  > 通用实现的参数和返回值类型必须兼容所有定义的签名。
+- 不能直接调用通用实现
+  > ts 只允许调用符合签名的重载方法，而不能直接调用通用实现。
+:::
