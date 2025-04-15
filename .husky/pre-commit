@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# 检查 Node.js 是否安装
+if ! type node >/dev/null 2>&1; then
+  echo "❌ Node.js 未安装，请执行以下命令安装 Node.js："
+  echo "nvm install --lts && corepack enable"
+  exit 1
+else
+  nodeVersion=$(node -v)
+  echo "✅ Node.js 已安装，版本: $nodeVersion"
+  echo "路径: $(which node)"
+fi
+
+# 检查 pnpm 是否安装
+if ! type pnpm >/dev/null 2>&1; then
+  echo "❌ pnpm 未安装，请执行以下命令安装 pnpm："
+  echo "corepack enable && corepack prepare pnpm@latest --activate"
+  exit 1
+else
+  pnpmVersion=$(pnpm -v)
+  echo "✅ pnpm 已安装，版本: $pnpmVersion"
+  echo "路径: $(which pnpm)"
+fi
+
+# 执行 lint-staged (这里不需要 lint-staged,因为这是以 .md 文件为主)
+# echo "🚀 正在执行 lint-staged..."
+# pnpm dlx lint-staged --verbose
