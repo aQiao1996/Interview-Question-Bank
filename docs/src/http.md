@@ -542,3 +542,104 @@ GraphQL 是一种用于 API 的查询语言和运行时，由 Facebook 开发。
 - 持续优化。
   > - 定期评估和优化网络性能，跟踪最新的优化技术。
 :::
+
+## 16、CORS 是如何实现跨域的
+::: details 详情
+**什么是 CORS**
+- CORS（Cross-Origin Resource Sharing，跨域资源共享）是一种浏览器的跨域访问机制。
+- 它通过设置特定的 HTTP 响应头，允许浏览器访问跨域资源。
+
+---
+
+**CORS 的实现原理**
+- 浏览器会在跨域请求时，自动添加一些请求头，并根据服务器返回的响应头决定是否允许跨域访问。
+- CORS 的核心是服务器通过响应头告知浏览器是否允许跨域请求。
+
+---
+
+**CORS 的关键响应头**
+- `Access-Control-Allow-Origin`
+  > 指定允许访问的域名。
+  ```http
+  Access-Control-Allow-Origin: https://example.com
+  ```
+- `Access-Control-Allow-Methods`
+  > 指定允许的 HTTP 方法。
+  ```http
+  Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+  ```
+- `Access-Control-Allow-Headers`
+  > 指定允许的自定义请求头。
+  ```http
+  Access-Control-Allow-Headers: Content-Type, Authorization
+  ```
+- `Access-Control-Allow-Credentials`
+  > 指定是否允许携带 Cookie。
+  ```http
+  Access-Control-Allow-Credentials: true
+  ```
+- `Access-Control-Expose-Headers`
+  > 指定哪些响应头可以被浏览器访问。
+  ```http
+  Access-Control-Expose-Headers: X-Custom-Header
+  ```
+- `Access-Control-Max-Age`
+  > 指定预检请求的结果可以缓存的时间（单位：秒）。
+  ```http
+  Access-Control-Max-Age: 86400
+  ```
+
+---
+
+**CORS 的两种请求类型**
+- 简单请求
+  - 满足以下条件的请求被视为简单请求
+    - 使用的 HTTP 方法是 `GET`、`POST` 或 `HEAD`。
+    - 请求头仅包含以下字段：
+      > - `Accept`
+      > - `Accept-Language`
+      > - `Content-Language`
+      > - `Content-Type`（值为 `application/x-www-form-urlencoded`、`multipart/form-data` 或 `text/plain`）。
+  - 流程
+    - 浏览器直接发送请求，服务器通过响应头决定是否允许跨域。
+- 预检请求
+  - 如果请求不满足简单请求的条件，浏览器会在正式请求之前发送一个 `OPTIONS` 请求，称为预检请求。
+  - 流程
+    1. 浏览器发送 `OPTIONS` 请求，询问服务器是否允许跨域。
+    2. 服务器返回包含 CORS 相关头的响应。
+    3. 如果预检请求通过，浏览器才会发送正式请求。
+:::
+
+## 17、什么是 CDN
+::: details 详情
+**定义**
+- CDN（Content Delivery Network，内容分发网络）是一种分布式的网络架构，用于加速内容的分发。
+- 通过将内容缓存到多个地理位置分散的节点（Edge Server），用户可以从离自己最近的节点获取资源，从而提高访问速度和可靠性。
+
+---
+
+**工作原理**
+1. 用户向目标服务器发起请求。
+2. DNS 解析将请求路由到最近的 CDN 节点。
+3. CDN 节点检查是否有缓存的资源：
+   - 如果有缓存，直接返回资源。
+   - 如果没有缓存，向源服务器请求资源并缓存到节点。
+4. 用户从 CDN 节点获取资源。
+
+---
+
+**优点**
+- 加速访问：用户从最近的节点获取资源，减少延迟。
+- 减轻源服务器压力：CDN 节点分担了大部分流量，降低源服务器负载。
+- 提高可靠性：多个节点分布式部署，避免单点故障。
+- 节省带宽：通过缓存减少重复请求，降低带宽消耗。
+- 支持高并发：分布式架构可以同时处理大量用户请求。
+
+---
+
+**应用场景**
+- 网站加速：提高网页加载速度，优化用户体验。
+- 视频点播/直播：提供高质量的视频流传输，减少卡顿。
+- 文件下载：加速大文件的分发（如软件、补丁）。
+- API 加速：提升接口响应速度，减少延迟。
+:::
