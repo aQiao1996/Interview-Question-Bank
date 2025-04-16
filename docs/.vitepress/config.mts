@@ -7,13 +7,23 @@ export default defineConfig({
   description: "前端面试宝典",
   srcDir: "./src", // 相对于项目根目录的 markdown 文件所在的文件夹 默认 .
   lang: "zh-CN",
+  base: "/",
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames: "assets/[ext]/[name]-[hash].[ext]", // 资源文件像 字体，图片等
+        },
+      },
+    },
+  },
   head: [
     // 添加图标
-    ["link", { rel: "icon", href: "/assets/images/common/logo.png" }],
+    ["link", { rel: "icon", href: "/public/logo.png" }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "assets/images/common/logo.png",
+    logo: "public/logo.png",
     // 导航菜单项的配置
     nav: menu,
     // 侧边栏菜单项的配置
