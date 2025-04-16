@@ -19,11 +19,11 @@ export default defineConfig({
   },
   head: [
     // 添加图标
-    ["link", { rel: "icon", href: "/public/logo.png" }],
+    ["link", { rel: "icon", href: "logo.png" }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "public/logo.png",
+    logo: "logo.png",
     // 导航菜单项的配置
     nav: menu,
     // 侧边栏菜单项的配置
