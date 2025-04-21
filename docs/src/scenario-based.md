@@ -1091,6 +1091,8 @@ app.listen(PORT, () => {
 - 使用`performance.now()`替代 `Date`
   > 浏览器高精度时间API（精度可达0.1ms）。`Date.now()`误差约 ±500ms ，`performance.now()`误差 ±50ms。
 ```js
+// 计算结束时间的时间戳（当前时间 + 60秒）
+const endTimestamp = Date.now(); + 60 * 1000;
 function usePreciseCountdown(endTimestamp) {
     const start = performance.now();
     const duration = endTimestamp - Date.now();
@@ -1132,6 +1134,7 @@ function usePreciseCountdown(endTimestamp) {
         }
     };
 }
+usePreciseCountdown(endTimestamp).getRemainingTime()
 ```
 - `Web Worker` 后台计时
   > 避免主线程阻塞。
@@ -1259,4 +1262,60 @@ function usePreciseCountdown(endTimestamp) {
     };
 }
 ```
+:::
+
+## 18、简述部署项目目到服务器上的流程
+::: details 详情
+1.将代码上传到 `git` 托管上。
+
+2.购买云服务器（CentOS示例）等等一系列准备工作，进入云服务器。
+
+3.使用自带的 `yum` 工具安装 `node`、`npm`、`git`、`nginx` 等。
+  > - `yum` 是用于基于 RPM 的 Linux 发行版（如 CentOS、RHEL、Fedora）的包管理器。
+  > - `yum` 命令跟 `npm`类似， [点击查看 Linux yum 命令](https://www.runoob.com/linux/linux-yum.html)。
+
+4.创建目录。
+  - 举例
+    > - 在文件夹 `home` 下面创建 `web` 文件夹。（ `ls` 查看当前目录下的文件， `cd home` 进入 `home` 文件夹，`mkdir web` 创建 `web` 文件夹 ）。
+
+5.将项目从 `git` 仓库拉下来。
+
+6.安装项目依赖。
+
+7.打包项目，使用 `pwd` 获取 `dist` 文件位置。
+
+8.配置 `nginx`，将 `dist` 文件夹配置到 `nginx` 的 `root` 下。
+
+9.启动 `nginx`，配置完成。
+
+::: tip Linux 常用命令
+|命令|描述|
+|---|--------|
+|`ls`|列出目录内容|
+|`cd`|更改当前目录|
+|`pwd`|显示当前工作目录|
+|`echo`|输出文本|
+|`ssh`|远程登录|
+|`cp`|复制文件或目录|
+|`mv`|移动或重命名文件或目录|
+|`rm`|删除文件或目录|
+|`mkdir`|创建新目录|
+|`rmdir`|删除空目录|
+|`touch`|创建空文件或更新文件时间戳|
+|`cat`|查看文件内容|
+|`more` / `less`|分页查看文件内容|
+|`head` / `tail`|查看文件的开头或结尾部分|
+|`grep`|在文件中搜索文本|
+|`find`|查找文件和目录|
+|`chmod`|更改文件权限|
+|`chown`|更改文件所有者|
+|`df`|显示磁盘空间使用情况|
+|`du`|显示目录或文件的磁盘使用情况|
+|`ps`|显示当前进程状态|
+|`kill`|终止进程|
+|`top` / `htop`|实时显示系统进程状况|
+|`man`|显示命令的手册页|
+|`tar`|打包和解压文件|
+|`wget` / `curl`|下载文件|
+|`scp`|安全复制文件|
 :::
