@@ -33,6 +33,12 @@ export default defineConfig({
       { icon: "github", link: "https://github.com/aQiao1996" },
       { icon: "gitee", link: "https://gitee.com/yangyunqiao" },
     ],
+    // 页脚
+    footer: {
+      message:
+        '备案号：<a href="https://beian.miit.gov.cn/#/Integrated/index" style="color:#298459;">蜀ICP备2025137931号</a>',
+      copyright: "Copyright © 2025-present",
+    },
     // 使用浏览器内索引进行模糊全文搜索
     search: { provider: "local" },
     // 大纲中显示的标题级别 (右侧目录)
