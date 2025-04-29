@@ -164,6 +164,7 @@ const Child = ({ message }) => {
   return <div>{message}</div>
 }
 ```
+
 - 通过回调函数向父组件传递数据
 ```js
 //父组件
@@ -179,42 +180,82 @@ const Child = ({ message }) => {
   return <button onClick={() => onSendData('Hello from Child')}>Send Data</button>
 }
 ```
+
 - 使用refs调用子组件暴露的方法
-```js
-import React, { useRef, forwardRef, useImperativeHandle } from 'react'
+  ::: code-group
+  ```js [React 19之前]
+  import React, { useRef, forwardRef, useImperativeHandle } from 'react'
 
-// 子组件
-const Child = forwardRef((props, ref) => {
-  // 暴露方法给父组件
-  useImperativeHandle(ref, () => ({
-    sayHello() {
-      alert('Hello from Child Component!')
-    },
-  }))
+  // 子组件
+  const Child = forwardRef((props, ref) => {
+    // 暴露方法给父组件
+    useImperativeHandle(ref, () => ({
+      sayHello() {
+        alert('Hello from Child Component!')
+      },
+    }))
 
-  return <div>Child Component</div>
-})
+    return <div>Child Component</div>
+  })
 
-// 父组件
-function Parent() {
-  const childRef = useRef(null)
+  // 父组件
+  function Parent() {
+    const childRef = useRef(null)
 
-  const handleClick = () => {
-    if (childRef.current) {
-      childRef.current.sayHello()
+    const handleClick = () => {
+      if (childRef.current) {
+        childRef.current.sayHello()
+      }
     }
+
+    return (
+      <div>
+        <Child ref={childRef} />
+        <button onClick={handleClick}>Call Child Method</button>
+      </div>
+    )
   }
 
-  return (
-    <div>
-      <Child ref={childRef} />
-      <button onClick={handleClick}>Call Child Method</button>
-    </div>
-  )
-}
+  export default Parent
+  ```
+  ```js [React 19+]
+  // In React 19, forwardRef is no longer necessary. Pass ref as a prop instead. forwardRef will deprecated in a future release.
+  // https://zh-hans.react.dev/blog/2024/12/05/react-19#ref-as-a-prop
+  import React, { useRef, useImperativeHandle } from 'react'
 
-export default Parent
-```
+  // 子组件
+  const Child = (props) => {
+    // 暴露方法给父组件
+    useImperativeHandle(props.ref, () => ({
+      sayHello() {
+        alert('Hello from Child Component!')
+      },
+    }))
+
+    return <div>Child Component</div>
+  }
+
+  // 父组件
+  function Parent() {
+    const childRef = useRef(null)
+
+    const handleClick = () => {
+      if (childRef.current) {
+        childRef.current.sayHello()
+      }
+    }
+
+    return (
+      <div>
+        <Child ref={childRef} />
+        <button onClick={handleClick}>Call Child Method</button>
+      </div>
+    )
+  }
+
+  export default Parent
+  ```
+
 - 通过 Context 进行跨组件通信
 ```js
 import React, { useState } from 'react'
@@ -260,6 +301,7 @@ function ChildB() {
 
 export default Parent
 ```
+
 - 使用状态管理库进行通信
   - React Context + useReducer
   ```js
@@ -306,6 +348,7 @@ export default Parent
 
   export default App
   ```
+
   - Redux：使用 Redux Toolkit 简化 Redux 开发
   ```js
   import { createSlice, configureStore } from '@reduxjs/toolkit'
@@ -334,6 +377,7 @@ export default Parent
   store.dispatch(increment())
   store.dispatch(decrement())
   ```
+
   - MobX
   ```js
   import { makeAutoObservable } from 'mobx'
@@ -369,6 +413,7 @@ export default Parent
 
   export default Counter
   ```
+
   - Zustand
   ```js
   import create from "zustand";
@@ -392,6 +437,7 @@ export default Parent
 
   export default Counter;
   ```
+  
 - 使用事件总线（Event Bus）进行通信
   > 可以使用第三方库如 pubsub-js 来实现父子组件间通信。在父组件中订阅一个事件，子组件在特定情况下发布这个事件并传递数据。
 ```js
