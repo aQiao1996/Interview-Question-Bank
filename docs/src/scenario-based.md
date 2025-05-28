@@ -1269,6 +1269,10 @@ function usePreciseCountdown(endTimestamp) {
 1.将代码上传到 `git` 托管上。
 
 2.购买云服务器（CentOS示例）等等一系列准备工作，进入云服务器。
+  - 举例：使用 MacOS 系统主机登录 Linux 云服务器。
+    > - 打开终端，输入 `ssh root@你的服务器IP地址`，回车。
+    > - 输入密码，回车。
+    > - 登录成功。
 
 3.使用自带的 `yum` 工具安装 `node`、`npm`、`git`、`nginx` 等。
   > - `yum` 是用于基于 RPM 的 Linux 发行版（如 CentOS、RHEL、Fedora）的包管理器。
