@@ -1283,6 +1283,12 @@ function usePreciseCountdown(endTimestamp) {
     > - 在文件夹 `home` 下面创建 `web` 文件夹。（ `ls` 查看当前目录下的文件， `cd home` 进入 `home` 文件夹，`mkdir web` 创建 `web` 文件夹 ）。
 
 5.将项目从 `git` 仓库拉下来。
+  > 如项目打包占用资源过高，服务器内存较小，可能无法进行打包，建议使用 `SFTP` 直接将打包后的文件上传到 Linux 云服务器上。[点击查看 SFTP 上传文件](https://support.huaweicloud.com/ecs_faq/zh-cn_topic_0170139796.html)。
+    > - 打开终端，输入 `sftp root@你的服务器IP地址`，回车。
+    > - 输入密码，回车。
+    > - 登录成功。
+    > - 上传文件，输入 `put -r 要传的文件位置 准备放到服务器文件位置`，回车。
+    > - 上传完成。
 
 6.安装项目依赖。
 
