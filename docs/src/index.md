@@ -13,9 +13,9 @@ hero:
     - theme: brand
       text: 开始学习
       link: /html
-    - theme: alt
-      text: 关于本站
-      link: /about
+    # - theme: alt
+    #   text: 关于本站
+    #   link: /about
 
 features:
   - title: 全面覆盖
