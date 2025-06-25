@@ -1057,6 +1057,8 @@ diff 算法的核心算法流程如下：
 ## 24、vue2 中 何统一监听组件报错
 ::: details 详情
 在 vue3 中，可以通过 全局错误处理器 （`errorHandler`） 和 生命周期钩子（例如 `onErrorCaptured` ）来统一监听和处理组件中的错误。
+
+而在 vue2 中可以通过以下方式来统一监听组件报错：
 - 通过全局错误处理器 `Vue.config.errorHandler`
 ```js
 import Vue from 'vue';
