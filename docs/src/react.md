@@ -976,7 +976,7 @@ function withAuth(WrappedComponent) {
     const isAuthenticated = false; // 模拟用户是否登录
 
     if (!isAuthenticated) {
-      return <p>Please log in to view this content.</p>;
+      return <p>去登录</p>;
     }
 
     return <WrappedComponent {...props} />;
