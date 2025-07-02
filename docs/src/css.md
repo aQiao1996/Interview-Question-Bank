@@ -396,6 +396,7 @@ BFC 的特性
 ## 15、简单描述 CSS 的盒模型
 CSS 的盒模型主要包括以下两种，可通过 `box-sizing` 属性进行配置：
 - 标准盒子模型（`content-box`）
-  > width = content-width height = content-height
+  > - width = content-width height = content-height。
 - 怪异盒子模型（`border-box`） 
-  > width = content-width + padding + border height = content-height + padding + border
+  > - width = content-width + padding + border height = content-height + padding + border。
+  > - 在怪异模式下，width 和 height 设置的是整个盒子的尺寸（包括 padding 和 border），而内容区域会自动调整。
