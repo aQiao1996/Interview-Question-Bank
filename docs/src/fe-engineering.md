@@ -823,3 +823,67 @@ mode: 'production', // 启用代码压缩、Tree Shaking 等优化
 - 网络请求验证
   - 打开浏览器开发者工具，观察触发动态导入时是否加载新 chunk。
 :::
+
+## 12、Webpack 的构建流程
+::: details 详情
+Webpack 的构建流程是一个串行的流程，主要包含以下关键步骤：
+
+1️⃣ 初始化配置
+- 读取配置文件：Webpack 启动后，会读取项目根目录下的 `webpack.config.js` 或其他指定的配置文件，获取构建所需的各种配置信息，如入口、出口、加载器、插件等。
+- 合并默认配置：将用户自定义的配置与 Webpack 的默认配置进行合并，生成最终的构建配置。
+
+2️⃣  初始化编译环境
+- 创建 Compiler 对象：Compiler 对象是 Webpack 的核心对象，负责整个编译过程的控制和管理，包含了所有 Webpack 配置信息。
+- 创建 Compilation 对象：Compilation 对象代表了一次资源的构建过程，负责模块的构建、依赖的解析、代码的生成等具体工作。
+
+3️⃣ 解析入口文件
+- 确定入口模块：根据配置中的 `entry` 选项，找到项目的入口文件（如 `index.js`）。
+- 构建依赖图：从入口文件开始，递归解析模块的依赖关系，使用 `require`、`import` 等语句找到所有依赖的模块，并将它们添加到依赖图中。
+
+4️⃣ 加载模块
+- 应用加载器：对于每个模块，Webpack 会根据配置中的 `module.rules` 规则，使用相应的加载器（Loaders）对模块进行转换。例如，使用 `babel-loader` 转换 ES6+ 代码，使用 `css-loader` 和 `style-loader` 处理 CSS 文件。
+- 解析模块路径：Webpack 会根据模块的导入语句，解析模块的实际文件路径，并将其转换为绝对路径。
+
+5️⃣ 转换和处理模块
+- 代码转换：加载器对模块内容进行转换后，Webpack 会将转换后的代码解析为抽象语法树（AST），并对其进行进一步的处理，如 Tree Shaking、代码压缩等。
+- 生成模块实例：处理完成后，Webpack 会为每个模块生成一个模块实例，包含模块的 ID、代码、依赖关系等信息。
+
+6️⃣ 合并模块
+- 生成 Chunk：Webpack 根据依赖图和配置中的代码分割规则，将相关的模块合并成一个或多个 Chunk。例如，入口模块和其直接依赖的模块会合并成一个主 Chunk，动态导入的模块会生成独立的 Chunk。
+- 优化 Chunk：对生成的 Chunk 进行优化，如提取公共代码、压缩代码等，以减小打包体积。
+
+7️⃣ 输出文件
+- 生成最终代码：根据配置中的 `output` 选项，将 Chunk 转换为最终的文件内容，如 JavaScript 文件、CSS 文件等。
+- 写入文件系统：将生成的文件写入到指定的输出目录中，完成整个构建过程。
+
+8️⃣ 执行插件
+- 生命周期钩子：在整个构建过程中，Webpack 会在不同的阶段触发相应的生命周期钩子，如 `compile`、`make`、`emit` 等。插件可以监听这些钩子，在特定的时机执行相应的操作，如生成 HTML 文件、压缩代码、清理输出目录等。
+
+---
+
+简单示例，以下是一个简单的 Webpack 构建流程示例：
+```js
+// webpack.config.js
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+    }),
+  ],
+};
