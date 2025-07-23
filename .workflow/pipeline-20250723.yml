@@ -23,11 +23,12 @@ stages:
           - '# 设置NPM源，提升安装速度'
           - npm config set registry https://registry.npmmirror.com
           - '# 进入项目目录'
-          - cd /home/web/interview-question-bank
+          - cd ..
+          - cd /home/web/interview-question-bank/
           - '# 拉取远程代码'
           - git pull origin main
           - '# 执行编译命令'
-          - npm run docs:build
+          - npm install&&npm run docs:build
           - '# 重启nginx'
           - nginx -s reload
         artifacts:
