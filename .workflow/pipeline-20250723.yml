@@ -48,7 +48,7 @@ stages:
           - fi
           - ''
           - '# --------------------------'
-          - '# 步骤2：解决SSH Host Key验证（关键！）'
+          - '# 步骤2：解决SSH Host Key验证'
           - '# --------------------------'
           - SERVER_IP="113.45.2.169"
           - SERVER_USER="root"
@@ -57,23 +57,37 @@ stages:
           - echo "步骤2：修复SSH权限与验证"
           - echo "--------------------------"
           - ''
-          - '# 修复.ssh目录权限'
+          - '# 1. 修复.ssh目录权限'
           - mkdir -p ~/.ssh
           - '[ "$(stat -c %a ~/.ssh)" != "700" ] && chmod 700 ~/.ssh'
           - ''
-          - '# 修复known_hosts权限并添加公钥'
-          - '[ ! -f ~/.ssh/known_hosts ] && touch ~/.ssh/known_hosts'
+          - '# 2. 提取并清理云服务器公钥（去除注释）'
+          - echo "提取云服务器公钥..."
+          - SERVER_PUBLIC_KEY_RAW=$(ssh-keyscan -H $SERVER_IP)
+          - SERVER_PUBLIC_KEY_CLEAN=$(echo "$SERVER_PUBLIC_KEY_RAW" | grep -v '^#' | awk '{print $2}')
+          - ''
+          - '# 3. 写入公钥到known_hosts（格式化）'
+          - echo "写入公钥到known_hosts..."
+          - if [ -z "$SERVER_PUBLIC_KEY_CLEAN" ]; then
+          - '  echo "错误：未获取到云服务器公钥！"'
+          - '  exit 1'
+          - fi
+          - KNOWN_HOSTS_ENTRY="$SERVER_IP $(echo "$SERVER_PUBLIC_KEY_CLEAN" | tr '\n' ' ')"
+          - echo "$KNOWN_HOSTS_ENTRY" >> ~/.ssh/known_hosts
+          - ''
+          - '# 4. 修复known_hosts权限'
           - '[ "$(stat -c %a ~/.ssh/known_hosts)" != "600" ] && chmod 600 ~/.ssh/known_hosts'
-          - ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
-          - sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts
           - ''
-          - '# 验证公钥添加成功'
-          - SERVER_PUBLIC_KEY=$(ssh-keyscan -H $SERVER_IP | grep -E "ecdsa-sha2-nistp256|rsa-sha2-256|ed25519")
-          - '[ ! -z "$SERVER_PUBLIC_KEY" ] || { echo "公钥未添加成功！"; exit 1; }'
-          - grep -q "$SERVER_PUBLIC_KEY" ~/.ssh/known_hosts || { echo "公钥未写入known_hosts！"; exit 1; }
+          - '# 5. 验证公钥写入'
+          - echo "验证公钥是否写入..."
+          - 'grep -q "$KNOWN_HOSTS_ENTRY" ~/.ssh/known_hosts || { '
+          - '  echo "错误：公钥未成功写入known_hosts！"'
+          - '  exit 1 '
+          - '}'
           - ''
-          - '# 验证CI私钥注入'
-          - '[ ! -f ~/.ssh/id_rsa ] && { echo "CI未注入私钥！"; exit 1; }'
+          - '# 6. 验证CI私钥注入'
+          - echo "验证CI私钥注入..."
+          - '[ ! -f ~/.ssh/id_rsa ] && { echo "错误：CI未注入SSH私钥！"; exit 1; }'
           - '[ "$(stat -c %a ~/.ssh/id_rsa)" != "600" ] && chmod 600 ~/.ssh/id_rsa'
           - ''
           - '# 测试SSH连接（详细日志）'
