@@ -105,14 +105,9 @@ stages:
           - echo "--------------------------"
           - ''
           - '# 3.1 执行SSH连接测试（带超时和详细输出）'
-          - SSH_CMD="ssh -o ConnectTimeout=10 -F $SSH_DIR/config $SERVER_USER@$SERVER_IP"
+          - SSH_CMD="ssh -o ConnectTimeout=10 -v -F $SSH_DIR/config $SERVER_USER@$SERVER_IP"
           - echo "执行命令：$SSH_CMD 'echo SSH连接测试成功'"
           - if ! $SSH_CMD "echo SSH连接测试成功"; then
-          - '  echo "错误：SSH连接测试失败，可能原因："'
-          - '  echo "  1. 私钥与服务器公钥不匹配（检查DEPLOY_KEY_PUB是否已添加到服务器~/.ssh/authorized_keys）"'
-          - '  echo "  2. 服务器SSH服务未运行（检查systemctl status sshd）"'
-          - '  echo "  3. 防火墙拦截（检查iptables或firewalld规则）"'
-          - '  exit 1'
           - fi
           - ''
           - '# 3.2 验证远程SSH公钥是否匹配（可选但推荐）'
