@@ -18,7 +18,7 @@ stages:
       - step: build@nodejs
         name: build_nodejs
         displayName: Nodejs 构建
-        nodeVersion: 21.5.0
+        nodeVersion: 20.10.0
         commands:
           - '#!/bin/bash'
           - 'set -ex  # 开启严格模式（出错立即终止，打印详细日志）'
@@ -29,11 +29,11 @@ stages:
           - '# 设置NPM源（提升安装速度）'
           - npm config set registry https://registry.npmmirror.com
           - ''
-          - '# 安装Node.js 20.8.0（若未安装）'
+          - '# 安装Node.js 20.10.0（若未安装）'
           - if ! command -v node &> /dev/null; then
-          - '  echo "安装Node.js 20.8.0..."'
+          - '  echo "安装Node.js 20.10.0..."'
           - '  curl -fsSL https://rpm.nodesource.com/setup_21.x | sudo -E bash -'
-          - '  sudo yum install -y nodejs  # CentOS系统，Ubuntu用 `sudo apt install -y nodejs`'
+          - '  yum install -y nodejs  # CentOS系统，Ubuntu用 `sudo apt install -y nodejs`'
           - fi
           - ''
           - '# 安装VitePress（全局，确保 `vitepress` 命令可用）'
@@ -45,7 +45,7 @@ stages:
           - '# 安装Nginx（若未安装）'
           - if ! command -v nginx &> /dev/null; then
           - '  echo "安装Nginx..."'
-          - '  sudo yum install -y nginx  # CentOS系统，Ubuntu用 `sudo apt install -y nginx`'
+          - '  yum install -y nginx  # CentOS系统，Ubuntu用 `sudo apt install -y nginx`'
           - fi
           - ''
           - '# --------------------------'
