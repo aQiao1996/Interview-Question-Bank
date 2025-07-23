@@ -7,6 +7,10 @@ triggers:
     branches:
       precise:
         - main
+variables:
+  global:
+    - DEPLOY_KEY
+    - DEPLOY_KEY_PUB
 stages:
   - name: stage-9721c2a0
     displayName: 华为云git部署
