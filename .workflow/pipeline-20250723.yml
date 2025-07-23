@@ -48,7 +48,7 @@ stages:
           - fi
           - ''
           - '# --------------------------'
-          - '# 步骤2：解决SSH Host Key验证（手动预配置）'
+          - '# 步骤2：解决SSH Host Key验证（动态获取）'
           - '# --------------------------'
           - SERVER_IP="113.45.2.169"
           - SERVER_USER="root"
@@ -61,18 +61,41 @@ stages:
           - mkdir -p ~/.ssh
           - chmod 700 ~/.ssh
           - ''
-          - '# 2. 复制预配置的known_hosts文件'
-          - cp ./known_hosts ~/.ssh/known_hosts
+          - '# 2. 动态获取云服务器公钥'
+          - echo "提取云服务器公钥..."
+          - SERVER_PUBLIC_KEY_RAW=$(ssh-keyscan -H $SERVER_IP 2>/dev/null)
+          - if [ -z "$SERVER_PUBLIC_KEY_RAW" ]; then
+          - '  echo "错误：ssh-keyscan 未返回公钥！"'
+          - '  exit 1'
+          - fi
+          - ''
+          - '# 提取第一行非注释的 RSA 公钥'
+          - SERVER_PUBLIC_KEY_CLEAN=$(echo "$SERVER_PUBLIC_KEY_RAW" | awk '/^ssh-rsa / && !/^#/ {print; exit}')
+          - if [ -z "$SERVER_PUBLIC_KEY_CLEAN" ]; then
+          - '  echo "错误：未找到有效公钥！"'
+          - '  exit 1'
+          - fi
+          - ''
+          - '# 3. 写入公钥到known_hosts'
+          - echo "写入公钥到known_hosts..."
+          - KNOWN_HOSTS_ENTRY="$SERVER_IP $SERVER_PUBLIC_KEY_CLEAN"
+          - echo "$KNOWN_HOSTS_ENTRY" >> ~/.ssh/known_hosts
           - chmod 600 ~/.ssh/known_hosts
           - ''
-          - '# 3. 验证私钥注入'
+          - '# 4. 验证公钥写入'
+          - 'grep -q "$KNOWN_HOSTS_ENTRY" ~/.ssh/known_hosts || { '
+          - '  echo "错误：公钥未成功写入known_hosts！"'
+          - '  exit 1 '
+          - '}'
+          - ''
+          - '# 5. 验证私钥注入'
           - if [ ! -f ~/.ssh/id_rsa ]; then
           - '  echo "错误：CI未注入SSH私钥！"'
           - '  exit 1'
           - fi
           - chmod 600 ~/.ssh/id_rsa
           - ''
-          - '# 4. 测试SSH连接'
+          - '# 6. 测试SSH连接'
           - echo "测试SSH连接..."
           - ssh -vvv root@$SERVER_IP "echo SSH连接成功"
           - ''
