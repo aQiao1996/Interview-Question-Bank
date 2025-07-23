@@ -27,59 +27,76 @@ stages:
           - set -ex
           - ''
           - '# --------------------------'
-          - '# 步骤1：配置基础环境（CentOS 专用）'
+          - '# 步骤1：配置SSH连接云服务器（Gitee CI环境）'
           - '# --------------------------'
-          - npm config set registry https://registry.npmmirror.com
+          - SERVER_IP="113.45.2.169"
+          - SERVER_USER="root"
+          - 'SSH_PRIVATE_KEY_PATH=~/.ssh/id_rsa  # Gitee部署密钥注入的私钥路径'
           - ''
-          - '# 安装Node.js 20.10.0'
-          - if ! command -v node &> /dev/null; then
-          - '  echo "安装Node.js 20.10.0..."'
-          - '  curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -'
-          - '  yum install -y nodejs'
-          - fi
-          - ''
-          - '# 安装VitePress'
-          - if ! command -v vitepress &> /dev/null; then
-          - '  echo "安装VitePress..."'
-          - '  npm install -g vitepress'
-          - fi
-          - ''
-          - '# 安装Nginx'
-          - if ! command -v nginx &> /dev/null; then
-          - '  echo "安装Nginx..."'
-          - '  yum install -y nginx'
-          - fi
-          - ''
-          - '# --------------------------'
-          - '# 步骤2：配置SSH（使用Gitee预注入的公钥）'
-          - '# --------------------------'
-          - '# 假设Gitee已将公钥注入到环境变量 `GITEE_SSH_PUBLIC_KEY`'
-          - '# （需在Gitee CI设置中配置该变量）'
-          - if [ -z "$GITEE_SSH_PUBLIC_KEY" ]; then
-          - '  echo "错误：Gitee未注入SSH公钥！"'
-          - '  exit 1'
-          - fi
-          - ''
-          - '# 1. 创建.ssh目录并设置权限'
+          - '# 1. 确保.ssh目录存在并设置权限'
           - mkdir -p ~/.ssh
           - chmod 700 ~/.ssh
           - ''
-          - '# 2. 写入公钥到known_hosts（使用Gitee的公钥）'
-          - echo "写入Gitee SSH公钥到known_hosts..."
-          - echo "$GITEE_SSH_PUBLIC_KEY" >> ~/.ssh/known_hosts
-          - chmod 600 ~/.ssh/known_hosts
+          - '# 2. 动态获取云服务器公钥（避免首次连接警告）'
+          - if ! grep -q "$SERVER_IP" ~/.ssh/known_hosts; then
+          - '  ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts'
+          - '  chmod 600 ~/.ssh/known_hosts'
+          - fi
           - ''
-          - '# 3. 验证私钥注入（需在Gitee CI中配置私钥环境变量 `GITEE_SSH_PRIVATE_KEY`）'
-          - if [ -z "$GITEE_SSH_PRIVATE_KEY" ]; then
-          - '  echo "错误：Gitee未注入SSH私钥！"'
+          - '# 3. 验证私钥权限（Gitee部署密钥已注入）'
+          - if [ ! -f "$SSH_PRIVATE_KEY_PATH" ]; then
+          - '  echo "错误：Gitee未注入SSH私钥，请检查部署密钥配置"'
           - '  exit 1'
           - fi
-          - echo "$GITEE_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          - chmod 600 ~/.ssh/id_rsa
+          - chmod 600 "$SSH_PRIVATE_KEY_PATH"
           - ''
-          - '# 4. 测试SSH连接（使用Gitee的SSH地址，如git@gitee.com）'
-          - echo "测试SSH连接..."
-          - ssh -vvv -o StrictHostKeyChecking=no git@gitee.com "echo SSH连接成功"
+          - '# --------------------------'
+          - '# 步骤2：通过SSH远程执行云服务器部署操作'
+          - '# --------------------------'
+          - echo "--------------------------"
+          - echo "步骤2：通过SSH连接云服务器并部署"
+          - echo "--------------------------"
+          - ''
+          - ssh -i "$SSH_PRIVATE_KEY_PATH" "$SERVER_USER@$SERVER_IP" "
+          - '  set -ex'
+          - ''
+          - '  # --------------------------'
+          - '  # 步骤2.1：进入项目目录（云服务器本地）'
+          - '  # --------------------------'
+          - '  PROJECT_DIR=\"/home/web/interview-question-bank\"'
+          - '  cd \"$PROJECT_DIR\" || { echo \"项目目录不存在！\"; exit 1; }'
+          - ''
+          - '  # --------------------------'
+          - '  # 步骤2.2：拉取Gitee仓库最新代码'
+          - '  # --------------------------'
+          - '  echo \"拉取Gitee仓库最新代码...\"'
+          - '  git pull origin main  # 确保云服务器项目目录是Gitee仓库的克隆'
+          - ''
+          - '  # --------------------------'
+          - '  # 步骤2.3：安装依赖并构建VitePress'
+          - '  # --------------------------'
+          - '  echo \"安装生产依赖并构建...\"'
+          - '  npm install --production'
+          - '  npm run docs:build  # 生成dist目录（VitePress默认输出）'
+          - ''
+          - '  # --------------------------'
+          - '  # 步骤2.4：部署构建产物到Nginx目录'
+          - '  # --------------------------'
+          - '  DIST_SRC=\"./dist\"'
+          - '  DIST_DEST=\"/usr/share/nginx/html\"'
+          - '  echo \"部署静态文件到Nginx目录...\"'
+          - '  cp -r \"$DIST_SRC\"/* \"$DIST_DEST/\"  # 覆盖旧文件（或增量更新）'
+          - ''
+          - '  # --------------------------'
+          - '  # 步骤2.5：检查Nginx配置并重启'
+          - '  # --------------------------'
+          - '  echo \"检查Nginx配置并重启...\"'
+          - '  nginx -t  # 验证配置文件语法'
+          - '  nginx -s reload  # 平滑重启（不中断现有连接）'
+          - '"'
+          - ''
+          - echo "--------------------------"
+          - echo "部署完成！"
         artifacts:
           - name: BUILD_ARTIFACT
             path:
