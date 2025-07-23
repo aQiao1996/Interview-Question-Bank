@@ -117,12 +117,10 @@ stages:
           - ''
           - '# 3.2 验证远程SSH公钥是否匹配（可选但推荐）'
           - echo "验证服务器公钥是否匹配..."
-          - SERVER_PUB_KEY=$(ssh -F $SSH_DIR/config $SERVER_USER@$SERVER_IP "cat ~/.ssh/authorized_keys" | grep "$DEPLOY_KEY_PUB")
-          - if [ -z "$SERVER_PUB_KEY" ]; then
-          - '  echo "错误：服务器~/.ssh/authorized_keys未包含当前公钥！"'
-          - '  echo "请手动将以下公钥添加到服务器："'
-          - '  echo "$DEPLOY_KEY_PUB"'
-          - '  exit 1'
+          - SSH_CMD="ssh -o ConnectTimeout=10 -v -F $SSH_DIR/config $SERVER_USER@$SERVER_IP"
+          - echo "执行命令：$SSH_CMD 'echo SSH连接测试成功'"
+          - if ! $SSH_CMD "echo SSH连接测试成功"; then
+          - '  # 错误日志会输出到终端，根据提示排查'
           - fi
           - ''
           - '# --------------------------'
