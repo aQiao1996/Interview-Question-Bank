@@ -28,140 +28,64 @@ stages:
           - set -ex
           - ''
           - '# --------------------------'
-          - '# 配置项（必须通过Gitee CI变量设置）'
+          - '# 配置项（通过Gitee CI变量设置）'
           - '# --------------------------'
           - 'SERVER_IP="113.45.2.169"       # 云服务器公网IP'
-          - 'SERVER_PORT="22"               # SSH端口（默认22）'
-          - 'SERVER_USER="root"             # SSH登录用户'
-          - 'REMOTE_PROJECT_DIR="/home/web/interview-question-bank"  # 云服务器项目路径'
-          - 'DIST_REMOTE_DIR="/usr/share/nginx/html"               # Nginx静态文件目录'
-          - 'DEPLOY_KEY_SSH_PRIVATE="$DEPLOY_KEY"                  # Gitee注入的SSH私钥（CI变量）'
-          - 'DEPLOY_KEY_PUB="$DEPLOY_KEY_PUB"                      # Gitee注入的SSH公钥（CI变量）'
+          - 'SERVER_PORT="22"               # SSH端口'
+          - 'SERVER_USER="root"             # SSH用户'
+          - 'REMOTE_PROJECT_DIR="/home/web/interview-question-bank"  # 项目目录'
+          - 'DIST_REMOTE_DIR="/usr/share/nginx/html"  # Nginx静态目录（可选，根据构建输出调整）'
+          - 'DEPLOY_KEY="$DEPLOY_KEY"       # Gitee注入的SSH私钥（CI变量）'
           - ''
           - '# --------------------------'
-          - '# 步骤1：前置检查'
+          - '# 步骤1：快速配置SSH连接'
           - '# --------------------------'
-          - echo "--------------------------"
-          - echo "步骤1：部署前环境检查"
-          - echo "--------------------------"
-          - ''
-          - '# 1.1 检查私钥是否注入'
-          - if [ -z "$DEPLOY_KEY_SSH_PRIVATE" ]; then
-          - '  echo "错误：Gitee CI变量 DEPLOY_KEY 未设置（需添加SSH私钥）"'
-          - '  exit 1'
-          - fi
-          - if [ -z "$DEPLOY_KEY_PUB" ]; then
-          - '  echo "错误：Gitee CI变量 DEPLOY_KEY_PUB 未设置（需添加SSH公钥）"'
-          - '  exit 1'
-          - fi
+          - echo "配置SSH连接..."
+          - mkdir -p ~/.ssh/ci_deploy && chmod 700 ~/.ssh/ci_deploy
+          - echo "$DEPLOY_KEY" > ~/.ssh/ci_deploy/key && chmod 600 ~/.ssh/ci_deploy/key
+          - echo -e "Host $SERVER_IP\n  HostName $SERVER_IP\n  User $SERVER_USER\n  Port $SERVER_PORT\n  IdentityFile ~/.ssh/ci_deploy/key\n  StrictHostKeyChecking no" > ~/.ssh/config
           - ''
           - '# --------------------------'
-          - '# 步骤2：配置SSH连接（CI环境专用）'
+          - '# 步骤2：测试SSH连通性'
           - '# --------------------------'
-          - echo "--------------------------"
-          - echo "步骤2：配置SSH连接参数"
-          - echo "--------------------------"
-          - ''
-          - '# 2.1 创建临时SSH目录'
-          - SSH_DIR=~/.ssh/ci_deploy
-          - mkdir -p "$SSH_DIR"
-          - chmod 700 "$SSH_DIR"
-          - ''
-          - '# 2.2 写入私钥'
-          - echo "$DEPLOY_KEY_SSH_PRIVATE" > "$SSH_DIR/deploy_key"
-          - chmod 600 "$SSH_DIR/deploy_key" || {
-          - '  echo "错误：私钥文件权限设置失败（必须为600）"'
-          - '  exit 1'
-          - '}'
-          - ''
-          - '# 2.3 配置SSH客户端'
-          - cat > "$SSH_DIR/config" << EOF
-          - Host $SERVER_IP
-          - '  HostName $SERVER_IP'
-          - '  User $SERVER_USER'
-          - '  Port $SERVER_PORT'
-          - '  IdentityFile $SSH_DIR/deploy_key'
-          - '  IdentitiesOnly yes'
-          - '  StrictHostKeyChecking no'
-          - '  UserKnownHostsFile $SSH_DIR/known_hosts_ci'
-          - EOF
-          - ''
-          - '# 2.4 预扫描服务器公钥'
-          - echo "预扫描服务器公钥..."
-          - ssh-keyscan -H -p "$SERVER_PORT" "$SERVER_IP" >> "$SSH_DIR/known_hosts_ci"
-          - chmod 600 "$SSH_DIR/known_hosts_ci"
-          - ''
-          - '# --------------------------'
-          - '# 步骤3：测试SSH连接'
-          - '# --------------------------'
-          - echo "--------------------------"
-          - echo "步骤3：测试SSH连接"
-          - echo "--------------------------"
-          - ''
-          - SSH_CMD="ssh -o ConnectTimeout=10 -v -F $SSH_DIR/config $SERVER_USER@$SERVER_IP"
-          - echo "执行命令：$SSH_CMD 'echo SSH连接测试成功'"
-          - if ! $SSH_CMD "echo SSH连接测试成功"; then
-          - '  echo "错误：SSH连接测试失败，排查项："'
+          - echo "测试SSH连接..."
+          - if ! ssh -o ConnectTimeout=10 $SERVER_USER@$SERVER_IP "echo 连接成功"; then
+          - '  echo "❌ SSH连接失败，请检查："'
           - '  echo "  1. 服务器SSH服务是否运行（systemctl status sshd）"'
-          - '  echo "  2. 防火墙是否放行22端口（iptables/firewalld）"'
-          - '  echo "  3. 公钥是否已添加到服务器~/.ssh/authorized_keys"'
+          - '  echo "  2. 防火墙是否放行${SERVER_PORT}端口"'
+          - '  echo "  3. Gitee仓库是否已添加服务器公钥到~/.ssh/authorized_keys"'
           - '  exit 1'
           - fi
           - ''
           - '# --------------------------'
-          - '# 步骤4：远程执行核心部署操作'
+          - '# 步骤3：远程执行部署操作'
           - '# --------------------------'
-          - echo "--------------------------"
-          - echo "步骤4：远程执行服务器部署"
-          - echo "--------------------------"
-          - ''
-          - REMOTE_SCRIPT="
+          - echo "开始远程部署..."
+          - ssh $SERVER_USER@$SERVER_IP "
           - '  set -ex'
           - ''
-          - '  # --------------------------'
-          - '  # 服务器端前置检查'
-          - '  # --------------------------'
-          - '  echo ''服务器端检查项目目录...'''
-          - '  [ -d \"$REMOTE_PROJECT_DIR\" ] || { echo ''错误：项目目录不存在''; exit 1; }'
-          - '  cd \"$REMOTE_PROJECT_DIR\" || exit 1'
+          - '  # 进入项目目录并检查'
+          - '  cd $REMOTE_PROJECT_DIR || { echo ''❌ 项目目录不存在''; exit 1; }'
           - ''
-          - '  echo ''检查必要工具（git/npm/nginx）...'''
-          - '  command -v git >/dev/null 2>&1 || { echo ''错误：需要安装git''; exit 1; }'
-          - '  command -v npm >/dev/null 2>&1 || { echo ''错误：需要安装npm''; exit 1; }'
-          - '  command -v nginx >/dev/null 2>&1 || { echo ''错误：需要安装nginx''; exit 1; }'
+          - '  # 拉取最新代码'
+          - '  git pull origin main || { echo ''❌ git pull失败''; exit 1; }'
           - ''
-          - '  # --------------------------'
-          - '  # 代码拉取与构建'
-          - '  # --------------------------'
-          - '  echo ''拉取最新代码...'''
-          - '  git pull origin main || { echo ''错误：git pull失败''; exit 1; }'
+          - '  # 安装生产依赖（跳过devDependencies）'
+          - '  npm install --production || { echo ''❌ npm依赖安装失败''; exit 1; }'
           - ''
-          - '  echo ''安装生产依赖...'''
-          - '  npm install --production || { echo ''错误：npm install失败''; exit 1; }'
+          - '  # VitePress构建（根据实际构建命令调整）'
+          - '  npm run docs:build || { echo ''❌ 构建失败''; exit 1; }'
           - ''
-          - '  echo ''执行VitePress构建...'''
-          - '  npm run docs:build || { echo ''错误：VitePress构建失败''; exit 1; }'
+          - '  # 可选：同步构建产物到Nginx目录（如果构建输出不在默认位置）'
+          - '  # cp -r docs/.vitepress/dist/* $DIST_REMOTE_DIR/'
           - ''
-          - '  # --------------------------'
-          - '  # Nginx配置验证与重启'
-          - '  # --------------------------'
-          - '  echo ''验证Nginx配置...'''
-          - '  nginx -t || { '
-          - '    echo ''错误：Nginx配置验证失败'''
-          - '    exit 1'
-          - '  }'
-          - ''
-          - '  echo ''平滑重启Nginx...'''
-          - '  nginx -s reload'
-          - '  echo ''Nginx重启成功'''
+          - '  # 验证并重启Nginx'
+          - '  nginx -t || { echo ''❌ Nginx配置校验失败''; exit 1; }'
+          - '  nginx -s reload && echo ''✅ Nginx重启成功'''
           - '"'
-          - '# --------------------------'
-          - '# 最终验证'
-          - '# --------------------------'
+          - ''
           - echo "--------------------------"
-          - echo "部署完成！验证信息："
-          - ''
-          - ''
+          - echo "部署完成！"
         artifacts:
           - name: BUILD_ARTIFACT
             path:
