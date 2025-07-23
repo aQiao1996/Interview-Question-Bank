@@ -34,7 +34,7 @@ stages:
           - 'SERVER_USER="root"             # SSH登录用户'
           - 'PROJECT_DIR="/home/web/interview-question-bank"  # 项目路径'
           - 'DIST_DIR="/usr/share/nginx/html"               # Nginx静态文件目录'
-          - 'DEPLOY_KEY="$DEPLOY_KEY"       # Gitee注入的SSH私钥（CI变量）'
+          - 'DEPLOY_KEY_PUB="$DEPLOY_KEY_PUB"       # Gitee注入的SSH私钥（CI变量）'
           - ''
           - '# --------------------------'
           - '# 步骤1：配置SSH连接'
@@ -45,7 +45,7 @@ stages:
           - ''
           - '# 创建临时SSH目录并写入私钥'
           - mkdir -p ~/.ssh
-          - echo "$DEPLOY_KEY" > ~/.ssh/id_rsa
+          - echo "$DEPLOY_KEY_PUB" > ~/.ssh/id_rsa
           - chmod 600 ~/.ssh/id_rsa
           - ''
           - '# 添加服务器指纹到known_hosts'
