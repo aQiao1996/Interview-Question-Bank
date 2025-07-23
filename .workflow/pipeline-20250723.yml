@@ -23,80 +23,49 @@ stages:
         displayName: Nodejs 构建
         nodeVersion: 20.10.0
         commands:
-          - '#!/bin/bash'
-          - set -ex
+          - '# .gitlab-ci.yml'
+          - 'image: node:20.10.0  # 使用预配置的Node.js环境'
           - ''
-          - '# --------------------------'
-          - '# 步骤1：配置SSH连接云服务器（Gitee CI环境）'
-          - '# --------------------------'
-          - SERVER_IP="113.45.2.169"
-          - SERVER_USER="root"
-          - 'SSH_PRIVATE_KEY_PATH=~/.ssh/id_rsa  # Gitee部署密钥注入的私钥路径'
+          - 'stages:'
+          - '  - build'
+          - '  - deploy'
           - ''
-          - '# 1. 确保.ssh目录存在并设置权限'
-          - mkdir -p ~/.ssh
-          - chmod 700 ~/.ssh
+          - 'variables:'
+          - '  SSH_PRIVATE_KEY: $SSHPrivate秘钥  # 从Gitee CI/CD变量注入'
+          - '  SSH_KNOWN_HOSTS: $SSHKnownHosts    # 从Gitee CI/CD变量注入'
+          - '  SERVER_IP: 113.45.2.169'
+          - '  SERVER_USER: deployer  # 改用普通用户'
+          - '  DIST_DEST: /usr/share/nginx/html'
           - ''
-          - '# 2. 动态获取云服务器公钥（避免首次连接警告）'
-          - if ! grep -q "$SERVER_IP" ~/.ssh/known_hosts; then
-          - '  ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts'
-          - '  chmod 600 ~/.ssh/known_hosts'
-          - fi
+          - 'before_script:'
+          - '  # 配置SSH密钥'
+          - '  - command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+          - '  - eval $(ssh-agent -s)'
+          - '  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id Ed25519'
+          - '  - chmod 600 ~/.ssh/id Ed25519'
+          - '  - ssh-add ~/.ssh/id Ed25519'
+          - '  - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts'
+          - '  - chmod 600 ~/.ssh/known_hosts'
+          - '  - ssh -oBatchMode=yes -T $SERVER_USER@$SERVER_IP exit  # 验证连接'
           - ''
-          - '# 3. 验证私钥权限（Gitee部署密钥已注入）'
-          - if [ ! -f "$SSH_PRIVATE_KEY_PATH" ]; then
-          - '  echo "错误：Gitee未注入SSH私钥，请检查部署密钥配置"'
-          - '  exit 1'
-          - fi
-          - chmod 600 "$SSH_PRIVATE_KEY_PATH"
+          - 'build-job:'
+          - '  stage: build'
+          - '  script:'
+          - '    - npm install --production  # 安装生产依赖'
+          - '    - npm run docs:build            # 执行VitePress构建'
+          - '  artifacts:'
+          - '    paths:'
+          - '      - dist/  # 将构建产物作为artifacts传递'
+          - '    expire_in: 1 hour  # 设置过期时间'
           - ''
-          - '# --------------------------'
-          - '# 步骤2：通过SSH远程执行云服务器部署操作'
-          - '# --------------------------'
-          - echo "--------------------------"
-          - echo "步骤2：通过SSH连接云服务器并部署"
-          - echo "--------------------------"
-          - ''
-          - ssh -i "$SSH_PRIVATE_KEY_PATH" "$SERVER_USER@$SERVER_IP" "
-          - '  set -ex'
-          - ''
-          - '  # --------------------------'
-          - '  # 步骤2.1：进入项目目录（云服务器本地）'
-          - '  # --------------------------'
-          - '  PROJECT_DIR=\"/home/web/interview-question-bank\"'
-          - '  cd \"$PROJECT_DIR\" || { echo \"项目目录不存在！\"; exit 1; }'
-          - ''
-          - '  # --------------------------'
-          - '  # 步骤2.2：拉取Gitee仓库最新代码'
-          - '  # --------------------------'
-          - '  echo \"拉取Gitee仓库最新代码...\"'
-          - '  git pull origin main  # 确保云服务器项目目录是Gitee仓库的克隆'
-          - ''
-          - '  # --------------------------'
-          - '  # 步骤2.3：安装依赖并构建VitePress'
-          - '  # --------------------------'
-          - '  echo \"安装生产依赖并构建...\"'
-          - '  npm install --production'
-          - '  npm run docs:build  # 生成dist目录（VitePress默认输出）'
-          - ''
-          - '  # --------------------------'
-          - '  # 步骤2.4：部署构建产物到Nginx目录'
-          - '  # --------------------------'
-          - '  DIST_SRC=\"./dist\"'
-          - '  DIST_DEST=\"/usr/share/nginx/html\"'
-          - '  echo \"部署静态文件到Nginx目录...\"'
-          - '  cp -r \"$DIST_SRC\"/* \"$DIST_DEST/\"  # 覆盖旧文件（或增量更新）'
-          - ''
-          - '  # --------------------------'
-          - '  # 步骤2.5：检查Nginx配置并重启'
-          - '  # --------------------------'
-          - '  echo \"检查Nginx配置并重启...\"'
-          - '  nginx -t  # 验证配置文件语法'
-          - '  nginx -s reload  # 平滑重启（不中断现有连接）'
-          - '"'
-          - ''
-          - echo "--------------------------"
-          - echo "部署完成！"
+          - 'deploy-job:'
+          - '  stage: deploy'
+          - '  script:'
+          - '    - "部署到Nginx并重启"  # 使用更安全的部署方式'
+          - '  dependencies:'
+          - '    - build-job  # 依赖构建产物'
+          - '  only:'
+          - '    - master  # 仅在master分支触发部署'
         artifacts:
           - name: BUILD_ARTIFACT
             path:
