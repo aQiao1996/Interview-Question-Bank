@@ -21,96 +21,100 @@ stages:
         nodeVersion: 20.10.0
         commands:
           - '#!/bin/bash'
-          - 'set -ex  # 开启严格模式（出错立即终止，打印详细日志）'
+          - set -ex
           - ''
           - '# --------------------------'
           - '# 步骤1：配置基础环境（CentOS 专用）'
           - '# --------------------------'
-          - '# 设置NPM源（提升安装速度）'
           - npm config set registry https://registry.npmmirror.com
           - ''
-          - '# 安装Node.js 20.10.0（CentOS 专用）'
+          - '# 安装Node.js 20.10.0'
           - if ! command -v node &> /dev/null; then
           - '  echo "安装Node.js 20.10.0..."'
           - '  curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -'
-          - '  yum install -y nodejs  # CentOS 包管理器'
+          - '  yum install -y nodejs'
           - fi
           - ''
-          - '# 安装VitePress（全局，无需sudo）'
+          - '# 安装VitePress'
           - if ! command -v vitepress &> /dev/null; then
           - '  echo "安装VitePress..."'
-          - '  npm install -g vitepress  # 全局安装（用户级）'
+          - '  npm install -g vitepress'
           - fi
           - ''
-          - '# 安装Nginx（CentOS 专用）'
+          - '# 安装Nginx'
           - if ! command -v nginx &> /dev/null; then
           - '  echo "安装Nginx..."'
-          - '  yum install -y nginx  # CentOS 包管理器'
+          - '  yum install -y nginx'
           - fi
           - ''
           - '# --------------------------'
           - '# 步骤2：解决SSH Host Key验证（关键！）'
           - '# --------------------------'
-          - '# 云服务器信息（根据实际情况修改）'
-          - 'SERVER_IP="113.45.2.169"       # 云服务器公网IP'
-          - 'SERVER_USER="root"             # 登录用户名'
-          - echo "测试SSH连接（使用CI注入的私钥）..."
-          - ssh -v root@$SERVER_IP "echo SSH连接成功"
+          - SERVER_IP="113.45.2.169"
+          - SERVER_USER="root"
           - ''
-          - echo "解决SSH Host Key验证..."
-          - '# 创建.ssh目录（若不存在）'
-          - 'mkdir -p ~/.ssh  # 确保目录存在（-p 表示递归创建，若父目录不存在则自动创建）'
-          - '# 设置.ssh目录权限（仅用户可读写）'
-          - chmod 700 ~/.ssh
+          - echo "--------------------------"
+          - echo "步骤2：修复SSH权限与验证"
+          - echo "--------------------------"
           - ''
-          - '# 自动添加云服务器公钥到known_hosts（避免首次连接失败）'
+          - '# 修复.ssh目录权限'
+          - mkdir -p ~/.ssh
+          - '[ "$(stat -c %a ~/.ssh)" != "700" ] && chmod 700 ~/.ssh'
+          - ''
+          - '# 修复known_hosts权限并添加公钥'
+          - '[ ! -f ~/.ssh/known_hosts ] && touch ~/.ssh/known_hosts'
+          - '[ "$(stat -c %a ~/.ssh/known_hosts)" != "600" ] && chmod 600 ~/.ssh/known_hosts'
           - ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
-          - '# 设置known_hosts文件权限（仅用户可读写）'
-          - chmod 600 ~/.ssh/known_hosts
+          - sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts
+          - ''
+          - '# 验证公钥添加成功'
+          - SERVER_PUBLIC_KEY=$(ssh-keyscan -H $SERVER_IP | grep -E "ecdsa-sha2-nistp256|rsa-sha2-256|ed25519")
+          - '[ ! -z "$SERVER_PUBLIC_KEY" ] || { echo "公钥未添加成功！"; exit 1; }'
+          - grep -q "$SERVER_PUBLIC_KEY" ~/.ssh/known_hosts || { echo "公钥未写入known_hosts！"; exit 1; }
+          - ''
+          - '# 验证CI私钥注入'
+          - '[ ! -f ~/.ssh/id_rsa ] && { echo "CI未注入私钥！"; exit 1; }'
+          - '[ "$(stat -c %a ~/.ssh/id_rsa)" != "600" ] && chmod 600 ~/.ssh/id_rsa'
+          - ''
+          - '# 测试SSH连接（详细日志）'
+          - echo "测试SSH连接（详细日志）..."
+          - ssh -vvv root@$SERVER_IP "echo SSH连接成功"
           - ''
           - '# --------------------------'
           - '# 步骤3：同步云服务器项目到CI环境'
           - '# --------------------------'
-          - '# 云服务器项目目录（根据实际情况修改）'
-          - 'SERVER_PROJECT_DIR="/home/web/interview-question-bank"  # 云服务器项目目录'
-          - 'CI_WORK_DIR="/root/workspace"  # CI默认临时工作目录'
-          - ''
-          - echo "同步云服务器项目到CI环境..."
-          - '# 使用scp同步项目目录（-r 递归复制，-q 静默模式）'
+          - SERVER_PROJECT_DIR="/home/web/interview-question-bank"
+          - CI_WORK_DIR="/root/workspace"
+          - echo "同步项目目录：$SERVER_PROJECT_DIR 到 $CI_WORK_DIR..."
           - scp -rq root@$SERVER_IP:$SERVER_PROJECT_DIR $CI_WORK_DIR/
-          - '# 切换到CI中的项目目录（确保目录存在）'
           - cd $CI_WORK_DIR/$SERVER_PROJECT_DIR || { echo "项目目录不存在！"; exit 1; }
           - ''
           - '# --------------------------'
-          - '# 步骤4：拉取最新代码（若需同步云端改动）'
+          - '# 步骤4：拉取最新代码'
           - '# --------------------------'
           - echo "拉取远程代码..."
-          - 'git pull origin main  # 确保远程仓库地址正确（可通过 `git remote -v` 检查）'
+          - git pull origin main
           - ''
           - '# --------------------------'
-          - '# 步骤5：安装依赖并构建（生成dist目录）'
+          - '# 步骤5：安装依赖并构建'
           - '# --------------------------'
           - echo "安装生产依赖..."
-          - 'npm install --production  # 跳过devDependencies（加快安装速度）'
-          - ''
+          - npm install --production
           - echo "执行VitePress构建..."
-          - 'npm run docs:build  # 确保package.json中docs:build脚本正确调用vitepress（如："docs:build": "vitepress build docs"）'
+          - npm run docs:build
           - ''
           - '# --------------------------'
           - '# 步骤6：部署到Nginx并重启'
           - '# --------------------------'
+          - DIST_DEST="/usr/share/nginx/html"
           - echo "部署静态文件到Nginx..."
-          - '# 将CI环境中的dist目录复制到云服务器的Nginx根目录（CentOS 默认路径）'
-          - 'DIST_DEST="/usr/share/nginx/html"  # CentOS Nginx默认静态文件目录'
           - scp -rq $CI_WORK_DIR/$SERVER_PROJECT_DIR/dist/* root@$SERVER_IP:$DIST_DEST/
-          - ''
           - echo "检查Nginx配置..."
-          - 'nginx -t  # 验证配置是否正确（避免重启失败，输出应包含"syntax is ok"）'
-          - ''
+          - nginx -t
           - echo "平滑重启Nginx..."
-          - 'nginx -s reload  # 不中断服务重启'
+          - nginx -s reload
           - ''
-          - echo "部署完成！最新代码已同步到云服务器。"
+          - echo "部署完成！"
         artifacts:
           - name: BUILD_ARTIFACT
             path:
