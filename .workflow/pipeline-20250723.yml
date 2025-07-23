@@ -54,6 +54,8 @@ stages:
           - '# 云服务器信息（根据实际情况修改）'
           - 'SERVER_IP="113.45.2.169"       # 云服务器公网IP'
           - 'SERVER_USER="root"             # 登录用户名'
+          - echo "测试SSH连接（使用CI注入的私钥）..."
+          - ssh -v root@$SERVER_IP "echo SSH连接成功"
           - ''
           - echo "解决SSH Host Key验证..."
           - '# 创建.ssh目录（若不存在）'
