@@ -7,6 +7,9 @@ triggers:
     branches:
       precise:
         - main
+variables:
+  global:
+    - SERVER_PUBLIC_KEY_CLEAN
 stages:
   - name: stage-3b7a1a81
     displayName: 华为云git拉取部署
@@ -48,92 +51,35 @@ stages:
           - fi
           - ''
           - '# --------------------------'
-          - '# 步骤2：解决SSH Host Key验证（动态获取）'
+          - '# 步骤2：配置SSH（使用Gitee预注入的公钥）'
           - '# --------------------------'
-          - SERVER_IP="113.45.2.169"
-          - SERVER_USER="root"
-          - ''
-          - echo "--------------------------"
-          - echo "步骤2：修复SSH权限与验证"
-          - echo "--------------------------"
+          - '# 假设Gitee已将公钥注入到环境变量 `GITEE_SSH_PUBLIC_KEY`'
+          - '# （需在Gitee CI设置中配置该变量）'
+          - if [ -z "$GITEE_SSH_PUBLIC_KEY" ]; then
+          - '  echo "错误：Gitee未注入SSH公钥！"'
+          - '  exit 1'
+          - fi
           - ''
           - '# 1. 创建.ssh目录并设置权限'
           - mkdir -p ~/.ssh
           - chmod 700 ~/.ssh
           - ''
-          - '# 2. 动态获取云服务器公钥'
-          - echo "提取云服务器公钥..."
-          - SERVER_PUBLIC_KEY_RAW=$(ssh-keyscan -H $SERVER_IP 2>/dev/null)
-          - if [ -z "$SERVER_PUBLIC_KEY_RAW" ]; then
-          - '  echo "错误：ssh-keyscan 未返回公钥！"'
-          - '  exit 1'
-          - fi
-          - ''
-          - '# 提取第一行非注释的 RSA 公钥'
-          - SERVER_PUBLIC_KEY_CLEAN=$(echo "$SERVER_PUBLIC_KEY_RAW" | awk '/^ssh-rsa / && !/^#/ {print; exit}')
-          - if [ -z "$SERVER_PUBLIC_KEY_CLEAN" ]; then
-          - '  echo "错误：未找到有效公钥！"'
-          - '  exit 1'
-          - fi
-          - ''
-          - '# 3. 写入公钥到known_hosts'
-          - echo "写入公钥到known_hosts..."
-          - KNOWN_HOSTS_ENTRY="$SERVER_IP $SERVER_PUBLIC_KEY_CLEAN"
-          - echo "$KNOWN_HOSTS_ENTRY" >> ~/.ssh/known_hosts
+          - '# 2. 写入公钥到known_hosts（使用Gitee的公钥）'
+          - echo "写入Gitee SSH公钥到known_hosts..."
+          - echo "$GITEE_SSH_PUBLIC_KEY" >> ~/.ssh/known_hosts
           - chmod 600 ~/.ssh/known_hosts
           - ''
-          - '# 4. 验证公钥写入'
-          - 'grep -q "$KNOWN_HOSTS_ENTRY" ~/.ssh/known_hosts || { '
-          - '  echo "错误：公钥未成功写入known_hosts！"'
-          - '  exit 1 '
-          - '}'
-          - ''
-          - '# 5. 验证私钥注入'
-          - if [ ! -f ~/.ssh/id_rsa ]; then
-          - '  echo "错误：CI未注入SSH私钥！"'
+          - '# 3. 验证私钥注入（需在Gitee CI中配置私钥环境变量 `GITEE_SSH_PRIVATE_KEY`）'
+          - if [ -z "$GITEE_SSH_PRIVATE_KEY" ]; then
+          - '  echo "错误：Gitee未注入SSH私钥！"'
           - '  exit 1'
           - fi
+          - echo "$GITEE_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           - chmod 600 ~/.ssh/id_rsa
           - ''
-          - '# 6. 测试SSH连接'
+          - '# 4. 测试SSH连接（使用Gitee的SSH地址，如git@gitee.com）'
           - echo "测试SSH连接..."
-          - ssh -vvv root@$SERVER_IP "echo SSH连接成功"
-          - ''
-          - '# --------------------------'
-          - '# 步骤3：同步云服务器项目到CI环境'
-          - '# --------------------------'
-          - SERVER_PROJECT_DIR="/home/web/interview-question-bank"
-          - CI_WORK_DIR="/root/workspace"
-          - echo "同步项目目录：$SERVER_PROJECT_DIR 到 $CI_WORK_DIR..."
-          - scp -rq root@$SERVER_IP:$SERVER_PROJECT_DIR $CI_WORK_DIR/
-          - cd $CI_WORK_DIR/$SERVER_PROJECT_DIR || { echo "项目目录不存在！"; exit 1; }
-          - ''
-          - '# --------------------------'
-          - '# 步骤4：拉取最新代码'
-          - '# --------------------------'
-          - echo "拉取远程代码..."
-          - git pull origin main
-          - ''
-          - '# --------------------------'
-          - '# 步骤5：安装依赖并构建'
-          - '# --------------------------'
-          - echo "安装生产依赖..."
-          - npm install --production
-          - echo "执行VitePress构建..."
-          - npm run docs:build
-          - ''
-          - '# --------------------------'
-          - '# 步骤6：部署到Nginx并重启'
-          - '# --------------------------'
-          - DIST_DEST="/usr/share/nginx/html"
-          - echo "部署静态文件到Nginx..."
-          - scp -rq $CI_WORK_DIR/$SERVER_PROJECT_DIR/dist/* root@$SERVER_IP:$DIST_DEST/
-          - echo "检查Nginx配置..."
-          - nginx -t
-          - echo "平滑重启Nginx..."
-          - nginx -s reload
-          - ''
-          - echo "部署完成！"
+          - ssh -vvv -o StrictHostKeyChecking=no git@gitee.com "echo SSH连接成功"
         artifacts:
           - name: BUILD_ARTIFACT
             path:
