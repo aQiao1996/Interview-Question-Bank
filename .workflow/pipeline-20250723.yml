@@ -8,8 +8,8 @@ triggers:
       precise:
         - main
 stages:
-  - name: stage-3b7a1a81
-    displayName: 华为云git拉取部署
+  - name: stage-9721c2a0
+    displayName: 华为云git部署
     strategy: naturally
     trigger: auto
     executor:
@@ -240,6 +240,7 @@ stages:
           - '# --------------------------'
           - echo "--------------------------"
           - echo "部署完成！最终验证..."
+          - echo "访问地址：http://$SERVER_IP （或您配置的域名）"
           - echo "检查Nginx状态：ssh $SERVER_USER@$SERVER_IP 'systemctl status nginx'"
           - echo "检查最新文件：ssh $SERVER_USER@$SERVER_IP 'ls -l $DIST_REMOTE_DIR'"
           - echo "--------------------------"
