@@ -29,9 +29,9 @@ stages:
           - '# 设置NPM源（提升安装速度）'
           - npm config set registry https://registry.npmmirror.com
           - ''
-          - '# 安装Node.js 21.5.0（若未安装）'
+          - '# 安装Node.js 20.8.0（若未安装）'
           - if ! command -v node &> /dev/null; then
-          - '  echo "安装Node.js 21.5.0..."'
+          - '  echo "安装Node.js 20.8.0..."'
           - '  curl -fsSL https://rpm.nodesource.com/setup_21.x | sudo -E bash -'
           - '  sudo yum install -y nodejs  # CentOS系统，Ubuntu用 `sudo apt install -y nodejs`'
           - fi
