@@ -32,7 +32,6 @@ stages:
           - '# 安装Node.js 20.10.0（CentOS 专用）'
           - if ! command -v node &> /dev/null; then
           - '  echo "安装Node.js 20.10.0..."'
-          - '  # CentOS 使用 yum 安装，需先添加 Nodesource 源'
           - '  curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -'
           - '  yum install -y nodejs  # CentOS 包管理器'
           - fi
@@ -57,11 +56,18 @@ stages:
           - 'SERVER_USER="root"             # 登录用户名'
           - ''
           - echo "解决SSH Host Key验证..."
-          - '# 自动添加云服务器公钥到CI环境的known_hosts（避免首次连接失败）'
+          - '# 创建.ssh目录（若不存在）'
+          - 'mkdir -p ~/.ssh  # 确保目录存在（-p 表示递归创建，若父目录不存在则自动创建）'
+          - '# 设置.ssh目录权限（仅用户可读写）'
+          - chmod 700 ~/.ssh
+          - ''
+          - '# 自动添加云服务器公钥到known_hosts（避免首次连接失败）'
           - ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+          - '# 设置known_hosts文件权限（仅用户可读写）'
+          - chmod 600 ~/.ssh/known_hosts
           - ''
           - '# --------------------------'
-          - '# 步骤3：同步云服务器项目到CI环境（关键！）'
+          - '# 步骤3：同步云服务器项目到CI环境'
           - '# --------------------------'
           - '# 云服务器项目目录（根据实际情况修改）'
           - 'SERVER_PROJECT_DIR="/home/web/interview-question-bank"  # 云服务器项目目录'
@@ -89,7 +95,7 @@ stages:
           - 'npm run docs:build  # 确保package.json中docs:build脚本正确调用vitepress（如："docs:build": "vitepress build docs"）'
           - ''
           - '# --------------------------'
-          - '# 步骤6：部署到Nginx并重启（关键！）'
+          - '# 步骤6：部署到Nginx并重启'
           - '# --------------------------'
           - echo "部署静态文件到Nginx..."
           - '# 将CI环境中的dist目录复制到云服务器的Nginx根目录（CentOS 默认路径）'
