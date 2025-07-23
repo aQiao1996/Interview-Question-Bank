@@ -20,17 +20,77 @@ stages:
         displayName: Nodejs 构建
         nodeVersion: 21.5.0
         commands:
-          - '# 设置NPM源，提升安装速度'
+          - '#!/bin/bash'
+          - 'set -ex  # 开启严格模式（出错立即终止，打印详细日志）'
+          - ''
+          - '# --------------------------'
+          - '# 步骤1：配置基础环境（CI环境专用）'
+          - '# --------------------------'
+          - '# 设置NPM源（提升安装速度）'
           - npm config set registry https://registry.npmmirror.com
-          - '# 进入项目目录'
-          - cd ..
-          - cd /home/web/interview-question-bank/
-          - '# 拉取远程代码'
-          - git pull origin main
-          - '# 执行编译命令'
-          - npm install&&npm run docs:build
-          - '# 重启nginx'
-          - nginx -s reload
+          - ''
+          - '# 安装Node.js 21.5.0（若未安装）'
+          - if ! command -v node &> /dev/null; then
+          - '  echo "安装Node.js 21.5.0..."'
+          - '  curl -fsSL https://rpm.nodesource.com/setup_21.x | sudo -E bash -'
+          - '  sudo yum install -y nodejs  # CentOS系统，Ubuntu用 `sudo apt install -y nodejs`'
+          - fi
+          - ''
+          - '# 安装VitePress（全局，确保 `vitepress` 命令可用）'
+          - if ! command -v vitepress &> /dev/null; then
+          - '  echo "安装VitePress..."'
+          - '  npm install -g vitepress'
+          - fi
+          - ''
+          - '# 安装Nginx（若未安装）'
+          - if ! command -v nginx &> /dev/null; then
+          - '  echo "安装Nginx..."'
+          - '  sudo yum install -y nginx  # CentOS系统，Ubuntu用 `sudo apt install -y nginx`'
+          - fi
+          - ''
+          - '# --------------------------'
+          - '# 步骤2：同步云服务器项目到CI环境（关键！）'
+          - '# --------------------------'
+          - '# 云服务器信息（根据实际情况修改）'
+          - 'SERVER_IP="113.45.2.169"       # 云服务器公网IP'
+          - 'SERVER_PROJECT_DIR="/home/web/interview-question-bank"  # 云服务器项目目录'
+          - 'CI_WORK_DIR="/root/workspace"  # CI默认临时工作目录'
+          - ''
+          - echo "同步云服务器项目到CI环境..."
+          - '# 使用scp同步项目目录（-r 递归复制）'
+          - scp -r root@$SERVER_IP:$SERVER_PROJECT_DIR $CI_WORK_DIR/
+          - '# 切换到CI中的项目目录'
+          - cd $CI_WORK_DIR/$SERVER_PROJECT_DIR
+          - ''
+          - '# --------------------------'
+          - '# 步骤3：拉取最新代码（若需同步云端改动）'
+          - '# --------------------------'
+          - echo "拉取远程代码..."
+          - 'git pull origin main  # 确保远程仓库地址正确（可通过 `git remote -v` 检查）'
+          - ''
+          - '# --------------------------'
+          - '# 步骤4：安装依赖并构建（生成dist目录）'
+          - '# --------------------------'
+          - echo "安装生产依赖..."
+          - 'npm install --production  # 跳过devDependencies（加快安装速度）'
+          - ''
+          - echo "执行VitePress构建..."
+          - 'npm run docs:build  # 确保package.json中docs:build脚本正确调用vitepress'
+          - ''
+          - '# --------------------------'
+          - '# 步骤5：部署到Nginx并重启'
+          - '# --------------------------'
+          - echo "部署静态文件到Nginx..."
+          - '# 将CI环境中的dist目录复制到云服务器的Nginx根目录'
+          - sudo scp -r $CI_WORK_DIR/$SERVER_PROJECT_DIR/dist/* root@$SERVER_IP:/usr/share/nginx/html/
+          - ''
+          - echo "检查Nginx配置..."
+          - 'sudo nginx -t  # 验证配置是否正确（避免重启失败）'
+          - ''
+          - echo "平滑重启Nginx..."
+          - 'sudo nginx -s reload  # 不中断服务重启'
+          - ''
+          - echo "部署完成！最新代码已同步到云服务器。"
         artifacts:
           - name: BUILD_ARTIFACT
             path:
