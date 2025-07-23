@@ -22,8 +22,6 @@ stages:
         commands:
           - '# 设置NPM源，提升安装速度'
           - npm config set registry https://registry.npmmirror.com
-          - '# 返回最外层目录'
-          - cd ..
           - '# 进入项目目录'
           - cd /home/web/interview-question-bank
           - '# 拉取远程代码'
