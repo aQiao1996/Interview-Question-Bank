@@ -35,6 +35,8 @@ stages:
           - '# sh /home/admin/app/deploy.sh restart'
           - '# 如果你是php之类的无需制品包的制品方式，可以使用 git clone 或者 git pull 将源代码更新到服务器，再执行其他命令'
           - '# git clone ***@***.git'
+          - cd ..
+          - cd /home/web/interview-question-bank/
           - git pull origin main
           - npm run docs:build
           - echo '部署完成!'
