@@ -82,13 +82,13 @@ stages:
           - '# --------------------------'
           - echo "部署静态文件到Nginx..."
           - '# 将CI环境中的dist目录复制到云服务器的Nginx根目录'
-          - sudo scp -r $CI_WORK_DIR/$SERVER_PROJECT_DIR/dist/* root@$SERVER_IP:/usr/share/nginx/html/
+          - scp -r $CI_WORK_DIR/$SERVER_PROJECT_DIR/dist/* root@$SERVER_IP:/usr/share/nginx/html/
           - ''
           - echo "检查Nginx配置..."
-          - 'sudo nginx -t  # 验证配置是否正确（避免重启失败）'
+          - 'nginx -t  # 验证配置是否正确（避免重启失败）'
           - ''
           - echo "平滑重启Nginx..."
-          - 'sudo nginx -s reload  # 不中断服务重启'
+          - 'nginx -s reload  # 不中断服务重启'
           - ''
           - echo "部署完成！最新代码已同步到云服务器。"
         artifacts:
