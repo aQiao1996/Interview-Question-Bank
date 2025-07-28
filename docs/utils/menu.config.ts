@@ -11,4 +11,5 @@ export default [
   { text: "http", link: "/http" },
   { text: "场景题", link: "/scenario-based" },
   { text: "前端工程化", link: "/fe-engineering" },
+  { text: "手写题", link: "/code" },
 ];
