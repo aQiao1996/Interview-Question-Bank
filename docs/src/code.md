@@ -139,14 +139,14 @@ testFn(); // 1秒后触发
 function throttle(fn, delay) {
   let lastTime = 0; // 上一次执行函数的时间戳，初始为 0
   return function (...args) {
-    // 获取当前时间
+    // 当前时间戳
     const nowTime = Date.now();
     // 计算当前时间与上次执行时间的差值，
     // 如果差值大于等于设定的时间间隔，则执行回调函数，并更新上次执行时间
     if (nowTime - lastTime >= delay) {
       // 执行回调函数
       fn.apply(this, args);
-      // 更新上次执行时间
+      // 更新上次执行时间为当前时间
       lastTime = nowTime;
     }
     // 如果差值小于设定的时间间隔，则不执行回调函数
