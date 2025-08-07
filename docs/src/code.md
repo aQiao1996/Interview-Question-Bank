@@ -137,7 +137,7 @@ testFn(); // 1秒后触发
 ::: details 详情
 ```js
 function throttle(fn, delay) {
-  let lastTime = 0;
+  let lastTime = 0; // 上一次执行函数的时间戳，初始为 0
   return function (...args) {
     // 获取当前时间
     const nowTime = Date.now();
@@ -149,6 +149,7 @@ function throttle(fn, delay) {
       // 更新上次执行时间
       lastTime = nowTime;
     }
+    // 如果差值小于设定的时间间隔，则不执行回调函数
   };
 }
 ```
