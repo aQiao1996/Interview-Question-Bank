@@ -106,7 +106,7 @@ function debounce(fn, delay) {
     }
     // 重新设置定时器
     timer = setTimeout(() => {
-      // 定时器到期后，执行回调函数
+      // 定时器到期后，执行回调函数，绑定当前上下文和参数
       fn.apply(this, args);
     }, delay);
   };
@@ -144,7 +144,7 @@ function throttle(fn, delay) {
     // 计算当前时间与上次执行时间的差值，
     // 如果差值大于等于设定的时间间隔，则执行回调函数，并更新上次执行时间
     if (nowTime - lastTime >= delay) {
-      // 执行回调函数
+      // 执行回调函数，绑定当前上下文和参数
       fn.apply(this, args);
       // 更新上次执行时间为当前时间
       lastTime = nowTime;
