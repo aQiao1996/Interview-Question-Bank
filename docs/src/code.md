@@ -210,8 +210,9 @@ testFn(1, 2, 3); // 柯理化函数触发 1 2 3
   > - O(1)
 - 稳定性：
   > - 稳定排序算法。
-- 代码实现：
+::: details 详情
 ```js
+// 基础版，时间复杂度O(n^2)
 function bubbleSort(arr) {
   const len = arr.length;
   // 外层循环，控制排序轮数
