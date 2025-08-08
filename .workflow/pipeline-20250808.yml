@@ -61,7 +61,7 @@ stages:
           - npm -v
           - ''
           - npm config set registry https://registry.npmmirror.com/
-          - npm install --production
+          - npm install
           - ''
           - '# 尝试构建，如果失败则退出'
           - if ! npm run docs:build; then
