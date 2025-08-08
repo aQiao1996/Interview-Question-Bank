@@ -58,6 +58,9 @@ stages:
           - '    exit 1'
           - fi
           - ''
+          - echo "验证构建产物："
+          - ls -la ./docs/.vitepress/dist
+          - ''
           - echo "===== 本地构建完成 ====="
         artifacts:
           - name: BUILD_ARTIFACT
