@@ -21,7 +21,7 @@ stages:
       - step: build@nodejs
         name: build_nodejs
         displayName: Nodejs 构建
-        nodeVersion: 14.16.0
+        nodeVersion: 21.5.0
         commands:
           - '#!/bin/bash'
           - set -ex
@@ -32,7 +32,7 @@ stages:
           - 'SERVER_IP="113.45.2.169"       # 云服务器公网IP'
           - 'SERVER_USER="root"             # SSH登录用户'
           - 'PROJECT_DIR="/home/web/interview-question-bank"  # 服务器项目路径'
-          - 'DIST_LOCAL="./.vitepress/dist"            # 本地构建产物目录地址'
+          - 'DIST_LOCAL="./docs/.vitepress/dist"            # 本地构建产物目录地址'
           - 'DIST_REMOTE="/usr/share/nginx/html"  # 服务器目标路径（Nginx 静态目录）'
           - 'SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY"       # Gitee注入的SSH私钥内容（CI变量）'
           - 'SSH_KEY_PATH="$HOME/.ssh/id_rsa"       # 本地 SSH 私钥路径（由 SSH_PRIVATE_KEY 写入）'
