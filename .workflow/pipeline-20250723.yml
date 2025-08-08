@@ -1,6 +1,6 @@
 version: '1.0'
 name: pipeline-20250723
-displayName: pipeline-20250723
+displayName: Node构建CICD
 triggers:
   trigger: manual
   push:
