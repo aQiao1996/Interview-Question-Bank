@@ -155,4 +155,40 @@ function throttle(fn, delay) {
 ```
 :::
 
+## 4、手写柯理化函数
+- 柯理化函数：柯理化函数是指将一个多参数函数转换为多个单参数函数的技术。
+- 应用场景：
+  > - 函数参数复用。
+  > - 函数参数延迟执行。
+- 实现原理：
+  > - 利用闭包保存参数。
+  > - 每次调用函数时，判断参数是否足够。
+  > - 如果参数足够，则执行回调函数。
+  > - 如果参数不足，则返回新的函数，等待参数补充。
+::: details 详情
+```js
+function currying(fn, ...args) {
+  // 如果参数足够，则执行回调函数
+  if (args.length >= fn.length) {
+    return fn.apply(this, args);
+  }
+  // 如果参数不足，则返回新的函数，等待参数补充
+  // return currying.bind(this, fn, ...args);
+  return (...newArgs) => currying(fn, ...args, ...newArgs);
+}
+
+// 测试柯理化函数
+const testFn = currying((a, b, c) => {
+  console.log("柯理化函数触发", a, b, c);
+});
+
+// 模拟连续触发事件
+testFn(1)(2)(3); // 柯理化函数触发 1 2 3
+testFn(1, 2)(3); // 柯理化函数触发 1 2 3
+testFn(1, 2, 3); // 柯理化函数触发 1 2 3
+```
+:::
+
+
+
 
