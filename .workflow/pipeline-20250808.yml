@@ -85,8 +85,17 @@ stages:
           - '# 步骤3：使用 scp 上传 dist 目录到服务器'
           - '# --------------------------'
           - echo "===== 开始上传产物 ====="
-          - '# 先清空远程目录'
-          - '# ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "rm -rf $DIST_REMOTE"'
+          - '# 检查并创建远程目录结构'
+          - ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "
+          - '    if [ ! -d \"$DIST_REMOTE\" ]; then'
+          - '        echo ''远程目录不存在，正在创建...'''
+          - '        mkdir -p \"$DIST_REMOTE\"'
+          - '        chmod -R 755 \"/home/web/interview-question-bank/docs\"'
+          - '    fi'
+          - '    # 清空目录但保留目录本身'
+          - '    rm -rf \"$DIST_REMOTE\"/*'
+          - '"'
+          - ''
           - ''
           - '# 上传 dist 目录内容'
           - scp -r -i "$SSH_KEY_PATH" "$DIST_LOCAL"/* "$SERVER_USER@$SERVER_IP:$DIST_REMOTE"
