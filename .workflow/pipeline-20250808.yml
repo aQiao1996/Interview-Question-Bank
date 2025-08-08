@@ -85,11 +85,11 @@ stages:
           - '# 步骤3：使用 scp 上传 dist 目录到服务器'
           - '# --------------------------'
           - echo "===== 开始上传产物 ====="
-          - '# 先清空远程目录(这里不需要，vitepress会进行清空)'
-          - '# ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "rm -rf $DIST_REMOTE/"'
+          - '# 先清空远程目录'
+          - '# ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "rm -rf $DIST_REMOTE"'
           - ''
           - '# 上传 dist 目录内容'
-          - scp -r -i "$SSH_KEY_PATH" "$DIST_LOCAL"/* "$SERVER_USER@$SERVER_IP:$DIST_REMOTE/"
+          - scp -r -i "$SSH_KEY_PATH" "$DIST_LOCAL"/* "$SERVER_USER@$SERVER_IP:$DIST_REMOTE"
           - echo "===== 产物上传完成 ====="
           - ''
           - '# --------------------------'
