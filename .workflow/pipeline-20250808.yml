@@ -69,11 +69,16 @@ stages:
           - '    exit 1'
           - fi
           - ''
-          - '# 检查 dist 目录是否存在'
+          - '# 检查构建产物'
           - if [ ! -d "$DIST_LOCAL" ]; then
-          - '    echo "错误：构建后未生成 dist 目录"'
+          - '    echo "错误：构建后未生成预期目录 $DIST_LOCAL"'
+          - '    echo "当前目录内容："'
+          - '    ls -la'
+          - '    echo ".vitepress 目录内容："'
+          - '    ls -la .vitepress'
           - '    exit 1'
           - fi
+          - ''
           - echo "===== 本地构建完成 ====="
           - ''
           - '# --------------------------'
