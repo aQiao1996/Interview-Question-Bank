@@ -33,7 +33,7 @@ stages:
           - 'SERVER_USER="root"             # SSH登录用户'
           - 'PROJECT_DIR="/home/web/interview-question-bank"  # 服务器项目路径'
           - 'DIST_LOCAL="./docs/.vitepress/dist"            # 本地构建产物目录地址'
-          - 'DIST_REMOTE="/usr/share/nginx/html"  # 服务器目标路径（Nginx 静态目录）'
+          - 'DIST_REMOTE="home/web/interview-question-bank/docs/.vitepress/"  # 服务器目标路径（Nginx 静态目录）'
           - 'SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY"       # Gitee注入的SSH私钥内容（CI变量）'
           - 'SSH_KEY_PATH="$HOME/.ssh/id_rsa"       # 本地 SSH 私钥路径（由 SSH_PRIVATE_KEY 写入）'
           - ''
@@ -85,8 +85,8 @@ stages:
           - '# 步骤3：使用 scp 上传 dist 目录到服务器'
           - '# --------------------------'
           - echo "===== 开始上传产物 ====="
-          - '# 先清空远程目录（可选）'
-          - ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "rm -rf $DIST_REMOTE/*"
+          - '# 先清空远程目录'
+          - ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "rm -rf $DIST_REMOTE/dist"
           - ''
           - '# 上传 dist 目录内容'
           - scp -r -i "$SSH_KEY_PATH" "$DIST_LOCAL"/* "$SERVER_USER@$SERVER_IP:$DIST_REMOTE/"
