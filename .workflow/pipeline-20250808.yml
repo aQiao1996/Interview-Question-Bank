@@ -1,0 +1,95 @@
+version: '1.0'
+name: pipeline-20250808
+displayName: Node构建
+triggers:
+  trigger: manual
+  push:
+    branches:
+      precise:
+        - main
+variables:
+  global:
+    - SSH_PRIVATE_KEY
+stages:
+  - name: stage-e11d560a
+    displayName: 华为云CICD
+    strategy: naturally
+    trigger: auto
+    executor:
+      - yangyunqiao
+    steps:
+      - step: build@nodejs
+        name: build_nodejs
+        displayName: Nodejs 构建
+        nodeVersion: 14.16.0
+        commands:
+          - '#!/bin/bash'
+          - set -ex
+          - ''
+          - '# --------------------------'
+          - '# 配置项'
+          - '# --------------------------'
+          - 'SERVER_IP="113.45.2.169"       # 云服务器公网IP'
+          - 'SERVER_USER="root"             # SSH登录用户'
+          - 'PROJECT_DIR="/home/web/interview-question-bank"  # 服务器项目路径'
+          - 'DIST_LOCAL="./dist"            # 本地构建产物目录'
+          - 'DIST_REMOTE="/usr/share/nginx/html"  # 服务器目标路径（Nginx 静态目录）'
+          - 'SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY"       # Gitee注入的SSH私钥内容（CI变量）'
+          - 'SSH_KEY_PATH="$HOME/.ssh/id_rsa"       # 本地 SSH 私钥路径（由 SSH_PRIVATE_KEY 写入）'
+          - ''
+          - '# --------------------------'
+          - '# 步骤1：配置SSH连接（基于 Gitee 注入的私钥）'
+          - '# --------------------------'
+          - echo "--------------------------"
+          - echo "配置SSH连接"
+          - echo "--------------------------"
+          - ''
+          - '# 创建临时SSH目录并写入私钥（由 CI 变量 SSH_PRIVATE_KEY 注入）'
+          - mkdir -p ~/.ssh
+          - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          - chmod 600 ~/.ssh/id_rsa
+          - chmod 700 ~/.ssh
+          - ''
+          - '# 添加服务器指纹到 known_hosts'
+          - ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+          - ''
+          - '# --------------------------'
+          - '# 步骤2：本地构建（生成 dist 目录）'
+          - '# --------------------------'
+          - echo "===== 开始本地构建 ====="
+          - 'npm config set registry https://registry.npmmirror.com/  # 设置 npm 源'
+          - 'npm install --production  # 仅安装生产依赖'
+          - 'npm run docs:build        # 构建生成静态文件到 ./dist 目录'
+          - echo "===== 本地构建完成 ====="
+          - ''
+          - '# --------------------------'
+          - '# 步骤3：使用 scp 上传 dist 目录到服务器'
+          - '# --------------------------'
+          - echo "===== 开始上传产物 ====="
+          - '# -r：递归上传整个 dist 目录内容'
+          - '# -i：指定刚才用 SSH_PRIVATE_KEY 写入的私钥路径'
+          - scp -r -i "$SSH_KEY_PATH" "$DIST_LOCAL/" "$SERVER_USER@$SERVER_IP:$DIST_REMOTE"
+          - echo "===== 产物上传完成 ====="
+          - ''
+          - '# --------------------------'
+          - '# 步骤4：服务器端操作（拉取代码 + 重启 Nginx）'
+          - '# --------------------------'
+          - echo "===== 服务器端操作 ====="
+          - '# 拉取最新代码（如果项目代码也需要同步更新）'
+          - ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "
+          - '  cd $PROJECT_DIR && git pull origin main'
+          - '"'
+          - ''
+          - '# 重启 Nginx 使新静态文件生效'
+          - ssh -i "$SSH_KEY_PATH" "$SERVER_USER@$SERVER_IP" "nginx -s reload"
+          - echo "===== 部署完成！ ====="
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - ./dist
+        caches:
+          - ~/.npm
+          - ~/.yarn
+        notify: []
+        strategy:
+          retry: '0'
