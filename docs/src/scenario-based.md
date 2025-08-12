@@ -84,6 +84,7 @@ description: 场景面试题
     if (controller) {
       controller.abort(); // 取消之前的请求
     }
+    // https://developer.mozilla.org/zh-CN/docs/Web/API/AbortController
     controller = new AbortController();
     const signal = controller.signal;
 
