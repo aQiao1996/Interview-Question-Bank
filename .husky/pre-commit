@@ -33,4 +33,5 @@ fi
 # npx lint-staged --verbose
 
 # 执行 commitlint
+echo "🚀 正在执行 commitlint..."
 npx --no -- commitlint --edit "$1"
