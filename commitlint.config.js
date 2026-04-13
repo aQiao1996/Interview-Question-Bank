@@ -18,8 +18,6 @@ module.exports = {
         "🧪 test", // 增加测试用例
         "↩ revert", // 回滚到上一版本
         "🎈 perf", // 优化相关
-        "🚀 deploy", // 部署相关（新增类型）
-        "🔒 security", // 安全性修复（新增类型）
       ],
     ],
     // 确保提交信息的 type 不能为空
@@ -29,10 +27,9 @@ module.exports = {
   },
   parserPreset: {
     parserOpts: {
-      // 自定义解析规则，支持 Emoji 开头的 type
-      // 我这里只是为了配合 vscode 插件 git-commit-plugin 使用，一般公司应该不会需要 Emoji
-      headerPattern: /^(\p{Emoji}*\s*\w+)(?:\(([\w$.\-* ]+)\))?: (.+)$/u,
-      headerCorrespondence: ["type", "scope", "subject"],
+      // 提交头必须匹配：emoji + type + 全角冒号 + subject
+      headerPattern: /^(\p{Emoji}+\s+\w+)：(.+)$/u,
+      headerCorrespondence: ["type", "subject"],
     },
   },
 };

@@ -19,3 +19,5 @@ command -v npx >/dev/null 2>&1 || {
 }
 
 echo "✅ node 版本: $(node -v)  路径: $(command -v node)"
+echo "🚀 正在执行 commitlint..."
+npx --no -- commitlint --edit "$1"
