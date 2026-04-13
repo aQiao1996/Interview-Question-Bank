@@ -27,8 +27,8 @@ module.exports = {
   },
   parserPreset: {
     parserOpts: {
-      // 提交头必须匹配：emoji + type + 全角冒号 + subject
-      headerPattern: /^(\p{Emoji}+\s+\w+)：(.+)$/u,
+      // 提交头必须匹配：emoji + type + 冒号(: 或 ：) + subject
+      headerPattern: /^(\p{Emoji}+\s+\w+)[:：](.+)$/u,
       headerCorrespondence: ["type", "subject"],
     },
   },

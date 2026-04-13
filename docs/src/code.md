@@ -155,8 +155,8 @@ function throttle(fn, delay) {
 ```
 :::
 
-## 4、手写柯理化函数
-- 柯理化函数：柯理化函数是指将一个多参数函数转换为多个单参数函数的技术。
+## 4、手写柯里化函数
+- 柯里化函数：柯里化函数是指将一个多参数函数转换为多个单参数函数的技术。
 - 应用场景：
   > - 函数参数复用。
   > - 函数参数延迟执行。
@@ -177,15 +177,15 @@ function currying(fn, ...args) {
   return (...newArgs) => currying(fn, ...args, ...newArgs);
 }
 
-// 测试柯理化函数
+// 测试柯里化函数
 const testFn = currying((a, b, c) => {
-  console.log("柯理化函数触发", a, b, c);
+  console.log("柯里化函数触发", a, b, c);
 });
 
 // 模拟连续触发事件
-testFn(1)(2)(3); // 柯理化函数触发 1 2 3
-testFn(1, 2)(3); // 柯理化函数触发 1 2 3
-testFn(1, 2, 3); // 柯理化函数触发 1 2 3
+testFn(1)(2)(3); // 柯里化函数触发 1 2 3
+testFn(1, 2)(3); // 柯里化函数触发 1 2 3
+testFn(1, 2, 3); // 柯里化函数触发 1 2 3
 ```
 :::
 
@@ -252,4 +252,3 @@ function bubbleSortOptimized(arr) {
 }
 ```
 :::
-

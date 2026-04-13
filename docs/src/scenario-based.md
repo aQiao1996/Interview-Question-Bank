@@ -1268,7 +1268,7 @@ function usePreciseCountdown(endTimestamp) {
 ```
 :::
 
-## 18、简述部署项目目到服务器上的流程
+## 18、简述部署项目到服务器上的流程
 ::: details 详情
 1.将代码上传到 `git` 托管上。
 

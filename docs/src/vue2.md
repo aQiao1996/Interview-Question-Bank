@@ -1054,7 +1054,7 @@ diff 算法的核心算法流程如下：
 ![alt text](assets/images/vue2/diff-image-2.png)
 :::
 
-## 24、vue2 中 何统一监听组件报错
+## 24、vue2 中如何统一监听组件报错
 ::: details 详情
 在 vue3 中，可以通过 全局错误处理器 （`errorHandler`） 和 生命周期钩子（例如 `onErrorCaptured` ）来统一监听和处理组件中的错误。
 

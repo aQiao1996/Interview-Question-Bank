@@ -407,7 +407,7 @@ dog.describe(); // 正常执行
 ```
 :::
 
-## 6、type 和 interface 共同和区别，如何选择
+## 6、type 和 interface 共同点和区别，如何选择
 type 和 interface 有很多相同之处，很多人因此而产生“选择困难症”，这也是 TS 热议的话题。
 
 共同点

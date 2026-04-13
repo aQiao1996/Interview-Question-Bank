@@ -18,6 +18,8 @@ command -v npx >/dev/null 2>&1 || {
   exit 1
 }
 
-echo "✅ node 版本: $(node -v)  路径: $(command -v node)"
-echo "🚀 正在执行 commitlint..."
-npx --no -- commitlint --edit "$1"
+if ! npx --no -- commitlint --edit "$1"; then
+  echo "❌ commitlint 校验失败"
+  echo "ℹ️ 当前 node: $(node -v)  路径: $(command -v node)"
+  exit 1
+fi
