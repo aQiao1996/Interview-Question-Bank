@@ -1,13 +1,15 @@
 import { defineConfig } from "vitepress";
 import menu from "../utils/menu.config";
 
+const base = process.env.VITEPRESS_BASE ?? "/";
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "前端面试宝典",
   description: "前端面试宝典",
   srcDir: "./src", // 相对于项目根目录的 markdown 文件所在的文件夹 默认 .
   lang: "zh-CN",
-  base: "/",
+  base,
   vite: {
     build: {
       rollupOptions: {
@@ -19,11 +21,11 @@ export default defineConfig({
   },
   head: [
     // 添加图标
-    ["link", { rel: "icon", href: "logo.png" }],
+    ["link", { rel: "icon", href: `${base}logo.png` }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "logo.png",
+    logo: `${base}logo.png`,
     // 导航菜单项的配置
     nav: menu,
     // 侧边栏菜单项的配置
