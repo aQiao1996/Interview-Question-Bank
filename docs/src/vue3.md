@@ -34,7 +34,7 @@ Composition API
 以下是 `Proxy` 相比 `Object.defineProperty` 的一些改进和优势：
 - 更强大和灵活：`Proxy` 可以代理整个对象，而不仅仅是对象的属性。这意味着您可以监听对象的整个操作，包括属性的增删改查等。而 `Object.defineProperty` 只能监听对象的属性的读取和赋值操作。
 - 更直观和易用：使用 `Proxy` 可以更直观地监听对象的操作，而不需要像 `Object.defineProperty` 那样手动定义 getter 和 setter。这使得代码更加清晰和易于理解。
-- 更好的性能：`Proxy` 的性能通常比 `Object.defineProperty` 更好，因为 `Proxy` 是原生实现的，而 `Object.defineProperty` 是 js 引擎的内部实现。`Proxy` 的底层实现更高效，可以更好地处理大型对象和多次操作。
+- 能力更完整：`Proxy` 并不意味着在所有场景下性能都更好，Vue3 选择它的核心原因是它可以拦截更多操作（如属性新增、删除、in、ownKeys、数组索引和长度变化等），让响应式实现更统一，也减少了 Vue2 中对数组方法重写和 `Vue.set` / `Vue.delete` 之类补丁方案的依赖。
 - 支持数组变化的检测：使用 `Proxy` 可以很容易地监听数组的变化，包括数组的 push、pop、splice 等操作。而 `Object.defineProperty` 难以实现对数组变化的监听。
 :::
 
