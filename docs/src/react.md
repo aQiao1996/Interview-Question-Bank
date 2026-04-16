@@ -69,7 +69,7 @@ React 组件的生命周期在过去的不同版本中有所调整，以下是 R
 |阶段|Hook 方法|描述|
 |----|-------|-------|
 |初始化/挂载|`useState()`|初始化状态并在每次渲染时返回一对值（当前状态和更新状态的函数）|
-|初始化/挂载|`useEffect(fn, deps)`|类似于 `componentDidMount` 和 `componentDidUpdate` 的合并，以及 `componentWillUnmount` 功能；fn 函数在组件渲染后运行，deps 是依赖数组，控制何时重新运行该效果|
+|初始化/挂载|`useEffect(fn, deps)`|在组件提交渲染后执行副作用；当依赖变化时会重新执行，返回的清理函数会在下一次副作用执行前和组件卸载时调用|
 |初始化/挂载|`useLayoutEffect(fn, deps)`|类似 `useEffect`，但在所有 DOM 变更之后同步调用|
 |初始化/挂载|`useMemo(() => result, deps)`|记忆化计算结果，仅当依赖项 deps 改变时重新计算|
 |初始化/挂载|`useCallback(fn, deps)`|记忆化函数引用，避免不必要的函数重创建|
@@ -998,7 +998,7 @@ export default function App() {
 :::
 
 ## 11、React.setState 是同步还是异步的
-- `setState` 并不能保证是同步的，在生命周期函数和合成事件中是异步的，在原生事件和 `setTimeout` 中是同步的。
+- `setState` 更准确地说是一次“状态更新调度”，并不能简单用“同步”或“异步”概括。React 会根据当前的批处理上下文、优先级和调度策略决定何时提交更新，因此我们不应该依赖 `setState` 调用后立刻就能拿到最新渲染结果。
 - `React18+` 使用 `createRoot` 后，自动批处理的范围更大了，很多原本会立即触发多次渲染的更新现在会被合并后统一提交；但这并不意味着只能简单理解成“所有 setState 都变成异步”，因为 React 的核心语义仍然是调度和批处理，必要时也可以通过 `flushSync` 强制同步刷新。
 
 ## 12、React.setState 到页面重新渲染经历了什么
