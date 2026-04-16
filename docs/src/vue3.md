@@ -26,7 +26,7 @@ Composition API
 - Vue3 原生支持 `TypeScript`，提供更完善的类型推导和开发体验。
 - Vue3 支持为一个组件绑定多个 `v-model`，并且可以自定义 `prop` 和 `event` 名称。
 - Vue3 支持监听支持动态属性监听和更多数据类型（如 `Map`、`Set`），无需手动调用 `Vue.set`。
-- Vue3 新增`provide` 和 `inject`提供了更灵活的依赖注入机制。
+- `provide` 和 `inject` 在 Vue2 中就已经存在，Vue3 只是结合组合式 API 让它们在逻辑复用和依赖注入场景下使用起来更自然。
 :::
 
 ## 2、vue3 中为什么要使用 Proxy，它对比 Object.defineProperty 有什么改进
