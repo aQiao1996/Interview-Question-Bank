@@ -9,6 +9,7 @@ export default [
   { text: "react", link: "/react" },
   { text: "node", link: "/node" },
   { text: "http", link: "/http" },
+  { text: "AI", link: "/ai" },
   { text: "场景题", link: "/scenario-based" },
   { text: "前端工程化", link: "/fe-engineering" },
   { text: "手写题", link: "/code" },
