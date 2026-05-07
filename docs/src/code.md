@@ -490,3 +490,67 @@ console.log(myInstanceof([], Object)); // true
 console.log(myInstanceof("hello", String)); // false
 ```
 :::
+
+## 10、手写 new 操作符
+- new 操作符：new 用于创建构造函数的实例对象，并将实例对象的原型指向构造函数的 prototype。
+- 应用场景：
+  > - 理解构造函数创建实例的过程。
+  > - 理解 this、原型链和返回值之间的关系。
+  > - 面试中常用于考察 JavaScript 对象创建机制。
+- 实现原理：
+  > - 创建一个新的空对象。
+  > - 将新对象的原型指向构造函数的 prototype。
+  > - 使用新对象作为 this 执行构造函数，并传入参数。
+  > - 如果构造函数返回对象或函数，则返回该结果。
+  > - 如果构造函数没有返回对象，则返回创建的新对象。
+- 注意事项：
+  > - 构造函数返回基本数据类型时会被忽略。
+  > - 构造函数返回对象或函数时，会覆盖默认创建的实例对象。
+::: details 详情
+```js
+function myNew(Constructor, ...args) {
+  if (typeof Constructor !== "function") {
+    throw new TypeError("Constructor must be a function");
+  }
+
+  // 创建一个新对象，并让它的原型指向构造函数的 prototype
+  const instance = Object.create(Constructor.prototype);
+
+  // 执行构造函数，让构造函数中的 this 指向新对象
+  const result = Constructor.apply(instance, args);
+
+  // 如果构造函数返回对象或函数，则返回该结果，否则返回新对象
+  if (result !== null && (typeof result === "object" || typeof result === "function")) {
+    return result;
+  }
+
+  return instance;
+}
+
+// 测试 new 操作符
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+Person.prototype.sayName = function () {
+  console.log(this.name);
+};
+
+const person = myNew(Person, "Tom", 18);
+
+console.log(person.name); // Tom
+console.log(person.age); // 18
+console.log(person instanceof Person); // true
+person.sayName(); // Tom
+
+function Factory() {
+  this.name = "default";
+  return {
+    name: "custom",
+  };
+}
+
+console.log(myNew(Factory).name); // custom
+```
+:::
