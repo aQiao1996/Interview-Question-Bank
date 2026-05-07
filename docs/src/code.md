@@ -856,3 +856,73 @@ promiseRace([request, timeout]).catch(error => {
 });
 ```
 :::
+
+## 16、手写 Promise.allSettled
+- Promise.allSettled：Promise.allSettled 用于并发执行多个 Promise，等所有 Promise 都完成后，返回每一项的最终状态和结果。
+- 应用场景：
+  > - 多个请求互不影响，需要拿到每个请求的成功或失败结果。
+  > - 批量任务执行后展示完整执行报告。
+  > - 面试中考察 Promise 状态收集和结果顺序处理。
+- 实现原理：
+  > - 返回一个新的 Promise。
+  > - 遍历传入的可迭代对象，将每一项通过 Promise.resolve 包装。
+  > - 成功时记录 `{ status: "fulfilled", value }`。
+  > - 失败时记录 `{ status: "rejected", reason }`。
+  > - 使用计数器记录已完成数量，全部完成后 resolve 结果数组。
+- 注意事项：
+  > - 不会因为某一个 Promise 失败而 reject。
+  > - 返回结果的顺序和传入顺序一致。
+  > - 空数组需要直接 resolve 空数组。
+::: details 详情
+```js
+function promiseAllSettled(promises) {
+  return new Promise(resolve => {
+    const list = Array.from(promises);
+    const result = [];
+    let settledCount = 0;
+
+    if (list.length === 0) {
+      resolve([]);
+      return;
+    }
+
+    list.forEach((item, index) => {
+      Promise.resolve(item)
+        .then(value => {
+          result[index] = {
+            status: "fulfilled",
+            value,
+          };
+        })
+        .catch(reason => {
+          result[index] = {
+            status: "rejected",
+            reason,
+          };
+        })
+        .finally(() => {
+          settledCount++;
+
+          if (settledCount === list.length) {
+            resolve(result);
+          }
+        });
+    });
+  });
+}
+
+// 测试 Promise.allSettled
+const p1 = Promise.resolve("success");
+const p2 = Promise.reject("error");
+const p3 = 3;
+
+promiseAllSettled([p1, p2, p3]).then(result => {
+  console.log(result);
+  // [
+  //   { status: "fulfilled", value: "success" },
+  //   { status: "rejected", reason: "error" },
+  //   { status: "fulfilled", value: 3 }
+  // ]
+});
+```
+:::
