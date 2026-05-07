@@ -607,3 +607,62 @@ function getType() {
 console.log(getType.myCall([])); // [object Array]
 ```
 :::
+
+## 12、手写 apply 方法
+- apply 方法：apply 用于改变函数执行时的 this 指向，并立即执行函数，参数以数组或类数组的形式传入。
+- 应用场景：
+  > - 显式指定函数执行时的 this。
+  > - 参数已经以数组形式存在时调用函数。
+  > - 借用内置方法处理类数组。
+- 实现原理：
+  > - 判断调用 myApply 的目标是否为函数。
+  > - 将传入的 thisArg 转成对象，null 或 undefined 默认指向全局对象。
+  > - 使用 Symbol 创建唯一属性名，将当前函数临时挂到 thisArg 上。
+  > - 判断第二个参数是否存在，不存在则直接执行函数。
+  > - 如果第二个参数存在，则展开参数数组后执行函数。
+  > - 执行完成后删除临时属性，并返回函数执行结果。
+- 注意事项：
+  > - 第二个参数必须是数组或类数组。
+  > - apply 和 call 的核心区别在于参数传递方式不同。
+::: details 详情
+```js
+Function.prototype.myApply = function (thisArg, args) {
+  if (typeof this !== "function") {
+    throw new TypeError("myApply must be called on a function");
+  }
+
+  const context = thisArg == null ? globalThis : Object(thisArg);
+  const fnKey = Symbol("fn");
+
+  context[fnKey] = this;
+
+  let result;
+  if (args == null) {
+    result = context[fnKey]();
+  } else {
+    result = context[fnKey](...args);
+  }
+
+  delete context[fnKey];
+
+  return result;
+};
+
+// 测试 apply 方法
+function introduce(city, job) {
+  return `${this.name} 来自 ${city}，职业是 ${job}`;
+}
+
+const user = {
+  name: "Tom",
+};
+
+const result = introduce.myApply(user, ["上海", "前端工程师"]);
+
+console.log(result); // Tom 来自 上海，职业是 前端工程师
+
+const numbers = [5, 10, 2, 8];
+
+console.log(Math.max.myApply(null, numbers)); // 10
+```
+:::
