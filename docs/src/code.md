@@ -737,3 +737,68 @@ console.log(person instanceof Person); // true
 person.sayName(); // Jerry
 ```
 :::
+
+## 14、手写 Promise.all
+- Promise.all：Promise.all 用于并发执行多个 Promise，全部成功后按原顺序返回结果数组，只要有一个失败就立即返回失败原因。
+- 应用场景：
+  > - 多个接口并发请求，并等待全部完成。
+  > - 多个异步任务互不依赖，但后续逻辑依赖全部结果。
+  > - 面试中考察 Promise、并发控制和结果顺序处理。
+- 实现原理：
+  > - 返回一个新的 Promise。
+  > - 遍历传入的可迭代对象，将每一项通过 Promise.resolve 包装。
+  > - 每个 Promise 成功后，将结果保存到对应下标位置。
+  > - 使用计数器记录已完成数量，全部完成后 resolve 结果数组。
+  > - 任意一个 Promise 失败时，直接 reject 失败原因。
+- 注意事项：
+  > - 返回结果的顺序和传入顺序一致，不受完成时间影响。
+  > - 空数组需要直接 resolve 空数组。
+  > - 非 Promise 值也要当作成功值处理。
+::: details 详情
+```js
+function promiseAll(promises) {
+  return new Promise((resolve, reject) => {
+    const list = Array.from(promises);
+    const result = [];
+    let fulfilledCount = 0;
+
+    if (list.length === 0) {
+      resolve([]);
+      return;
+    }
+
+    list.forEach((item, index) => {
+      Promise.resolve(item)
+        .then(value => {
+          result[index] = value;
+          fulfilledCount++;
+
+          if (fulfilledCount === list.length) {
+            resolve(result);
+          }
+        })
+        .catch(reason => {
+          reject(reason);
+        });
+    });
+  });
+}
+
+// 测试 Promise.all
+const p1 = Promise.resolve(1);
+const p2 = new Promise(resolve => {
+  setTimeout(() => resolve(2), 1000);
+});
+const p3 = 3;
+
+promiseAll([p1, p2, p3]).then(result => {
+  console.log(result); // [1, 2, 3]
+});
+
+const p4 = Promise.reject("error");
+
+promiseAll([p1, p4, p3]).catch(error => {
+  console.log(error); // error
+});
+```
+:::
