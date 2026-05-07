@@ -802,3 +802,57 @@ promiseAll([p1, p4, p3]).catch(error => {
 });
 ```
 :::
+
+## 15、手写 Promise.race
+- Promise.race：Promise.race 用于并发执行多个 Promise，谁最先完成就以谁的结果作为最终结果，最先完成可以是成功也可以是失败。
+- 应用场景：
+  > - 请求超时控制。
+  > - 多个异步任务竞争，只关心最快返回的结果。
+  > - 面试中考察 Promise 状态流转和并发处理。
+- 实现原理：
+  > - 返回一个新的 Promise。
+  > - 遍历传入的可迭代对象，将每一项通过 Promise.resolve 包装。
+  > - 任意一个 Promise 最先 resolve 时，外层 Promise 直接 resolve。
+  > - 任意一个 Promise 最先 reject 时，外层 Promise 直接 reject。
+  > - Promise 状态一旦确定，后续结果不会再影响最终状态。
+- 注意事项：
+  > - 非 Promise 值会被 Promise.resolve 包装，可能最先完成。
+  > - 空数组不会触发 resolve 或 reject，会一直处于 pending 状态。
+::: details 详情
+```js
+function promiseRace(promises) {
+  return new Promise((resolve, reject) => {
+    const list = Array.from(promises);
+
+    list.forEach(item => {
+      Promise.resolve(item).then(resolve, reject);
+    });
+  });
+}
+
+// 测试 Promise.race
+const p1 = new Promise(resolve => {
+  setTimeout(() => resolve("p1"), 1000);
+});
+
+const p2 = new Promise(resolve => {
+  setTimeout(() => resolve("p2"), 500);
+});
+
+promiseRace([p1, p2]).then(result => {
+  console.log(result); // p2
+});
+
+const request = new Promise(resolve => {
+  setTimeout(() => resolve("请求成功"), 2000);
+});
+
+const timeout = new Promise((resolve, reject) => {
+  setTimeout(() => reject("请求超时"), 1000);
+});
+
+promiseRace([request, timeout]).catch(error => {
+  console.log(error); // 请求超时
+});
+```
+:::
