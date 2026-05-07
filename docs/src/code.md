@@ -436,3 +436,57 @@ eventBus.emit("login", "Tom"); // 登录用户：Tom
 eventBus.emit("login", "Jerry"); // 不会执行
 ```
 :::
+
+## 9、手写 instanceof
+- instanceof：instanceof 用于判断构造函数的 prototype 属性是否出现在实例对象的原型链上。
+- 应用场景：
+  > - 判断对象是否由某个构造函数创建。
+  > - 判断对象是否属于某个类或父类。
+  > - 面试中考察原型链和构造函数的理解。
+- 实现原理：
+  > - 先获取实例对象的原型，也就是 `Object.getPrototypeOf(left)`。
+  > - 再获取构造函数的 `prototype`。
+  > - 沿着实例对象的原型链不断向上查找。
+  > - 如果某一层原型等于构造函数的 `prototype`，则返回 true。
+  > - 如果原型链查找到 null，说明没有找到，返回 false。
+- 注意事项：
+  > - 基本数据类型不是对象，直接返回 false。
+  > - 右侧必须是函数，否则不符合 instanceof 的使用方式。
+::: details 详情
+```js
+function myInstanceof(left, right) {
+  if (left === null || (typeof left !== "object" && typeof left !== "function")) {
+    return false;
+  }
+
+  if (typeof right !== "function") {
+    throw new TypeError("Right-hand side of instanceof is not callable");
+  }
+
+  let proto = Object.getPrototypeOf(left);
+  const prototype = right.prototype;
+
+  while (proto !== null) {
+    if (proto === prototype) {
+      return true;
+    }
+    proto = Object.getPrototypeOf(proto);
+  }
+
+  return false;
+}
+
+// 测试 instanceof
+function Person(name) {
+  this.name = name;
+}
+
+const person = new Person("Tom");
+
+console.log(myInstanceof(person, Person)); // true
+console.log(myInstanceof(person, Object)); // true
+console.log(myInstanceof([], Array)); // true
+console.log(myInstanceof([], Object)); // true
+console.log(myInstanceof("hello", String)); // false
+```
+:::
