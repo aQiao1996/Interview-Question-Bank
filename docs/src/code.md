@@ -554,3 +554,56 @@ function Factory() {
 console.log(myNew(Factory).name); // custom
 ```
 :::
+
+## 11、手写 call 方法
+- call 方法：call 用于改变函数执行时的 this 指向，并立即执行函数，参数以逗号分隔的形式传入。
+- 应用场景：
+  > - 显式指定函数执行时的 this。
+  > - 借用其他对象上的方法。
+  > - 面试中考察 this 绑定、对象属性调用和参数处理。
+- 实现原理：
+  > - 判断调用 myCall 的目标是否为函数。
+  > - 将传入的 thisArg 转成对象，null 或 undefined 默认指向全局对象。
+  > - 使用 Symbol 创建唯一属性名，避免覆盖 thisArg 上已有属性。
+  > - 将当前函数临时挂到 thisArg 上并执行。
+  > - 执行完成后删除临时属性，并返回函数执行结果。
+- 注意事项：
+  > - 基本数据类型作为 thisArg 时，需要通过 Object 包装成对象。
+  > - 使用 Symbol 可以避免属性名冲突。
+::: details 详情
+```js
+Function.prototype.myCall = function (thisArg, ...args) {
+  if (typeof this !== "function") {
+    throw new TypeError("myCall must be called on a function");
+  }
+
+  const context = thisArg == null ? globalThis : Object(thisArg);
+  const fnKey = Symbol("fn");
+
+  context[fnKey] = this;
+  const result = context[fnKey](...args);
+  delete context[fnKey];
+
+  return result;
+};
+
+// 测试 call 方法
+function introduce(city, job) {
+  return `${this.name} 来自 ${city}，职业是 ${job}`;
+}
+
+const user = {
+  name: "Tom",
+};
+
+const result = introduce.myCall(user, "上海", "前端工程师");
+
+console.log(result); // Tom 来自 上海，职业是 前端工程师
+
+function getType() {
+  return Object.prototype.toString.myCall(this);
+}
+
+console.log(getType.myCall([])); // [object Array]
+```
+:::
