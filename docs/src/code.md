@@ -39,6 +39,7 @@ const tree = {
 };
 ```
 :::
+
 ::: details 详情
 ```js
 /**
@@ -250,5 +251,105 @@ function bubbleSortOptimized(arr) {
   }
   return arr;
 }
+```
+:::
+
+## 6、手写深拷贝函数
+- 深拷贝：深拷贝是指创建一个新的对象或数组，并递归复制原数据中的每一层属性，使新数据和原数据不共享引用地址。
+- 应用场景：
+  > - 复制复杂对象，避免修改副本时影响原对象。
+  > - 状态管理中保存快照。
+  > - 表单数据回显、重置和编辑。
+- 实现原理：
+  > - 判断当前值是否为对象类型，如果不是对象则直接返回。
+  > - 判断当前值是数组还是普通对象，创建对应的新容器。
+  > - 遍历对象自身属性，递归拷贝每一项。
+  > - 使用 WeakMap 记录已经拷贝过的对象，解决循环引用问题。
+- 注意事项：
+  > - 基础版本主要处理普通对象和数组。
+  > - Date、RegExp、Map、Set、函数、Symbol 等特殊类型需要按业务场景单独处理。
+::: details 详情
+```js
+function deepClone(target, cache = new WeakMap()) {
+  // null 和基本数据类型直接返回
+  if (target === null || typeof target !== "object") {
+    return target;
+  }
+
+  // 处理循环引用，如果当前对象已经拷贝过，直接返回缓存结果
+  if (cache.has(target)) {
+    return cache.get(target);
+  }
+
+  // 根据原数据类型创建新的数组或对象
+  const result = Array.isArray(target) ? [] : {};
+
+  // 先放入缓存，避免递归过程中遇到循环引用时无限递归
+  cache.set(target, result);
+
+  // 只遍历对象自身属性
+  for (const key in target) {
+    if (Object.prototype.hasOwnProperty.call(target, key)) {
+      result[key] = deepClone(target[key], cache);
+    }
+  }
+
+  return result;
+}
+
+// 测试深拷贝函数
+const obj = {
+  name: "前端",
+  info: {
+    age: 3,
+    tags: ["html", "css", "js"],
+  },
+};
+obj.self = obj;
+
+const clonedObj = deepClone(obj);
+clonedObj.info.tags.push("vue");
+
+console.log(obj.info.tags); // ["html", "css", "js"]
+console.log(clonedObj.info.tags); // ["html", "css", "js", "vue"]
+console.log(clonedObj.self === clonedObj); // true
+```
+:::
+
+## 7、手写数组扁平化函数
+- 数组扁平化：数组扁平化是指将多层嵌套数组转换为指定层级或一维数组。
+- 应用场景：
+  > - 处理树形数据转换后的列表结果。
+  > - 合并多层分类、菜单或权限数组。
+  > - 面试中考察递归、循环和数组方法的使用。
+- 实现原理：
+  > - 遍历数组中的每一项。
+  > - 如果当前项还是数组，并且还需要继续展开，则递归处理当前项。
+  > - 如果当前项不是数组，或者已经达到指定展开层级，则直接放入结果数组。
+- 注意事项：
+  > - 可以通过 depth 控制展开层级。
+  > - 如果需要完全展开，可以传入 Infinity。
+::: details 详情
+```js
+function flatten(arr, depth = 1) {
+  const result = [];
+
+  for (const item of arr) {
+    if (Array.isArray(item) && depth > 0) {
+      result.push(...flatten(item, depth - 1));
+    } else {
+      result.push(item);
+    }
+  }
+
+  return result;
+}
+
+// 测试数组扁平化函数
+const arr = [1, [2, [3, [4, 5]]], 6];
+
+console.log(flatten(arr)); // [1, 2, [3, [4, 5]], 6]
+console.log(flatten(arr, 2)); // [1, 2, 3, [4, 5], 6]
+console.log(flatten(arr, Infinity)); // [1, 2, 3, 4, 5, 6]
 ```
 :::
