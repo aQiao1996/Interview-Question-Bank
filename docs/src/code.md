@@ -353,3 +353,86 @@ console.log(flatten(arr, 2)); // [1, 2, 3, [4, 5], 6]
 console.log(flatten(arr, Infinity)); // [1, 2, 3, 4, 5, 6]
 ```
 :::
+
+## 8、手写发布订阅模式
+- 发布订阅模式：发布订阅模式是一种对象间通信方式，发布者不直接调用订阅者，而是通过事件中心统一管理事件的订阅、触发和取消订阅。
+- 应用场景：
+  > - 组件之间解耦通信。
+  > - 全局事件总线。
+  > - 消息通知、状态变化通知。
+- 实现原理：
+  > - 使用一个对象或 Map 保存事件名和对应的回调函数列表。
+  > - 订阅时，将回调函数加入对应事件的列表。
+  > - 发布时，依次执行该事件下的所有回调函数。
+  > - 取消订阅时，从回调函数列表中移除指定回调。
+- 注意事项：
+  > - 触发事件时需要透传参数。
+  > - 取消订阅时要处理事件不存在或回调不存在的情况。
+  > - 可以扩展 once 方法，实现只执行一次的订阅。
+::: details 详情
+```js
+class EventEmitter {
+  constructor() {
+    this.events = new Map();
+  }
+
+  on(eventName, callback) {
+    if (!this.events.has(eventName)) {
+      this.events.set(eventName, []);
+    }
+    this.events.get(eventName).push(callback);
+  }
+
+  off(eventName, callback) {
+    const callbacks = this.events.get(eventName);
+    if (!callbacks) return;
+
+    const index = callbacks.indexOf(callback);
+    if (index !== -1) {
+      callbacks.splice(index, 1);
+    }
+
+    if (callbacks.length === 0) {
+      this.events.delete(eventName);
+    }
+  }
+
+  emit(eventName, ...args) {
+    const callbacks = this.events.get(eventName);
+    if (!callbacks) return;
+
+    callbacks.slice().forEach(callback => {
+      callback(...args);
+    });
+  }
+
+  once(eventName, callback) {
+    const onceCallback = (...args) => {
+      callback(...args);
+      this.off(eventName, onceCallback);
+    };
+
+    this.on(eventName, onceCallback);
+  }
+}
+
+// 测试发布订阅模式
+const eventBus = new EventEmitter();
+
+function handleMessage(message) {
+  console.log("收到消息：", message);
+}
+
+eventBus.on("message", handleMessage);
+eventBus.emit("message", "hello"); // 收到消息：hello
+
+eventBus.off("message", handleMessage);
+eventBus.emit("message", "world"); // 不会执行
+
+eventBus.once("login", username => {
+  console.log("登录用户：", username);
+});
+eventBus.emit("login", "Tom"); // 登录用户：Tom
+eventBus.emit("login", "Jerry"); // 不会执行
+```
+:::
