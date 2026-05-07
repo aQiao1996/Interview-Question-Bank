@@ -666,3 +666,74 @@ const numbers = [5, 10, 2, 8];
 console.log(Math.max.myApply(null, numbers)); // 10
 ```
 :::
+
+## 13、手写 bind 方法
+- bind 方法：bind 用于改变函数执行时的 this 指向，但不会立即执行函数，而是返回一个新的函数。
+- 应用场景：
+  > - 固定函数执行时的 this。
+  > - 预置部分参数，实现函数参数复用。
+  > - 在事件回调、定时器回调中保留 this 指向。
+- 实现原理：
+  > - 判断调用 myBind 的目标是否为函数。
+  > - 保存原函数、绑定的 thisArg 和预置参数。
+  > - 返回一个新函数，新函数执行时合并预置参数和调用参数。
+  > - 如果返回的新函数被 new 调用，this 应该指向新创建的实例，而不是绑定的 thisArg。
+  > - 维护原函数的原型关系，使 new 调用时实例可以访问原型方法。
+- 注意事项：
+  > - bind 返回的是函数，不会立即执行。
+  > - bind 支持参数分批传入。
+  > - bind 后的函数作为构造函数使用时，绑定的 this 会失效。
+::: details 详情
+```js
+Function.prototype.myBind = function (thisArg, ...bindArgs) {
+  if (typeof this !== "function") {
+    throw new TypeError("myBind must be called on a function");
+  }
+
+  const originalFn = this;
+
+  function boundFn(...callArgs) {
+    const isNewCall = this instanceof boundFn;
+    const context = isNewCall ? this : thisArg;
+
+    return originalFn.apply(context, [...bindArgs, ...callArgs]);
+  }
+
+  // 维护原型关系，保证 new boundFn() 创建的实例可以访问原函数原型上的方法
+  boundFn.prototype = Object.create(originalFn.prototype);
+  boundFn.prototype.constructor = boundFn;
+
+  return boundFn;
+};
+
+// 测试 bind 方法
+function introduce(city, job) {
+  return `${this.name} 来自 ${city}，职业是 ${job}`;
+}
+
+const user = {
+  name: "Tom",
+};
+
+const boundIntroduce = introduce.myBind(user, "上海");
+
+console.log(boundIntroduce("前端工程师")); // Tom 来自 上海，职业是 前端工程师
+
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+Person.prototype.sayName = function () {
+  console.log(this.name);
+};
+
+const BoundPerson = Person.myBind({ name: "绑定对象" }, "Jerry");
+const person = new BoundPerson(20);
+
+console.log(person.name); // Jerry
+console.log(person.age); // 20
+console.log(person instanceof Person); // true
+person.sayName(); // Jerry
+```
+:::
