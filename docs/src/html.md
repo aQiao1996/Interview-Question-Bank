@@ -348,3 +348,49 @@ window.addEventListener("message", event => {
 
 简单理解：`src` 更偏向“把资源拿来用在当前位置”，`href` 更偏向“当前文档引用或链接到某个资源”。
 :::
+
+## 15、HTML5 中 data-* 自定义属性有什么作用
+`data-*` 是 HTML5 提供的自定义数据属性，用于在 HTML 元素上存放额外的自定义数据。
+
+::: details 详情
+### 基本用法
+
+```html
+<button
+  data-id="1001"
+  data-role="admin"
+  data-user-name="Tom"
+>
+  查看用户
+</button>
+```
+
+在 JavaScript 中可以通过 `dataset` 访问：
+
+```js
+const button = document.querySelector("button");
+
+console.log(button.dataset.id); // 1001
+console.log(button.dataset.role); // admin
+console.log(button.dataset.userName); // Tom
+```
+
+### 命名规则
+
+- 属性名必须以 `data-` 开头。
+- `data-user-name` 会转换成 `dataset.userName`。
+- 属性值会以字符串形式读取。
+
+### 应用场景
+
+- 给 DOM 元素绑定业务标识，例如 id、类型、状态。
+- 配合事件委托获取当前点击元素的数据。
+- 给组件或第三方脚本提供初始化配置。
+- 在不影响语义的情况下保存少量页面数据。
+
+### 注意事项
+
+- 不要存放敏感信息，因为 HTML 内容可以被用户查看。
+- 不适合存放大量复杂数据，复杂数据应放在 JavaScript 状态或接口数据中。
+- `data-*` 主要用于页面结构和脚本之间传递少量自定义信息。
+:::
