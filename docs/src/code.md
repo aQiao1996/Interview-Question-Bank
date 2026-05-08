@@ -926,3 +926,67 @@ promiseAllSettled([p1, p2, p3]).then(result => {
 });
 ```
 :::
+
+## 17、手写 Promise.any
+- Promise.any：Promise.any 用于并发执行多个 Promise，只要有一个 Promise 成功，就以第一个成功的结果作为最终结果；只有全部失败时才会 reject。
+- 应用场景：
+  > - 多个备用接口同时请求，只使用最快成功的结果。
+  > - 多个资源源站兜底，只要有一个可用即可。
+  > - 面试中考察 Promise 状态处理和失败原因收集。
+- 实现原理：
+  > - 返回一个新的 Promise。
+  > - 遍历传入的可迭代对象，将每一项通过 Promise.resolve 包装。
+  > - 任意一个 Promise 成功时，外层 Promise 立即 resolve。
+  > - 每个 Promise 失败时，将失败原因记录到对应下标位置。
+  > - 如果全部 Promise 都失败，则 reject 一个 AggregateError。
+- 注意事项：
+  > - 和 Promise.race 不同，Promise.any 只关心第一个成功结果。
+  > - 全部失败时才会 reject。
+  > - 空数组会直接 reject AggregateError。
+::: details 详情
+```js
+function promiseAny(promises) {
+  return new Promise((resolve, reject) => {
+    const list = Array.from(promises);
+    const errors = [];
+    let rejectedCount = 0;
+
+    if (list.length === 0) {
+      reject(new AggregateError([], "All promises were rejected"));
+      return;
+    }
+
+    list.forEach((item, index) => {
+      Promise.resolve(item)
+        .then(value => {
+          resolve(value);
+        })
+        .catch(reason => {
+          errors[index] = reason;
+          rejectedCount++;
+
+          if (rejectedCount === list.length) {
+            reject(new AggregateError(errors, "All promises were rejected"));
+          }
+        });
+    });
+  });
+}
+
+// 测试 Promise.any
+const p1 = Promise.reject("error1");
+const p2 = new Promise(resolve => {
+  setTimeout(() => resolve("success"), 1000);
+});
+const p3 = Promise.reject("error3");
+
+promiseAny([p1, p2, p3]).then(result => {
+  console.log(result); // success
+});
+
+promiseAny([Promise.reject("a"), Promise.reject("b")]).catch(error => {
+  console.log(error instanceof AggregateError); // true
+  console.log(error.errors); // ["a", "b"]
+});
+```
+:::
