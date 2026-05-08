@@ -1003,3 +1003,65 @@ emitter.emit("login", "Jerry");
 - `once` 需要确保只执行一次。
 - 如果事件数量很多，可以进一步考虑取消后清理空数组，避免内存浪费。
 :::
+
+## 16、说说对 Node.js 中 cluster 的理解
+`cluster` 是 Node.js 提供的多进程模块，用于创建多个工作进程，让 Node 服务可以更好地利用多核 CPU。
+
+::: details 详情
+### 为什么需要 cluster
+
+Node.js 的 JavaScript 执行是单线程的，一个进程默认只能利用一个 CPU 核心。
+
+如果服务器是多核 CPU，只启动一个 Node 进程会造成 CPU 资源浪费。`cluster` 可以通过主进程创建多个工作进程，让多个进程共同处理请求。
+
+### 工作原理
+
+- 主进程负责创建和管理工作进程。
+- 工作进程负责实际处理请求。
+- 多个工作进程可以监听同一个端口。
+- 主进程可以监听工作进程退出，并重新拉起新的工作进程。
+
+### 基本示例
+
+```js
+const cluster = require("cluster");
+const http = require("http");
+const os = require("os");
+
+const cpuCount = os.cpus().length;
+
+if (cluster.isPrimary) {
+  console.log(`主进程 ${process.pid} 正在运行`);
+
+  for (let i = 0; i < cpuCount; i++) {
+    cluster.fork();
+  }
+
+  cluster.on("exit", worker => {
+    console.log(`工作进程 ${worker.process.pid} 已退出，重新启动`);
+    cluster.fork();
+  });
+} else {
+  http
+    .createServer((req, res) => {
+      res.end(`worker ${process.pid}`);
+    })
+    .listen(3000);
+
+  console.log(`工作进程 ${process.pid} 已启动`);
+}
+```
+
+### 应用场景
+
+- 提高 Node 服务对多核 CPU 的利用率。
+- 提升 Web 服务的并发处理能力。
+- 工作进程异常退出后自动重启，提高服务可用性。
+
+### 注意事项
+
+- 多进程之间内存不共享，不能直接共享变量。
+- 进程间通信需要使用 IPC、消息队列、Redis 等方案。
+- 如果需要生产级进程管理，通常会使用 PM2、Docker、Kubernetes 等工具。
+- 对 CPU 密集型任务，cluster 可以提升多核利用率；对 I/O 密集型任务，也要结合实际瓶颈分析。
+:::
