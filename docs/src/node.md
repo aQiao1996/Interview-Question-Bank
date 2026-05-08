@@ -905,3 +905,101 @@ Refresh Token，将会话管理流程改进如下：
 
 Refresh Token 提供了服务端禁用用户 Token 的方式，当用户需要登出或禁用用户时，只需要将服务端的 `Refresh Token` 禁用或删除，用户就会在 `Access Token` 过期后，由于无法获取到新的 `Access Token` 而再也无法访问需要认证的接口。这样的方式虽然会有一定的窗口期（取决于 `Access Token` 的失效时间），但是结合用户登出时客户端删除 `Access Token` 的操作，基本上可以适应常规情况下对用户认证鉴权的精度要求。
 :::
+
+## 15、如何手写一个 EventEmitter
+`EventEmitter` 是 Node.js 中非常常见的事件发布订阅模式实现。它允许我们注册事件、触发事件、移除事件监听器。
+
+::: details 详情
+### 核心能力
+
+- `on`：注册事件监听。
+- `off`：移除事件监听。
+- `emit`：触发事件。
+- `once`：只执行一次的监听。
+
+### 实现思路
+
+- 使用一个对象或 `Map` 存储事件名和对应的回调数组。
+- 注册事件时，把回调加入数组。
+- 触发事件时，按顺序执行对应回调。
+- 移除事件时，从数组中删除指定回调。
+- `once` 可以通过包装一层函数实现，触发后自动移除。
+
+### 示例实现
+
+```js
+class EventEmitter {
+  constructor() {
+    this.events = new Map();
+  }
+
+  on(eventName, callback) {
+    if (!this.events.has(eventName)) {
+      this.events.set(eventName, []);
+    }
+
+    this.events.get(eventName).push(callback);
+  }
+
+  off(eventName, callback) {
+    const callbacks = this.events.get(eventName);
+
+    if (!callbacks) {
+      return;
+    }
+
+    const index = callbacks.indexOf(callback);
+
+    if (index !== -1) {
+      callbacks.splice(index, 1);
+    }
+
+    if (callbacks.length === 0) {
+      this.events.delete(eventName);
+    }
+  }
+
+  emit(eventName, ...args) {
+    const callbacks = this.events.get(eventName);
+
+    if (!callbacks) {
+      return;
+    }
+
+    callbacks.slice().forEach(callback => {
+      callback(...args);
+    });
+  }
+
+  once(eventName, callback) {
+    const onceCallback = (...args) => {
+      callback(...args);
+      this.off(eventName, onceCallback);
+    };
+
+    this.on(eventName, onceCallback);
+  }
+}
+
+const emitter = new EventEmitter();
+
+function handleMessage(message) {
+  console.log("message:", message);
+}
+
+emitter.on("message", handleMessage);
+emitter.emit("message", "hello");
+emitter.off("message", handleMessage);
+emitter.once("login", username => {
+  console.log("login:", username);
+});
+emitter.emit("login", "Tom");
+emitter.emit("login", "Jerry");
+```
+
+### 注意事项
+
+- 触发事件时建议使用 `slice()` 拷贝一份回调数组，避免遍历过程中修改数组。
+- `once` 需要确保只执行一次。
+- 如果事件数量很多，可以进一步考虑取消后清理空数组，避免内存浪费。
+:::
