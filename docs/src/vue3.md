@@ -418,3 +418,68 @@ const emit = defineEmits<{
 - props 是只读的，子组件不应该直接修改 props。
 - 建议显式声明 emits，便于类型提示、事件文档和维护。
 :::
+
+## 12、vue3 中 defineExpose 有什么作用
+`defineExpose` 是 `<script setup>` 中的编译器宏，用于显式暴露组件内部的属性和方法，让父组件可以通过模板 ref 访问。
+
+::: details 详情
+### 为什么需要 defineExpose
+
+在普通 `<script>` 组件中，父组件通过 ref 获取到的组件实例通常可以访问组件内部暴露在实例上的属性和方法。
+
+但在 `<script setup>` 中，组件默认是关闭的，内部声明的变量和方法不会自动暴露给父组件。如果父组件确实需要调用子组件方法，就需要使用 `defineExpose` 显式暴露。
+
+### 子组件
+
+```vue
+<template>
+  <div>{{ count }}</div>
+</template>
+
+<script setup>
+import { ref } from "vue";
+
+const count = ref(0);
+
+function reset() {
+  count.value = 0;
+}
+
+function increment() {
+  count.value++;
+}
+
+defineExpose({
+  reset,
+  increment,
+});
+</script>
+```
+
+### 父组件
+
+```vue
+<template>
+  <Counter ref="counterRef" />
+  <button @click="handleReset">重置子组件</button>
+</template>
+
+<script setup>
+import { ref } from "vue";
+import Counter from "./Counter.vue";
+
+const counterRef = ref(null);
+
+function handleReset() {
+  counterRef.value?.reset();
+}
+</script>
+```
+
+### 注意事项
+
+- `defineExpose` 只能在 `<script setup>` 顶层使用。
+- 只暴露父组件确实需要访问的属性和方法，避免组件之间过度耦合。
+- 常规父子通信仍然优先使用 props 和 emits。
+- 适合暴露表单校验、重置、聚焦、滚动等命令式方法。
+:::
