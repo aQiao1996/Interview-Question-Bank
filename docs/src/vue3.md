@@ -348,3 +348,73 @@ const user = await fetch("/api/user").then(res => res.json());
 - fallback 插槽会在异步依赖未完成时展示。
 - 在复杂项目中，错误处理通常需要配合 `onErrorCaptured` 或全局错误处理。
 :::
+
+## 11、vue3 中 defineProps 和 defineEmits 有什么作用
+`defineProps` 和 `defineEmits` 是 `<script setup>` 中的编译器宏，分别用于声明组件接收的 props 和组件向外触发的事件。
+
+::: details 详情
+### defineProps
+
+`defineProps` 用于声明父组件传入的属性。它不需要从 `vue` 中导入，会在编译阶段被处理。
+
+```vue
+<script setup>
+const props = defineProps({
+  title: {
+    type: String,
+    required: true,
+  },
+  count: {
+    type: Number,
+    default: 0,
+  },
+});
+</script>
+
+<template>
+  <h3>{{ props.title }}</h3>
+  <p>{{ props.count }}</p>
+</template>
+```
+
+### defineEmits
+
+`defineEmits` 用于声明组件会触发哪些事件，并返回一个 `emit` 函数。
+
+```vue
+<script setup>
+const emit = defineEmits(["change", "submit"]);
+
+function handleClick() {
+  emit("change", 1);
+}
+</script>
+
+<template>
+  <button @click="handleClick">修改</button>
+</template>
+```
+
+### 使用 TypeScript 声明
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{
+  title: string;
+  count?: number;
+}>();
+
+const emit = defineEmits<{
+  change: [value: number];
+  submit: [form: { name: string }];
+}>();
+</script>
+```
+
+### 注意事项
+
+- `defineProps` 和 `defineEmits` 只能在 `<script setup>` 顶层使用。
+- 它们是编译器宏，不需要手动导入。
+- props 是只读的，子组件不应该直接修改 props。
+- 建议显式声明 emits，便于类型提示、事件文档和维护。
+:::
