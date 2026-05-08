@@ -1134,3 +1134,96 @@ Promise.resolve("success")
   });
 ```
 :::
+
+## 20、手写并发请求控制函数
+- 并发请求控制：并发请求控制是指限制同一时间正在执行的异步任务数量，避免一次性发起过多请求导致浏览器、服务端或网络压力过大。
+- 应用场景：
+  > - 批量上传文件。
+  > - 批量请求列表详情。
+  > - 大量异步任务需要限制最大并发数。
+- 实现原理：
+  > - 维护当前正在执行的任务数量 activeCount。
+  > - 维护下一个待执行任务的下标 currentIndex。
+  > - 每次启动任务时增加 activeCount。
+  > - 任务完成后减少 activeCount，并继续启动下一个任务。
+  > - 所有任务完成后，按原始顺序 resolve 结果数组。
+- 注意事项：
+  > - 返回结果的顺序应和任务传入顺序一致。
+  > - 任一任务失败时，可以直接 reject，也可以按业务改成收集失败结果。
+  > - 最大并发数需要大于 0。
+::: details 详情
+```js
+function limitRequest(tasks, limit) {
+  if (!Array.isArray(tasks)) {
+    return Promise.reject(new TypeError("tasks must be an array"));
+  }
+
+  if (limit <= 0) {
+    return Promise.reject(new Error("limit must be greater than 0"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const result = [];
+    let currentIndex = 0;
+    let activeCount = 0;
+    let finishedCount = 0;
+
+    if (tasks.length === 0) {
+      resolve([]);
+      return;
+    }
+
+    function runNext() {
+      while (activeCount < limit && currentIndex < tasks.length) {
+        const index = currentIndex;
+        const task = tasks[index];
+
+        currentIndex++;
+        activeCount++;
+
+        Promise.resolve()
+          .then(task)
+          .then(value => {
+            result[index] = value;
+            finishedCount++;
+            activeCount--;
+
+            if (finishedCount === tasks.length) {
+              resolve(result);
+              return;
+            }
+
+            runNext();
+          })
+          .catch(reject);
+      }
+    }
+
+    runNext();
+  });
+}
+
+// 测试并发请求控制函数
+function createTask(value, delay) {
+  return () => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        console.log("完成任务：", value);
+        resolve(value);
+      }, delay);
+    });
+  };
+}
+
+const tasks = [
+  createTask(1, 1000),
+  createTask(2, 500),
+  createTask(3, 300),
+  createTask(4, 800),
+];
+
+limitRequest(tasks, 2).then(result => {
+  console.log(result); // [1, 2, 3, 4]
+});
+```
+:::
