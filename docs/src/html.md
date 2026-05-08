@@ -193,3 +193,44 @@ container.appendChild(fragment)
 - 避免使用 table 布局。
 - 为元素提前设置好高宽，不因多次渲染改变位置。
 :::
+
+## 12、script 标签中 async 和 defer 有什么区别
+`async` 和 `defer` 都可以让外部脚本异步下载，减少脚本加载对 HTML 解析的阻塞，但它们的执行时机和执行顺序不同。
+
+::: details 详情
+### async
+
+- 脚本会异步下载。
+- 下载完成后会立即执行。
+- 执行时可能会暂停 HTML 解析。
+- 多个 async 脚本之间不能保证执行顺序。
+- 适合统计脚本、广告脚本等不依赖 DOM 和其他脚本的场景。
+
+```html
+<script src="analytics.js" async></script>
+```
+
+### defer
+
+- 脚本会异步下载。
+- 等 HTML 文档解析完成后再执行。
+- 多个 defer 脚本会按照它们在文档中出现的顺序执行。
+- 会在 `DOMContentLoaded` 事件触发前执行。
+- 适合依赖 DOM 或依赖执行顺序的业务脚本。
+
+```html
+<script src="main.js" defer></script>
+```
+
+### 对比总结
+
+| 特性 | async | defer |
+| --- | --- | --- |
+| 是否异步下载 | 是 | 是 |
+| 是否保证执行顺序 | 否 | 是 |
+| 执行时机 | 下载完成后立即执行 | HTML 解析完成后执行 |
+| 是否可能阻塞 HTML 解析 | 可能 | 不会 |
+| 适合场景 | 独立脚本 | 业务脚本 |
+
+如果脚本依赖 DOM 或依赖其他脚本的执行顺序，优先使用 `defer`；如果脚本完全独立，可以使用 `async`。
+:::
