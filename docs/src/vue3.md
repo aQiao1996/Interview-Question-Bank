@@ -246,3 +246,49 @@ const valueB = ref(2);
 ::: tip 提示
 `v-memo` 仅用于性能至上场景中的微小优化，应该很少需要。最常见的情况可能是有助于渲染海量 `v-for` 列表 (长度超过 1000 的情况)。
 :::
+
+## 9、vue3 中 Teleport 是什么，有哪些应用场景
+`Teleport` 是 Vue3 提供的内置组件，用于将组件模板中的一部分 DOM 渲染到当前组件层级之外的指定 DOM 节点中。
+
+::: details 详情
+### 作用
+
+在组件开发中，弹窗、抽屉、全局提示、下拉菜单等内容通常不适合渲染在当前组件内部，因为它们可能会受到父元素的 `overflow`、`z-index`、`transform` 等样式影响。
+
+`Teleport` 可以让组件逻辑仍然写在当前组件中，但实际 DOM 被挂载到指定位置，例如 `body` 下。
+
+### 基本用法
+
+```vue
+<template>
+  <button @click="visible = true">打开弹窗</button>
+
+  <Teleport to="body">
+    <div v-if="visible" class="modal-mask">
+      <div class="modal">
+        <p>这是一个弹窗</p>
+        <button @click="visible = false">关闭</button>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<script setup>
+import { ref } from "vue";
+
+const visible = ref(false);
+</script>
+```
+
+### 应用场景
+
+- 弹窗、抽屉、全局 loading。
+- Toast、Message、Notification。
+- 需要脱离父级 DOM 层级限制的浮层组件。
+
+### 注意事项
+
+- `to` 属性需要指向一个真实存在的 DOM 节点，例如 `body` 或 `#modal-root`。
+- `Teleport` 只改变 DOM 挂载位置，不改变组件之间的逻辑关系。
+- 父子组件通信、依赖注入、响应式状态仍然按原组件树工作。
+:::
