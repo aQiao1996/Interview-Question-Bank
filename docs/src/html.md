@@ -234,3 +234,66 @@ container.appendChild(fragment)
 
 如果脚本依赖 DOM 或依赖其他脚本的执行顺序，优先使用 `defer`；如果脚本完全独立，可以使用 `async`。
 :::
+
+## 13、iframe 有哪些优缺点，如何实现页面通信
+`iframe` 可以在当前页面中嵌入另一个 HTML 页面，常用于第三方页面接入、低成本系统集成、沙箱隔离等场景。
+
+::: details 详情
+### 优点
+
+- 可以嵌入独立页面，接入成本低。
+- 子页面和父页面的运行环境相对隔离，样式和脚本不容易互相影响。
+- 适合接入第三方系统、广告、地图、支付页、低代码页面等。
+- 可以通过 `sandbox` 属性限制子页面能力，提高安全性。
+
+### 缺点
+
+- 会额外加载一个完整页面，性能开销较大。
+- SEO 不友好，搜索引擎通常不会把 iframe 内容当作当前页面主体内容。
+- 父子页面之间通信比普通组件通信复杂。
+- 高度自适应、路由同步、登录态共享等问题需要额外处理。
+- 如果嵌入不可信页面，可能带来安全风险。
+
+### 使用 postMessage 通信
+
+父页面向 iframe 发送消息：
+
+```html
+<iframe id="child" src="https://example.com/child.html"></iframe>
+
+<script>
+const iframe = document.getElementById("child");
+
+iframe.onload = () => {
+  iframe.contentWindow.postMessage(
+    {
+      type: "SET_THEME",
+      value: "dark",
+    },
+    "https://example.com"
+  );
+};
+</script>
+```
+
+子页面接收消息：
+
+```js
+window.addEventListener("message", event => {
+  if (event.origin !== "https://parent.example.com") {
+    return;
+  }
+
+  if (event.data.type === "SET_THEME") {
+    console.log(event.data.value);
+  }
+});
+```
+
+### 安全注意事项
+
+- `postMessage` 的第二个参数不要随意写 `"*"`，应指定明确的目标域名。
+- 接收消息时必须校验 `event.origin`。
+- 嵌入不可信页面时应使用 `sandbox` 限制脚本、表单、弹窗等能力。
+- 如果不希望页面被别人 iframe 嵌入，可以设置 `X-Frame-Options` 或 CSP 的 `frame-ancestors`。
+:::
