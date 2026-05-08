@@ -639,3 +639,66 @@ const { count, name } = toRefs(state);
 - `toRefs` 只会转换对象当前已有的属性。
 - 如果只需要转换一个属性，使用 `toRef`；如果需要批量解构，使用 `toRefs`。
 :::
+
+## 15、vue3 中 provide 和 inject 有什么作用
+`provide` 和 `inject` 用于跨层级组件通信。祖先组件可以通过 `provide` 提供数据，后代组件可以通过 `inject` 注入并使用这些数据。
+
+::: details 详情
+### 基本用法
+
+祖先组件提供数据：
+
+```vue
+<script setup>
+import { provide, ref } from "vue";
+
+const theme = ref("dark");
+
+function changeTheme(value) {
+  theme.value = value;
+}
+
+provide("theme", theme);
+provide("changeTheme", changeTheme);
+</script>
+```
+
+后代组件注入数据：
+
+```vue
+<script setup>
+import { inject } from "vue";
+
+const theme = inject("theme");
+const changeTheme = inject("changeTheme");
+</script>
+
+<template>
+  <div>当前主题：{{ theme }}</div>
+  <button @click="changeTheme('light')">切换主题</button>
+</template>
+```
+
+### 响应式
+
+如果 `provide` 的是 `ref`、`reactive` 等响应式数据，后代组件通过 `inject` 拿到后仍然可以保持响应式。
+
+```js
+const count = ref(0);
+
+provide("count", count);
+```
+
+### 应用场景
+
+- 跨多层组件传递全局配置，例如主题、语言、权限。
+- 表单组件向子表单项传递上下文。
+- 组件库中父组件向深层子组件共享状态。
+
+### 注意事项
+
+- `provide/inject` 适合跨层级共享上下文，不适合替代所有状态管理。
+- 如果数据来源和修改逻辑分散，后期会难以维护。
+- 建议将修改方法也由提供方暴露，避免后代组件随意修改共享状态。
+- 大型全局状态仍然更适合使用 Pinia 等状态管理方案。
+:::
