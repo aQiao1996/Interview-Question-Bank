@@ -483,3 +483,79 @@ function handleReset() {
 - 常规父子通信仍然优先使用 props 和 emits。
 - 适合暴露表单校验、重置、聚焦、滚动等命令式方法。
 :::
+
+## 13、vue3 中 ref 和 shallowRef 有什么区别
+`ref` 和 `shallowRef` 都可以创建响应式引用，但它们对对象类型数据的响应式处理深度不同。
+
+::: details 详情
+### ref
+
+`ref` 会对对象类型的值做深层响应式转换。也就是说，对象内部的属性变化也会触发更新。
+
+```vue
+<script setup>
+import { ref } from "vue";
+
+const user = ref({
+  name: "Tom",
+  info: {
+    age: 18,
+  },
+});
+
+function updateAge() {
+  user.value.info.age++;
+}
+</script>
+```
+
+在上面示例中，修改 `user.value.info.age` 会触发视图更新。
+
+### shallowRef
+
+`shallowRef` 只追踪 `.value` 本身的变化，不会对对象内部属性做深层响应式转换。
+
+```vue
+<script setup>
+import { shallowRef } from "vue";
+
+const user = shallowRef({
+  name: "Tom",
+  info: {
+    age: 18,
+  },
+});
+
+function updateAge() {
+  user.value.info.age++;
+  // 不会触发视图更新
+}
+
+function replaceUser() {
+  user.value = {
+    name: "Jerry",
+    info: {
+      age: 20,
+    },
+  };
+  // 会触发视图更新
+}
+</script>
+```
+
+### 适用场景
+
+- `ref`：适合普通状态，尤其是需要追踪内部属性变化的对象。
+- `shallowRef`：适合大型对象、第三方库实例、不可变数据、只关心整体替换的场景。
+
+### 总结
+
+| 对比项 | ref | shallowRef |
+| --- | --- | --- |
+| 响应式深度 | 深层响应式 | 只追踪 value |
+| 内部属性变化 | 会触发更新 | 不会触发更新 |
+| 整体替换 value | 会触发更新 | 会触发更新 |
+| 适合场景 | 普通状态 | 大对象、外部实例、性能优化 |
+
+如果对象内部字段需要频繁响应式更新，使用 `ref`；如果只需要在整体替换时更新，或对象很大、不希望深层代理，使用 `shallowRef`。
+:::
