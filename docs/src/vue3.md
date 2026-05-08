@@ -559,3 +559,83 @@ function replaceUser() {
 
 如果对象内部字段需要频繁响应式更新，使用 `ref`；如果只需要在整体替换时更新，或对象很大、不希望深层代理，使用 `shallowRef`。
 :::
+
+## 14、vue3 中 toRef 和 toRefs 有什么作用
+`toRef` 和 `toRefs` 都用于把响应式对象中的属性转换成 ref，常用于解决解构 `reactive` 对象后丢失响应式的问题。
+
+::: details 详情
+### 为什么需要 toRef 和 toRefs
+
+`reactive` 返回的是一个响应式代理对象，如果直接解构其中的属性，会得到普通值，从而丢失响应式。
+
+```js
+import { reactive } from "vue";
+
+const state = reactive({
+  count: 0,
+  name: "Tom",
+});
+
+const { count } = state;
+
+state.count++;
+console.log(count); // 仍然是 0，不会跟着更新
+```
+
+### toRef
+
+`toRef` 用于把响应式对象中的某一个属性转换成 ref。
+
+```vue
+<script setup>
+import { reactive, toRef } from "vue";
+
+const state = reactive({
+  count: 0,
+  name: "Tom",
+});
+
+const count = toRef(state, "count");
+
+function increment() {
+  count.value++;
+}
+</script>
+```
+
+`count.value` 和 `state.count` 会保持同步。
+
+### toRefs
+
+`toRefs` 用于把响应式对象中的所有属性都转换成 ref。
+
+```vue
+<script setup>
+import { reactive, toRefs } from "vue";
+
+const state = reactive({
+  count: 0,
+  name: "Tom",
+});
+
+const { count, name } = toRefs(state);
+</script>
+
+<template>
+  <p>{{ count }}</p>
+  <p>{{ name }}</p>
+</template>
+```
+
+### 应用场景
+
+- 解构 `reactive` 对象并保留响应式。
+- 组合式函数返回响应式对象时，方便调用方解构使用。
+- 将 props 中的某个属性转换为 ref 后传给组合式函数。
+
+### 注意事项
+
+- `toRef` 和 `toRefs` 生成的 ref 与原响应式对象属性保持同步。
+- `toRefs` 只会转换对象当前已有的属性。
+- 如果只需要转换一个属性，使用 `toRef`；如果需要批量解构，使用 `toRefs`。
+:::
