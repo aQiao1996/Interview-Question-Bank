@@ -932,3 +932,69 @@ Vite 和 Webpack 都是前端构建工具，但它们在开发模式、构建策
 
 如果是现代新项目，通常优先选 Vite；如果项目已经深度依赖 Webpack 生态，保持 Webpack 也很合理。
 :::
+
+## 14、什么是 Tree Shaking，如何让它生效
+`Tree Shaking` 是构建工具在打包时移除未使用代码的一种优化手段，可以减小最终产物体积。
+
+::: details 详情
+### 基本原理
+
+Tree Shaking 主要依赖 ES Module 的静态结构。
+
+ES Module 的 `import` 和 `export` 是静态声明，构建工具可以在编译阶段分析哪些导出被使用，哪些导出没有被使用，然后在压缩阶段删除未使用代码。
+
+```js
+// utils.js
+export function add(a, b) {
+  return a + b;
+}
+
+export function minus(a, b) {
+  return a - b;
+}
+
+// main.js
+import { add } from "./utils";
+
+console.log(add(1, 2));
+```
+
+如果 `minus` 没有被使用，生产构建时就有机会被删除。
+
+### 生效条件
+
+- 使用 ES Module 语法，避免全部使用 CommonJS。
+- 生产模式构建，开启代码压缩。
+- 代码没有明显副作用。
+- 第三方包需要正确声明 `sideEffects`。
+
+### sideEffects 配置
+
+在 `package.json` 中可以通过 `sideEffects` 告诉构建工具哪些文件有副作用。
+
+```json
+{
+  "sideEffects": false
+}
+```
+
+如果项目中有全局样式或会执行副作用的文件，需要保留：
+
+```json
+{
+  "sideEffects": ["*.css", "*.scss"]
+}
+```
+
+### 常见失效原因
+
+- 使用 CommonJS 的 `require` 和 `module.exports`。
+- 模块顶层存在副作用代码，例如直接修改全局对象。
+- 使用整体导入导致构建工具难以精确分析。
+- 第三方包没有提供 ESM 产物。
+- 错误配置 `sideEffects`，导致该删除的没删或不该删的被删。
+
+### 总结
+
+Tree Shaking 的关键是“静态分析 + 无副作用判断 + 生产压缩”。开发时写代码应尽量使用 ES Module，避免不必要的模块副作用，并正确配置包的 `sideEffects`。
+:::
