@@ -990,3 +990,87 @@ promiseAny([Promise.reject("a"), Promise.reject("b")]).catch(error => {
 });
 ```
 :::
+
+## 18、手写 Promise.resolve
+- Promise.resolve：Promise.resolve 用于将一个值转换为 fulfilled 状态的 Promise。如果传入的是 Promise，则直接返回它本身。
+- 应用场景：
+  > - 统一同步值和异步值的处理方式。
+  > - 在 Promise.all、Promise.race 等方法中包装每一项输入。
+  > - 将 thenable 对象转换为标准 Promise。
+- 实现原理：
+  > - 如果传入值本身就是当前 Promise 构造函数创建的 Promise，直接返回该值。
+  > - 如果传入值是 thenable 对象或函数，则读取它的 then 方法。
+  > - 如果 then 是函数，则调用 then，并根据 then 的执行结果决定 Promise 状态。
+  > - 如果传入的是普通值，则返回 fulfilled 状态的 Promise。
+- 注意事项：
+  > - thenable 是指带有 then 方法的对象或函数。
+  > - 读取 then 属性时可能抛错，需要进入 rejected 状态。
+  > - thenable 的状态只能被改变一次。
+::: details 详情
+```js
+function promiseResolve(value) {
+  if (value instanceof Promise) {
+    return value;
+  }
+
+  return new Promise((resolve, reject) => {
+    if (value !== null && (typeof value === "object" || typeof value === "function")) {
+      let then;
+
+      try {
+        then = value.then;
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      if (typeof then === "function") {
+        let called = false;
+
+        try {
+          then.call(
+            value,
+            result => {
+              if (called) return;
+              called = true;
+              resolve(result);
+            },
+            reason => {
+              if (called) return;
+              called = true;
+              reject(reason);
+            }
+          );
+        } catch (error) {
+          if (!called) {
+            reject(error);
+          }
+        }
+        return;
+      }
+    }
+
+    resolve(value);
+  });
+}
+
+// 测试 Promise.resolve
+promiseResolve(1).then(result => {
+  console.log(result); // 1
+});
+
+const promise = Promise.resolve("success");
+
+console.log(promiseResolve(promise) === promise); // true
+
+const thenable = {
+  then(resolve) {
+    resolve("thenable success");
+  },
+};
+
+promiseResolve(thenable).then(result => {
+  console.log(result); // thenable success
+});
+```
+:::
