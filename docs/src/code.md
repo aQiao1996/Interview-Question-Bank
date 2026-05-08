@@ -1227,3 +1227,78 @@ limitRequest(tasks, 2).then(result => {
 });
 ```
 :::
+
+## 21、手写 LRU 缓存
+- LRU 缓存：LRU 是 Least Recently Used 的缩写，表示最近最少使用。当缓存容量满时，优先淘汰最久没有被访问的数据。
+- 应用场景：
+  > - 浏览器缓存。
+  > - 接口数据缓存。
+  > - 图片、文件、计算结果等有限容量缓存。
+- 实现原理：
+  > - 使用 Map 保存缓存数据，Map 会按照插入顺序保存 key。
+  > - get 命中缓存时，先删除原 key，再重新 set，使它变成最新使用的数据。
+  > - put 新增或更新数据时，也将该 key 放到最新位置。
+  > - 当容量超过限制时，删除 Map 中第一个 key，也就是最久未使用的数据。
+- 注意事项：
+  > - get 和 put 都需要更新数据的使用顺序。
+  > - Map 的 keys().next().value 可以获取最早插入的 key。
+  > - 如果面试要求严格 O(1)，也可以使用哈希表 + 双向链表实现。
+::: details 详情
+```js
+class LRUCache {
+  constructor(capacity) {
+    if (capacity <= 0) {
+      throw new Error("capacity must be greater than 0");
+    }
+
+    this.capacity = capacity;
+    this.cache = new Map();
+  }
+
+  get(key) {
+    if (!this.cache.has(key)) {
+      return -1;
+    }
+
+    const value = this.cache.get(key);
+
+    // 删除后重新插入，让当前 key 变成最近使用的数据
+    this.cache.delete(key);
+    this.cache.set(key, value);
+
+    return value;
+  }
+
+  put(key, value) {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
+    this.cache.set(key, value);
+
+    if (this.cache.size > this.capacity) {
+      const oldestKey = this.cache.keys().next().value;
+      this.cache.delete(oldestKey);
+    }
+  }
+}
+
+// 测试 LRU 缓存
+const lru = new LRUCache(2);
+
+lru.put("a", 1);
+lru.put("b", 2);
+
+console.log(lru.get("a")); // 1
+
+lru.put("c", 3); // 淘汰 b
+
+console.log(lru.get("b")); // -1
+console.log(lru.get("c")); // 3
+
+lru.put("d", 4); // 淘汰 a
+
+console.log(lru.get("a")); // -1
+console.log(lru.get("d")); // 4
+```
+:::
