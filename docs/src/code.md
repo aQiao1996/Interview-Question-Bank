@@ -1074,3 +1074,63 @@ promiseResolve(thenable).then(result => {
 });
 ```
 :::
+
+## 19、手写 Promise.prototype.finally
+- Promise.prototype.finally：finally 用于在 Promise 成功或失败后都执行同一段回调，常用于清理逻辑，并且默认透传原来的结果或失败原因。
+- 应用场景：
+  > - 请求完成后关闭 loading。
+  > - 异步任务完成后释放资源。
+  > - 无论成功失败都需要执行收尾逻辑。
+- 实现原理：
+  > - finally 返回一个新的 Promise。
+  > - 成功时执行回调，等待回调完成后继续返回原来的成功值。
+  > - 失败时执行回调，等待回调完成后继续抛出原来的失败原因。
+  > - 如果 finally 回调返回 rejected Promise 或抛出错误，则会用新的错误覆盖原结果。
+- 注意事项：
+  > - finally 的回调不接收成功值或失败原因。
+  > - 默认情况下，finally 不改变原 Promise 的最终结果。
+  > - 如果 finally 回调内部出错，则会影响后续状态。
+::: details 详情
+```js
+Promise.prototype.myFinally = function (callback) {
+  const onFinally = typeof callback === "function" ? callback : () => callback;
+  const P = this.constructor || Promise;
+
+  return this.then(
+    value => {
+      return P.resolve(onFinally()).then(() => value);
+    },
+    reason => {
+      return P.resolve(onFinally()).then(() => {
+        throw reason;
+      });
+    }
+  );
+};
+
+// 测试 Promise.prototype.finally
+Promise.resolve("success")
+  .myFinally(() => {
+    console.log("finally 执行");
+  })
+  .then(result => {
+    console.log(result); // success
+  });
+
+Promise.reject("error")
+  .myFinally(() => {
+    console.log("finally 也会执行");
+  })
+  .catch(error => {
+    console.log(error); // error
+  });
+
+Promise.resolve("success")
+  .myFinally(() => {
+    return Promise.reject("finally error");
+  })
+  .catch(error => {
+    console.log(error); // finally error
+  });
+```
+:::
