@@ -297,3 +297,54 @@ window.addEventListener("message", event => {
 - 嵌入不可信页面时应使用 `sandbox` 限制脚本、表单、弹窗等能力。
 - 如果不希望页面被别人 iframe 嵌入，可以设置 `X-Frame-Options` 或 CSP 的 `frame-ancestors`。
 :::
+
+## 14、src 和 href 有什么区别
+`src` 和 `href` 都可以用来引入外部资源，但它们的语义和加载行为不同。
+
+::: details 详情
+### src
+
+`src` 是 source 的缩写，表示将外部资源嵌入到当前标签所在的位置。浏览器解析到 `src` 时，通常会下载对应资源，并将资源内容作为当前标签的一部分。
+
+常见标签：
+
+```html
+<img src="logo.png" alt="logo" />
+<script src="main.js"></script>
+<iframe src="page.html"></iframe>
+```
+
+特点：
+
+- 表示资源替换或嵌入当前元素。
+- 资源通常是当前标签正常工作必需的内容。
+- 例如 `<script src="">` 默认会阻塞 HTML 解析，除非使用 `async` 或 `defer`。
+
+### href
+
+`href` 是 hyper reference 的缩写，表示当前文档和外部资源之间的引用关系。它不会把资源内容嵌入当前标签位置，而是建立链接或关联。
+
+常见标签：
+
+```html
+<a href="https://example.com">跳转链接</a>
+<link href="style.css" rel="stylesheet" />
+```
+
+特点：
+
+- 表示当前文档和目标资源之间的关系。
+- 常用于超链接、样式表、预加载等资源引用。
+- 例如 `<link rel="stylesheet">` 会加载 CSS，并影响页面渲染。
+
+### 总结
+
+| 对比项 | src | href |
+| --- | --- | --- |
+| 含义 | 引入并嵌入资源 | 建立资源引用关系 |
+| 常见标签 | img、script、iframe | a、link |
+| 是否替换当前元素内容 | 通常会 | 通常不会 |
+| 典型场景 | 图片、脚本、内嵌页面 | 链接、样式表、资源引用 |
+
+简单理解：`src` 更偏向“把资源拿来用在当前位置”，`href` 更偏向“当前文档引用或链接到某个资源”。
+:::
