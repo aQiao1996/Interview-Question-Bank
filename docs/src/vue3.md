@@ -292,3 +292,59 @@ const visible = ref(false);
 - `Teleport` 只改变 DOM 挂载位置，不改变组件之间的逻辑关系。
 - 父子组件通信、依赖注入、响应式状态仍然按原组件树工作。
 :::
+
+## 10、vue3 中 Suspense 是什么，有哪些应用场景
+`Suspense` 是 Vue3 提供的内置组件，用于协调异步依赖的加载状态。当默认插槽中的异步组件或带有异步 `setup` 的组件还没准备好时，可以先展示 fallback 插槽中的内容。
+
+::: details 详情
+### 作用
+
+在页面中使用异步组件、异步数据初始化或路由级懒加载组件时，组件渲染可能需要等待异步逻辑完成。
+
+`Suspense` 可以统一管理这段等待过程，让页面先展示 loading、骨架屏等兜底内容，等异步组件准备好后再展示真实内容。
+
+### 基本用法
+
+```vue
+<template>
+  <Suspense>
+    <template #default>
+      <UserProfile />
+    </template>
+
+    <template #fallback>
+      <div>加载中...</div>
+    </template>
+  </Suspense>
+</template>
+
+<script setup>
+import UserProfile from "./UserProfile.vue";
+</script>
+```
+
+`UserProfile.vue` 中可以包含异步 `setup`：
+
+```vue
+<template>
+  <div>{{ user.name }}</div>
+</template>
+
+<script setup>
+const user = await fetch("/api/user").then(res => res.json());
+</script>
+```
+
+### 应用场景
+
+- 异步组件加载。
+- 页面初始化时需要等待接口数据。
+- 骨架屏、loading、占位内容展示。
+- 和路由懒加载结合，优化页面切换体验。
+
+### 注意事项
+
+- `Suspense` 主要用于处理组件树中的异步依赖。
+- fallback 插槽会在异步依赖未完成时展示。
+- 在复杂项目中，错误处理通常需要配合 `onErrorCaptured` 或全局错误处理。
+:::
