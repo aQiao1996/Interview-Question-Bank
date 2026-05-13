@@ -1095,3 +1095,62 @@ Babel 默认主要做语法转换，API 兼容通常需要结合 `core-js`、`@b
 
 Babel 的核心是“源码 -> AST -> 修改 AST -> 生成代码”。面试中需要重点说明它不只是简单字符串替换，而是基于 AST 的代码转换工具。
 :::
+
+## 17、PostCSS 是什么，常见用途有哪些
+`PostCSS` 是一个使用 JavaScript 插件转换 CSS 的工具。它本身不直接做具体转换，真正的能力来自插件生态。
+
+::: details 详情
+### 工作原理
+
+PostCSS 会先把 CSS 解析成 AST，然后交给插件处理，最后再把处理后的 AST 生成新的 CSS。
+
+整体流程类似：
+
+```txt
+CSS 源码 -> CSS AST -> 插件转换 -> 生成 CSS
+```
+
+### 常见用途
+
+#### 1. 自动添加浏览器前缀
+
+最常见的是配合 `autoprefixer`：
+
+```css
+.box {
+  display: flex;
+}
+```
+
+经过处理后可能变成：
+
+```css
+.box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+```
+
+#### 2. 使用未来 CSS 语法
+
+可以通过插件提前使用部分未来 CSS 语法，再转换为当前浏览器可识别的写法。
+
+#### 3. CSS 代码检查和转换
+
+例如：
+
+- px 转 rem。
+- CSS Modules。
+- 压缩 CSS。
+- 校验 CSS 规范。
+
+### 和 Sass、Less 的区别
+
+- Sass、Less 是 CSS 预处理器，提供变量、嵌套、函数等语法能力。
+- PostCSS 是转换工具，能力取决于插件，可以做预处理、后处理、兼容性处理等。
+
+### 总结
+
+PostCSS 的核心价值是“插件化 CSS 转换”。在现代前端工程中，它通常和 Vite、Webpack、Tailwind CSS、Autoprefixer 等工具一起使用。
+:::

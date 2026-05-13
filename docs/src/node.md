@@ -1065,3 +1065,66 @@ if (cluster.isPrimary) {
 - 如果需要生产级进程管理，通常会使用 PM2、Docker、Kubernetes 等工具。
 - 对 CPU 密集型任务，cluster 可以提升多核利用率；对 I/O 密集型任务，也要结合实际瓶颈分析。
 :::
+
+## 17、Node.js 中间件洋葱模型是什么
+洋葱模型是一种中间件执行模型，常见于 Koa。请求会按照中间件注册顺序从外到内执行，遇到 `await next()` 后进入下一个中间件，后续逻辑再从内到外返回执行。
+
+::: details 详情
+### 执行过程
+
+假设有 3 个中间件：
+
+```js
+app.use(async (ctx, next) => {
+  console.log("1 start");
+  await next();
+  console.log("1 end");
+});
+
+app.use(async (ctx, next) => {
+  console.log("2 start");
+  await next();
+  console.log("2 end");
+});
+
+app.use(async (ctx, next) => {
+  console.log("3 start");
+  await next();
+  console.log("3 end");
+});
+```
+
+执行顺序是：
+
+```txt
+1 start
+2 start
+3 start
+3 end
+2 end
+1 end
+```
+
+### 为什么叫洋葱模型
+
+请求进入时，先经过最外层中间件，再一层层进入内部；响应返回时，又从内部一层层回到外部，就像洋葱的层级结构。
+
+### 应用场景
+
+- 统一错误处理。
+- 请求日志记录。
+- 鉴权。
+- 响应时间统计。
+- 参数解析和响应包装。
+
+### 和 Express 中间件的区别
+
+- Express 更偏线性执行，调用 `next()` 后进入下一个中间件。
+- Koa 基于 async/await，可以在 `await next()` 前后分别处理请求前置逻辑和响应后置逻辑。
+
+### 注意事项
+
+- 如果某个中间件没有调用 `next()`，后续中间件不会执行。
+- `await next()` 后面的代码会在下游中间件执行完成后继续执行。
+- 洋葱模型适合做请求前后都需要处理的逻辑。
+:::

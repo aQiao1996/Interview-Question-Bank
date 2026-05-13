@@ -702,3 +702,49 @@ provide("count", count);
 - 建议将修改方法也由提供方暴露，避免后代组件随意修改共享状态。
 - 大型全局状态仍然更适合使用 Pinia 等状态管理方案。
 :::
+
+## 16、vue3 中 effectScope 有什么作用
+`effectScope` 用于收集和统一管理响应式副作用，例如 `computed`、`watch`、`watchEffect`。当不再需要这些副作用时，可以一次性停止它们。
+
+::: details 详情
+### 为什么需要 effectScope
+
+在组件内部创建的响应式副作用会随着组件卸载自动清理。但在组件外部、插件、组合式函数或动态创建的逻辑中，如果没有统一管理副作用，可能会造成内存泄漏。
+
+`effectScope` 可以把一组响应式副作用放到同一个作用域中，后续通过 `scope.stop()` 一次性停止。
+
+### 基本用法
+
+```js
+import { effectScope, ref, watch, computed } from "vue";
+
+const scope = effectScope();
+
+scope.run(() => {
+  const count = ref(0);
+  const double = computed(() => count.value * 2);
+
+  watch(count, value => {
+    console.log("count changed:", value);
+  });
+
+  count.value++;
+  console.log(double.value);
+});
+
+// 停止作用域内收集到的 computed、watch 等副作用
+scope.stop();
+```
+
+### 应用场景
+
+- 组合式函数中统一管理多个 watcher。
+- 插件或全局状态模块中管理响应式副作用。
+- 动态创建一组响应式逻辑，并在某个时机整体销毁。
+
+### 注意事项
+
+- `effectScope` 更偏底层能力，日常业务组件里不一定常用。
+- 组件内部的 `watch` 通常会随组件卸载自动清理，不需要额外包一层 `effectScope`。
+- 适合封装复杂组合式函数、插件和可销毁的响应式模块。
+:::
