@@ -394,3 +394,75 @@ console.log(button.dataset.userName); // Tom
 - 不适合存放大量复杂数据，复杂数据应放在 JavaScript 状态或接口数据中。
 - `data-*` 主要用于页面结构和脚本之间传递少量自定义信息。
 :::
+
+## 16、Web Worker 和 Service Worker 有什么区别
+`Web Worker` 和 `Service Worker` 都可以在主线程之外运行 JavaScript，但它们的定位不同：Web Worker 主要用于处理耗时计算，Service Worker 主要用于网络代理、缓存和离线能力。
+
+::: details 详情
+### Web Worker
+
+Web Worker 用于创建后台线程，把耗时任务从主线程中拆出去，避免阻塞页面渲染和用户交互。
+
+适合场景：
+
+- 大量计算。
+- 大文件解析。
+- 图片处理。
+- 数据压缩、加密等耗时任务。
+
+基本示例：
+
+```js
+// main.js
+const worker = new Worker("./worker.js");
+
+worker.postMessage({
+  count: 100000,
+});
+
+worker.onmessage = event => {
+  console.log(event.data);
+};
+```
+
+```js
+// worker.js
+self.onmessage = event => {
+  const { count } = event.data;
+  let total = 0;
+
+  for (let i = 0; i < count; i++) {
+    total += i;
+  }
+
+  self.postMessage(total);
+};
+```
+
+### Service Worker
+
+Service Worker 是浏览器和网络之间的代理层，可以拦截请求、管理缓存、实现离线访问和消息推送。
+
+适合场景：
+
+- PWA 离线缓存。
+- 静态资源缓存。
+- 请求拦截和缓存策略控制。
+- 推送通知。
+
+### 核心区别
+
+| 对比项 | Web Worker | Service Worker |
+| --- | --- | --- |
+| 主要作用 | 后台计算 | 请求代理、缓存、离线能力 |
+| 生命周期 | 页面打开时创建，页面关闭后通常结束 | 独立于页面，有自己的生命周期 |
+| 是否能访问 DOM | 不能 | 不能 |
+| 是否能拦截请求 | 不能 | 可以 |
+| 典型场景 | 复杂计算 | PWA、离线缓存 |
+
+### 注意事项
+
+- 二者都不能直接操作 DOM，需要通过消息和主线程通信。
+- Service Worker 需要运行在 HTTPS 或 localhost 环境。
+- Web Worker 更偏计算能力，Service Worker 更偏网络和缓存能力。
+:::
