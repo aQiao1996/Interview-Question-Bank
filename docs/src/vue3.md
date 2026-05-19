@@ -854,3 +854,52 @@ async function handleClick() {
 - 不要滥用 `nextTick`，大多数业务逻辑可以通过响应式数据驱动。
 - 如果要监听数据变化后访问 DOM，也可以考虑 `watch` 的 `flush: "post"`。
 :::
+
+## 19、vue3 中 readonly 和 shallowReadonly 有什么区别
+`readonly` 和 `shallowReadonly` 都可以创建只读代理对象，区别在于只读限制的深度不同。
+
+::: details 详情
+### readonly
+
+`readonly` 会对对象做深层只读处理，对象内部嵌套属性也不能被修改。
+
+```js
+import { readonly } from "vue";
+
+const state = readonly({
+  user: {
+    name: "Tom",
+  },
+});
+
+state.user.name = "Jerry"; // 开发环境会警告，修改不会生效
+```
+
+### shallowReadonly
+
+`shallowReadonly` 只限制第一层属性，嵌套对象内部属性仍然可以被修改。
+
+```js
+import { shallowReadonly } from "vue";
+
+const state = shallowReadonly({
+  user: {
+    name: "Tom",
+  },
+});
+
+state.user = {}; // 不允许
+state.user.name = "Jerry"; // 可以修改嵌套对象
+```
+
+### 应用场景
+
+- `readonly`：希望暴露给外部使用但不允许外部修改的完整状态。
+- `shallowReadonly`：只需要保护顶层引用，内部对象由其他系统或模块管理。
+
+### 注意事项
+
+- 只读代理主要用于约束修改入口，不等同于深拷贝或不可变数据结构。
+- 如果原始对象本身被修改，只读代理仍然能反映最新值。
+- 对外暴露状态时，常用 `readonly` 防止调用方直接修改内部状态。
+:::
