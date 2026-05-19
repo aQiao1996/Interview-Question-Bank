@@ -1759,3 +1759,69 @@ router.register("/about", () => console.log("About Page"));
 router.navigate("/home"); // 跳转到 Home 页面
 ```
 :::
+
+## 27、React 中 memo、useMemo 和 useCallback 有什么区别
+`memo`、`useMemo` 和 `useCallback` 都和性能优化有关，但它们优化的对象不同。
+
+::: details 详情
+### React.memo
+
+`React.memo` 用于缓存组件渲染结果。当组件的 props 没有变化时，可以跳过本次重新渲染。
+
+```jsx
+const Child = React.memo(function Child({ name }) {
+  console.log("child render");
+  return <div>{name}</div>;
+});
+```
+
+适合场景：
+
+- 子组件渲染成本较高。
+- 子组件 props 稳定。
+- 父组件频繁更新，但不希望子组件无意义重渲染。
+
+### useMemo
+
+`useMemo` 用于缓存计算结果。
+
+```jsx
+const total = useMemo(() => {
+  return list.reduce((sum, item) => sum + item.price, 0);
+}, [list]);
+```
+
+适合场景：
+
+- 计算成本较高。
+- 需要保持对象或数组引用稳定，避免子组件重复渲染。
+
+### useCallback
+
+`useCallback` 用于缓存函数引用，本质上可以理解为返回函数版本的 `useMemo`。
+
+```jsx
+const handleClick = useCallback(() => {
+  console.log(id);
+}, [id]);
+```
+
+适合场景：
+
+- 函数作为 props 传给被 `React.memo` 包裹的子组件。
+- 函数被用作其他 Hook 的依赖项。
+
+### 对比总结
+
+| API | 优化对象 | 返回值 |
+| --- | --- | --- |
+| React.memo | 组件渲染 | 组件 |
+| useMemo | 计算结果 | 任意值 |
+| useCallback | 函数引用 | 函数 |
+
+### 注意事项
+
+- 不要盲目使用，缓存本身也有成本。
+- 如果计算很轻或组件很简单，使用这些 API 反而可能让代码更复杂。
+- 依赖数组必须准确，否则可能出现闭包旧值问题。
+:::

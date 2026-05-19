@@ -808,3 +808,49 @@ console.log(toRaw(state) === raw); // true
 - `markRaw` 会让对象跳过响应式系统，适合明确不需要响应式的数据。
 - 如果只是为了性能优化，应先确认响应式代理确实是性能瓶颈。
 :::
+
+## 18、vue3 中 nextTick 有什么作用
+`nextTick` 用于在下一次 DOM 更新完成后执行回调。它常用于在响应式数据变化后，等待页面 DOM 更新完成，再读取或操作 DOM。
+
+::: details 详情
+### 为什么需要 nextTick
+
+Vue 会把同一轮事件循环中的多次状态修改合并，然后异步更新 DOM。
+
+```vue
+<template>
+  <div ref="boxRef">{{ count }}</div>
+  <button @click="handleClick">增加</button>
+</template>
+
+<script setup>
+import { ref, nextTick } from "vue";
+
+const count = ref(0);
+const boxRef = ref(null);
+
+async function handleClick() {
+  count.value++;
+
+  console.log(boxRef.value.textContent); // 可能还是旧内容
+
+  await nextTick();
+
+  console.log(boxRef.value.textContent); // DOM 已更新
+}
+</script>
+```
+
+### 应用场景
+
+- 数据变化后读取最新 DOM 尺寸。
+- 列表渲染后滚动到底部。
+- 弹窗打开后自动聚焦输入框。
+- 状态更新后执行依赖最新 DOM 的第三方库逻辑。
+
+### 注意事项
+
+- `nextTick` 等待的是 Vue 的 DOM 更新，不是等待接口请求完成。
+- 不要滥用 `nextTick`，大多数业务逻辑可以通过响应式数据驱动。
+- 如果要监听数据变化后访问 DOM，也可以考虑 `watch` 的 `flush: "post"`。
+:::

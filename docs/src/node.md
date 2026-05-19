@@ -1213,3 +1213,55 @@ child.on("message", message => {
 - 大输出任务不要使用 `exec`，避免超过缓存限制。
 - CPU 密集型任务可以放到子进程，避免阻塞主进程事件循环。
 :::
+
+## 19、Node.js 中如何处理未捕获异常
+Node.js 中未捕获异常如果没有被处理，可能会导致进程退出。常见异常包括同步代码异常、Promise 未处理拒绝、异步回调异常等。
+
+::: details 详情
+### try...catch
+
+同步代码可以使用 `try...catch` 捕获。
+
+```js
+try {
+  JSON.parse("{");
+} catch (error) {
+  console.error("解析失败:", error);
+}
+```
+
+但 `try...catch` 无法捕获异步回调内部抛出的异常。
+
+### Promise 异常
+
+Promise 异常需要使用 `catch` 或 `try...catch + await`。
+
+```js
+async function main() {
+  try {
+    await request();
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+### 全局兜底
+
+```js
+process.on("uncaughtException", error => {
+  console.error("未捕获异常:", error);
+});
+
+process.on("unhandledRejection", reason => {
+  console.error("未处理 Promise 拒绝:", reason);
+});
+```
+
+### 生产建议
+
+- 全局异常处理只适合兜底记录日志，不建议让进程继续长期运行。
+- 发生未知异常后，进程可能已经处于不可信状态，应优雅退出并由进程管理工具重启。
+- Web 服务中应使用统一错误处理中间件处理业务异常。
+- 结合日志、监控、告警定位问题。
+:::

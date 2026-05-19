@@ -614,3 +614,63 @@ Grid 同时处理行和列，更适合二维布局。
 - 如果同时需要控制行和列，用 Grid 更合适。
 - 实际项目中二者经常组合使用：外层用 Grid 做整体布局，内部用 Flex 做局部对齐。
 :::
+
+## 19、CSS 中 transition 和 animation 有什么区别
+`transition` 和 `animation` 都可以实现动画效果，但它们的触发方式、控制能力和适用场景不同。
+
+::: details 详情
+### transition
+
+`transition` 用于在 CSS 属性变化时添加过渡效果，需要有状态变化触发，例如 hover、class 改变、样式改变。
+
+```css
+.button {
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.button:hover {
+  opacity: 1;
+}
+```
+
+特点：
+
+- 需要触发条件。
+- 适合简单状态切换。
+- 只能描述开始和结束两个状态之间的过渡。
+
+### animation
+
+`animation` 通过 `@keyframes` 定义动画关键帧，可以自动播放，也可以循环播放。
+
+```css
+@keyframes move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100px);
+  }
+}
+
+.box {
+  animation: move 1s linear infinite;
+}
+```
+
+特点：
+
+- 不一定需要交互触发。
+- 可以定义多个关键帧。
+- 支持循环、延迟、方向、暂停等更复杂控制。
+
+### 对比总结
+
+| 对比项 | transition | animation |
+| --- | --- | --- |
+| 触发方式 | 状态变化触发 | 可自动执行 |
+| 控制能力 | 较简单 | 更强 |
+| 关键帧 | 不支持多关键帧 | 支持 keyframes |
+| 适合场景 | hover、展开收起 | loading、循环动画、复杂动画 |
+:::

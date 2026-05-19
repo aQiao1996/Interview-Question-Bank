@@ -1302,3 +1302,48 @@ console.log(lru.get("a")); // -1
 console.log(lru.get("d")); // 4
 ```
 :::
+
+## 22、手写 compose 函数
+- compose 函数：compose 用于把多个函数组合成一个函数，执行顺序通常是从右到左。
+- 应用场景：
+  > - 函数组合。
+  > - Redux 中间件组合。
+  > - 多个数据转换函数串联执行。
+- 实现原理：
+  > - 接收多个函数作为参数。
+  > - 返回一个新的函数。
+  > - 新函数执行时，从右到左依次执行每个函数。
+  > - 上一个函数的返回值会作为下一个函数的参数。
+::: details 详情
+```js
+function compose(...fns) {
+  if (fns.length === 0) {
+    return value => value;
+  }
+
+  if (fns.length === 1) {
+    return fns[0];
+  }
+
+  return function (...args) {
+    let index = fns.length - 1;
+    let result = fns[index](...args);
+
+    while (--index >= 0) {
+      result = fns[index](result);
+    }
+
+    return result;
+  };
+}
+
+// 测试 compose 函数
+const add = x => x + 1;
+const double = x => x * 2;
+const square = x => x * x;
+
+const fn = compose(square, double, add);
+
+console.log(fn(2)); // square(double(add(2))) = 36
+```
+:::

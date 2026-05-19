@@ -710,3 +710,40 @@ Cache-Control: max-age=3600
 - 带 hash 的静态资源可以设置较长强缓存。
 - JS、CSS、图片等静态资源通常配合文件 hash 和 `Cache-Control` 使用。
 :::
+
+## 19、HTTP 中 keep-alive 有什么作用
+HTTP keep-alive 指的是连接复用。它允许客户端和服务器在一次 TCP 连接上发送多个 HTTP 请求和响应，避免每次请求都重新建立连接。
+
+::: details 详情
+### 为什么需要 keep-alive
+
+如果每个 HTTP 请求都重新建立 TCP 连接，就会产生额外的三次握手和慢启动成本。
+
+keep-alive 可以复用连接，减少连接建立开销，提高请求效率。
+
+### HTTP/1.0 和 HTTP/1.1
+
+- HTTP/1.0 默认短连接，需要通过 `Connection: keep-alive` 开启。
+- HTTP/1.1 默认开启持久连接，除非显式设置 `Connection: close`。
+
+```http
+Connection: keep-alive
+```
+
+### 优点
+
+- 减少 TCP 连接建立和关闭的成本。
+- 降低延迟。
+- 减轻服务器和网络压力。
+- 对多个静态资源请求更友好。
+
+### 注意事项
+
+- 长连接不是永久连接，服务器通常会设置超时时间和最大请求数。
+- 空闲连接过多会占用服务器资源。
+- HTTP/2 在一个连接上支持多路复用，比 HTTP/1.1 的 keep-alive 更进一步。
+
+### 总结
+
+keep-alive 的核心是连接复用。它减少了重复建立 TCP 连接的成本，是 HTTP 性能优化中的基础机制。
+:::

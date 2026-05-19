@@ -1093,3 +1093,54 @@ export default {
 </script>
 ```
 :::
+
+## 25、vue2 中 mixin 有什么作用，有哪些问题
+`mixin` 是 Vue2 中用于复用组件选项的一种方式。多个组件可以引入同一个 mixin，从而复用 data、methods、生命周期钩子等逻辑。
+
+::: details 详情
+### 基本用法
+
+```js
+const logMixin = {
+  created() {
+    console.log("组件创建:", this.$options.name);
+  },
+  methods: {
+    log(message) {
+      console.log(message);
+    },
+  },
+};
+
+export default {
+  name: "UserList",
+  mixins: [logMixin],
+  created() {
+    this.log("UserList created");
+  },
+};
+```
+
+### 合并规则
+
+- 生命周期钩子会合并成数组，都会执行，mixin 中的钩子通常先执行。
+- methods、components、directives 等对象会合并。
+- 如果组件和 mixin 中存在同名方法，组件自身选项优先级更高。
+- data 会进行合并，冲突时组件自身数据优先。
+
+### 优点
+
+- 可以复用组件公共逻辑。
+- 在 Vue2 时代常用于抽离重复的生命周期、方法和状态。
+
+### 问题
+
+- 数据来源不清晰，阅读组件时很难知道属性或方法来自哪个 mixin。
+- 命名容易冲突。
+- 多个 mixin 组合后依赖关系隐蔽，维护成本高。
+- 逻辑复用粒度不够灵活。
+
+### 总结
+
+Vue2 中可以用 mixin 做逻辑复用，但复杂项目中容易造成隐式依赖和命名冲突。Vue3 中更推荐使用 Composable 组合式函数来复用逻辑。
+:::
