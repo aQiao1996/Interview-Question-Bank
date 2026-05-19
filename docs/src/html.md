@@ -569,3 +569,43 @@ ARIA 可以补充语义，但不应该滥用。优先使用原生语义，原生
 
 可访问性的核心是：语义清晰、键盘可用、焦点可见、文本替代完整、状态变化能被辅助技术感知。
 :::
+
+## 19、picture 和 source 标签有什么作用
+`picture` 和 `source` 用于实现响应式图片，让浏览器根据屏幕尺寸、像素密度或图片格式支持情况选择最合适的图片资源。
+
+::: details 详情
+### 基本用法
+
+```html
+<picture>
+  <source srcset="banner.avif" type="image/avif" />
+  <source srcset="banner.webp" type="image/webp" />
+  <img src="banner.jpg" alt="活动 Banner" />
+</picture>
+```
+
+浏览器会按顺序检查 `source`，选择第一个支持的资源。如果都不支持，则使用 `img` 的 `src`。
+
+### 根据屏幕宽度选择图片
+
+```html
+<picture>
+  <source media="(max-width: 600px)" srcset="banner-mobile.jpg" />
+  <source media="(max-width: 1200px)" srcset="banner-tablet.jpg" />
+  <img src="banner-desktop.jpg" alt="活动 Banner" />
+</picture>
+```
+
+### 常见应用场景
+
+- 移动端和桌面端使用不同尺寸图片。
+- 优先使用 AVIF、WebP 等新格式，兼容时回退到 JPG/PNG。
+- 根据不同屏幕比例展示不同裁剪版本。
+- 优化首屏图片加载性能。
+
+### 注意事项
+
+- `picture` 只是负责选择资源，真正展示图片的仍然是 `img`。
+- `img` 标签必须保留，用作默认回退内容和无障碍描述。
+- `alt` 应写在 `img` 上。
+:::
