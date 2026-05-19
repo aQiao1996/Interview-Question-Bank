@@ -1128,3 +1128,88 @@ app.use(async (ctx, next) => {
 - `await next()` 后面的代码会在下游中间件执行完成后继续执行。
 - 洋葱模型适合做请求前后都需要处理的逻辑。
 :::
+
+## 18、Node.js 中 child_process 有哪些常用方法
+`child_process` 是 Node.js 用于创建子进程的内置模块，常用于执行系统命令、启动脚本、处理 CPU 密集型任务或和其他进程通信。
+
+::: details 详情
+### exec
+
+`exec` 会启动一个 shell 执行命令，并把输出结果缓存到内存中，适合输出较小的命令。
+
+```js
+const { exec } = require("child_process");
+
+exec("node -v", (error, stdout, stderr) => {
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  console.log(stdout);
+});
+```
+
+特点：
+
+- 使用 shell 执行命令。
+- 回调中一次性拿到输出结果。
+- 输出结果有默认缓存大小限制。
+- 不适合处理大量输出。
+
+### spawn
+
+`spawn` 不会一次性缓存输出，而是通过流的方式读取 stdout 和 stderr，适合长时间运行或输出较大的命令。
+
+```js
+const { spawn } = require("child_process");
+
+const child = spawn("node", ["-v"]);
+
+child.stdout.on("data", data => {
+  console.log(data.toString());
+});
+
+child.stderr.on("data", data => {
+  console.error(data.toString());
+});
+```
+
+特点：
+
+- 默认不经过 shell。
+- 输出通过流处理。
+- 适合大文件处理、持续输出、长时间任务。
+
+### fork
+
+`fork` 是 `spawn` 的特殊形式，专门用于创建 Node.js 子进程，并且默认建立 IPC 通信通道。
+
+```js
+const { fork } = require("child_process");
+
+const child = fork("./worker.js");
+
+child.send({
+  type: "start",
+});
+
+child.on("message", message => {
+  console.log(message);
+});
+```
+
+### 对比总结
+
+| 方法 | 适合场景 | 输出方式 | 是否适合 IPC |
+| --- | --- | --- | --- |
+| exec | 简单命令、小输出 | 回调一次性返回 | 否 |
+| spawn | 长任务、大输出 | 流式输出 | 可手动配置 |
+| fork | Node 子进程通信 | IPC 消息 | 是 |
+
+### 注意事项
+
+- 执行用户输入拼接的命令时要防止命令注入。
+- 大输出任务不要使用 `exec`，避免超过缓存限制。
+- CPU 密集型任务可以放到子进程，避免阻塞主进程事件循环。
+:::
