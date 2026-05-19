@@ -1201,3 +1201,50 @@ repo
 - 中后台、多端应用、组件库一起维护。
 - 团队希望统一工程规范和依赖管理。
 :::
+
+## 19、Browserslist 是什么，有什么作用
+`Browserslist` 用于声明项目需要兼容哪些浏览器和运行环境。Babel、Autoprefixer、PostCSS、ESLint 等工具都可以读取它，从而决定要做哪些兼容处理。
+
+::: details 详情
+### 配置方式
+
+可以写在 `package.json` 中：
+
+```json
+{
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
+```
+
+也可以写在 `.browserslistrc` 文件中：
+
+```txt
+> 1%
+last 2 versions
+not dead
+```
+
+### 常见作用
+
+- Babel 根据目标浏览器决定是否需要转换新语法。
+- Autoprefixer 根据目标浏览器决定是否添加 CSS 前缀。
+- 构建工具可以根据目标环境决定产物兼容范围。
+- 团队可以统一项目的浏览器支持策略。
+
+### 常见查询语法
+
+- `> 1%`：全球使用率大于 1% 的浏览器。
+- `last 2 versions`：每个浏览器最近两个版本。
+- `not dead`：排除已经停止维护或长期无人使用的浏览器。
+- `iOS >= 13`：指定 iOS Safari 版本。
+
+### 注意事项
+
+- 兼容范围越宽，构建产物通常越大，转换和 polyfill 也更多。
+- 移动端项目需要特别关注 iOS Safari 和 Android WebView。
+- 修改 Browserslist 后，可能影响 JS 转译结果和 CSS 前缀输出。
+:::
