@@ -748,3 +748,63 @@ scope.stop();
 - 组件内部的 `watch` 通常会随组件卸载自动清理，不需要额外包一层 `effectScope`。
 - 适合封装复杂组合式函数、插件和可销毁的响应式模块。
 :::
+
+## 17、vue3 中 markRaw 和 toRaw 有什么作用
+`markRaw` 和 `toRaw` 都和 Vue3 响应式代理有关。`markRaw` 用于标记一个对象永远不要被转成响应式代理，`toRaw` 用于从响应式代理中拿到原始对象。
+
+::: details 详情
+### markRaw
+
+`markRaw` 可以让对象跳过响应式转换。即使这个对象被放进 `reactive` 或 `ref` 中，也不会被代理。
+
+```js
+import { reactive, markRaw } from "vue";
+
+const chartInstance = markRaw({
+  render() {
+    console.log("render chart");
+  },
+});
+
+const state = reactive({
+  chart: chartInstance,
+});
+
+console.log(state.chart === chartInstance); // true
+```
+
+适合场景：
+
+- 第三方库实例，例如图表实例、地图实例、编辑器实例。
+- 不希望被深层代理的大型对象。
+- 只作为普通对象存储，不参与响应式更新的数据。
+
+### toRaw
+
+`toRaw` 用于获取响应式对象对应的原始对象。
+
+```js
+import { reactive, toRaw } from "vue";
+
+const raw = {
+  count: 1,
+};
+
+const state = reactive(raw);
+
+console.log(state === raw); // false
+console.log(toRaw(state) === raw); // true
+```
+
+适合场景：
+
+- 调试响应式对象。
+- 需要把原始对象传给不接受 Proxy 的第三方库。
+- 做对象身份比较时排查代理对象和原始对象不一致的问题。
+
+### 注意事项
+
+- 不建议长期持有 `toRaw` 返回的原始对象并直接修改，否则可能绕过响应式更新。
+- `markRaw` 会让对象跳过响应式系统，适合明确不需要响应式的数据。
+- 如果只是为了性能优化，应先确认响应式代理确实是性能瓶颈。
+:::
