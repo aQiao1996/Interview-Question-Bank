@@ -609,3 +609,51 @@ ARIA 可以补充语义，但不应该滥用。优先使用原生语义，原生
 - `img` 标签必须保留，用作默认回退内容和无障碍描述。
 - `alt` 应写在 `img` 上。
 :::
+
+## 20、script type="module" 有什么特点
+`<script type="module">` 用于在浏览器中加载 ES Module 模块脚本，它支持 `import` 和 `export`，并且默认具备延迟执行等特性。
+
+::: details 详情
+### 基本用法
+
+```html
+<script type="module" src="./main.js"></script>
+```
+
+```js
+// main.js
+import { add } from "./utils.js";
+
+console.log(add(1, 2));
+```
+
+### 主要特点
+
+- 支持 ES Module 的 `import` 和 `export`。
+- 默认是严格模式。
+- 默认延迟执行，类似 `defer`，不会阻塞 HTML 解析。
+- 模块只会执行一次，即使被多次导入。
+- 顶层作用域不会污染全局作用域。
+- 默认按 CORS 规则加载跨域模块。
+
+### 和普通 script 的区别
+
+| 对比项 | 普通 script | module script |
+| --- | --- | --- |
+| 模块语法 | 不支持 import/export | 支持 |
+| 默认严格模式 | 否 | 是 |
+| 执行时机 | 默认阻塞解析 | 默认 defer |
+| 顶层作用域 | 可能污染全局 | 模块作用域 |
+| 加载规则 | 普通脚本规则 | CORS 模块规则 |
+
+### nomodule
+
+可以配合 `nomodule` 给不支持模块脚本的旧浏览器提供降级脚本。
+
+```html
+<script type="module" src="modern.js"></script>
+<script nomodule src="legacy.js"></script>
+```
+
+现代浏览器会加载 `modern.js`，旧浏览器会加载 `legacy.js`。
+:::
