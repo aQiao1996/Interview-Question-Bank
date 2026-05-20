@@ -1068,3 +1068,68 @@ watch(keyword, async (newKeyword, oldKeyword, onCleanup) => {
 - `watchEffect` 也支持类似的清理机制。
 - 如果副作用和组件生命周期绑定，也要考虑组件卸载时的清理。
 :::
+
+## 23、vue3 中 effectScope 有什么作用
+`effectScope` 用于收集一组响应式副作用，并在需要时统一停止，常用于组合式函数、插件或独立状态模块中管理 watcher 和 computed。
+
+::: details 详情
+### 为什么需要 effectScope
+
+组件内部创建的 `watch`、`watchEffect` 会随着组件卸载自动停止。
+
+但如果在组件外部或独立模块中创建副作用，就需要自己管理清理时机，否则可能造成内存泄漏或重复监听。
+
+### 基本用法
+
+```js
+import { effectScope, ref, watch } from "vue";
+
+const scope = effectScope();
+
+scope.run(() => {
+  const count = ref(0);
+
+  watch(count, value => {
+    console.log("count changed:", value);
+  });
+});
+
+// 停止 scope 内收集到的所有副作用
+scope.stop();
+```
+
+### 在组合式函数中的使用
+
+```js
+import { effectScope, ref, watchEffect } from "vue";
+
+export function createCounterStore() {
+  const scope = effectScope();
+  const count = ref(0);
+
+  scope.run(() => {
+    watchEffect(() => {
+      console.log(count.value);
+    });
+  });
+
+  return {
+    count,
+    dispose: () => scope.stop(),
+  };
+}
+```
+
+### 应用场景
+
+- 组件外部的响应式状态模块。
+- 插件内部创建的 watcher。
+- 需要手动销毁的组合式逻辑。
+- 批量管理多个副作用。
+
+### 注意事项
+
+- `effectScope` 只管理在 `scope.run()` 中创建的响应式副作用。
+- 调用 `stop()` 后，scope 内的 watcher、computed 等会停止更新。
+- 普通组件内大多数场景不需要手动使用，Vue 会自动处理组件作用域。
+:::
