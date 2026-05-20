@@ -1426,3 +1426,51 @@ export default {
 - 大依赖要结合实际使用场景考虑按需加载。
 - 拆包后要观察首屏体积、请求瀑布流和缓存命中情况。
 :::
+
+## 24、前端如何配置资源预加载策略
+资源预加载用于提前请求后续可能需要的资源，减少用户真正访问时的等待时间，但配置不当也会抢占首屏带宽。
+
+::: details 详情
+### preload
+
+`preload` 表示当前页面很快就会用到该资源，浏览器应尽早加载。
+
+```html
+<link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin />
+```
+
+适合首屏关键字体、关键 CSS、关键脚本等。
+
+### prefetch
+
+`prefetch` 表示资源未来可能会用到，浏览器可以在空闲时低优先级加载。
+
+```html
+<link rel="prefetch" href="/assets/user-page.js" as="script" />
+```
+
+适合下一页路由 chunk、用户可能访问的详情页资源。
+
+### modulepreload
+
+现代 ESM 产物可以使用 `modulepreload` 提前加载模块依赖：
+
+```html
+<link rel="modulepreload" href="/assets/main.js" />
+```
+
+Vite 构建产物中常会自动处理模块预加载。
+
+### 配置原则
+
+- 首屏必需资源用 `preload`。
+- 后续可能访问的资源用 `prefetch`。
+- 不确定是否会用到的资源不要过度预加载。
+- 预加载资源必须真的被使用，否则会浪费带宽。
+
+### 注意事项
+
+- `preload` 优先级较高，滥用会影响首屏关键请求。
+- 字体预加载需要正确设置 `as`、`type`、`crossorigin`。
+- 路由预取应结合用户行为，例如鼠标悬停或进入可视区域后再触发。
+:::
