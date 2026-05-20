@@ -657,3 +657,59 @@ console.log(add(1, 2));
 
 现代浏览器会加载 `modern.js`，旧浏览器会加载 `legacy.js`。
 :::
+
+## 21、HTML 表单中常见的增强属性有哪些
+HTML5 给表单提供了很多增强属性，可以减少简单校验和交互逻辑的 JavaScript 代码。
+
+::: details 详情
+### 常见属性
+
+- `placeholder`：输入框占位提示。
+- `required`：提交前要求必填。
+- `pattern`：使用正则表达式做格式校验。
+- `min`、`max`：限制数字、日期等输入范围。
+- `maxlength`、`minlength`：限制输入长度。
+- `autocomplete`：控制是否启用自动填充。
+- `autofocus`：页面加载后自动聚焦。
+- `readonly`：只读，内容会随表单提交。
+- `disabled`：禁用，内容不会随表单提交。
+
+### 示例
+
+```html
+<form>
+  <input
+    type="email"
+    name="email"
+    placeholder="请输入邮箱"
+    required
+    autocomplete="email"
+  />
+
+  <input
+    type="text"
+    name="code"
+    pattern="\\d{6}"
+    maxlength="6"
+    placeholder="6 位验证码"
+  />
+
+  <button type="submit">提交</button>
+</form>
+```
+
+### readonly 和 disabled 的区别
+
+| 对比项 | readonly | disabled |
+| --- | --- | --- |
+| 是否可编辑 | 否 | 否 |
+| 是否可聚焦 | 通常可以 | 不可以 |
+| 是否提交值 | 会提交 | 不会提交 |
+| 常见场景 | 展示不可编辑字段 | 禁用不可用字段 |
+
+### 注意事项
+
+- 原生表单校验只能处理基础规则，复杂业务校验仍需要 JavaScript。
+- 前端校验不能替代服务端校验。
+- 表单控件应配合 `label` 使用，提升可访问性。
+:::
