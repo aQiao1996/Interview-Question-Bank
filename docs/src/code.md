@@ -1459,3 +1459,54 @@ retry(
 - 重试只适合幂等或可安全重复执行的任务。
 - 生产中可以增加指数退避、最大延迟、取消控制等能力。
 :::
+
+## 25、手写模板字符串渲染函数
+- 模板字符串渲染函数：把模板中的占位符替换成数据对象中的值。
+- 应用场景：
+  > - 简单消息模板。
+  > - 文案变量替换。
+  > - 低复杂度模板引擎实现。
+- 实现原理：
+  > - 使用正则匹配 `{{ key }}` 形式的占位符。
+  > - 根据 key 从数据对象中取值。
+  > - 支持通过点路径读取嵌套属性。
+  > - 找不到值时返回空字符串或保留原占位符。
+::: details 详情
+```js
+function getValue(data, path) {
+  return path.split(".").reduce((result, key) => {
+    if (result == null) {
+      return undefined;
+    }
+
+    return result[key];
+  }, data);
+}
+
+function render(template, data) {
+  return template.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (match, key) => {
+    const value = getValue(data, key);
+
+    return value == null ? "" : String(value);
+  });
+}
+
+// 测试模板字符串渲染函数
+const template = "你好，{{ user.name }}，今天是 {{ date }}";
+
+const result = render(template, {
+  user: {
+    name: "Tom",
+  },
+  date: "周三",
+});
+
+console.log(result); // 你好，Tom，今天是 周三
+```
+
+### 注意事项
+
+- 这种实现只适合简单变量替换，不支持表达式、循环和条件判断。
+- 如果模板来自用户输入，需要注意 XSS 风险。
+- 复杂场景应使用成熟模板引擎或框架能力。
+:::
