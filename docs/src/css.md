@@ -27,6 +27,42 @@ description: css面试题
 |:`not()`|`p:not(.highlight)`|选择所有不具有 `highlight` 类的 `<p>` 元素|
 :::
 
+## 21、transform 位移和 position 定位有什么区别
+`transform: translate()` 和 `position` 都能改变元素显示位置，但它们影响的层面不同。
+
+::: details 详情
+### 核心区别
+
+- `transform: translate()` 是视觉层面的位移，不会改变元素在文档流中的占位，也不会影响周围元素布局。
+- `position` 配合 `top`、`left`、`right`、`bottom` 会改变元素的定位位置，具体是否影响文档流取决于定位类型。
+- `relative` 会保留原始占位，视觉上偏移；`absolute` 和 `fixed` 会脱离普通文档流。
+
+### 性能差异
+
+`transform` 通常更适合做动画，因为它更容易被浏览器放到合成层处理，减少布局计算和重排。
+
+```css
+.box {
+  transform: translateX(20px);
+}
+```
+
+如果频繁修改 `left` 或 `top`，浏览器可能需要重新计算布局：
+
+```css
+.box {
+  position: relative;
+  left: 20px;
+}
+```
+
+### 使用场景
+
+- 做过渡动画、拖拽跟手、弹窗进入离开动画，优先考虑 `transform`。
+- 做元素定位、覆盖层、固定导航、相对容器摆放，使用 `position`。
+- 需要让元素真实参与布局变化时，不应只依赖 `transform`。
+:::
+
 ## 2、line-height 如何继承
 ::: details 详情
 `line-height` 不同类型的值，继承规则是不一样的。
