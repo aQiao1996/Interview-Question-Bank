@@ -1405,3 +1405,65 @@ setInterval(() => {
 - 配置进程管理工具，在异常退出后自动拉起。
 - 对内存持续上涨设置告警，避免问题扩大。
 :::
+
+## 23、Node.js 中 worker_threads 有什么作用
+`worker_threads` 用于在 Node.js 中创建工作线程，适合处理 CPU 密集型任务，避免阻塞主线程事件循环。
+
+::: details 详情
+### 为什么需要 worker_threads
+
+Node.js 主线程适合处理 I/O 密集型任务，但如果执行大量计算，会阻塞事件循环，导致请求响应变慢。
+
+例如：
+
+- 大文件压缩。
+- 图片处理。
+- 加密解密。
+- 大量数据计算。
+- 复杂 JSON 解析或报表生成。
+
+这些任务可以放到 worker 线程中执行。
+
+### 基本示例
+
+```js
+const { Worker } = require("worker_threads");
+
+function runWorker(data) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker("./worker.js", {
+      workerData: data,
+    });
+
+    worker.on("message", resolve);
+    worker.on("error", reject);
+    worker.on("exit", code => {
+      if (code !== 0) {
+        reject(new Error(`worker stopped with exit code ${code}`));
+      }
+    });
+  });
+}
+```
+
+```js
+// worker.js
+const { parentPort, workerData } = require("worker_threads");
+
+const result = workerData.numbers.reduce((sum, item) => sum + item, 0);
+
+parentPort.postMessage(result);
+```
+
+### 和 child_process 的区别
+
+- `worker_threads` 是线程，共享同一个进程资源，通信成本相对低。
+- `child_process` 是子进程，隔离性更强，但创建和通信成本更高。
+- CPU 密集型计算更适合优先考虑 `worker_threads`。
+
+### 注意事项
+
+- worker 不是越多越好，过多线程会增加调度和内存成本。
+- 应使用线程池复用 worker，避免频繁创建销毁。
+- 主线程和 worker 通信需要考虑数据序列化成本。
+:::
