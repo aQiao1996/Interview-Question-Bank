@@ -1133,3 +1133,76 @@ export function createCounterStore() {
 - 调用 `stop()` 后，scope 内的 watcher、computed 等会停止更新。
 - 普通组件内大多数场景不需要手动使用，Vue 会自动处理组件作用域。
 :::
+
+## 24、vue3 中 toRef 和 toRefs 有什么作用
+`toRef` 和 `toRefs` 用于把响应式对象中的属性转换成 ref，常用于解构 reactive 对象时保留响应式。
+
+::: details 详情
+### 为什么需要
+
+直接解构 `reactive` 对象会丢失响应式连接：
+
+```js
+import { reactive } from "vue";
+
+const state = reactive({
+  count: 0,
+});
+
+const { count } = state;
+
+state.count++;
+console.log(count); // 仍然是旧值
+```
+
+因为 `count` 只是普通值，不再和 `state.count` 建立响应式关联。
+
+### toRef
+
+`toRef` 用于把响应式对象的某个属性转成 ref：
+
+```vue
+<script setup>
+import { reactive, toRef } from "vue";
+
+const state = reactive({
+  count: 0,
+});
+
+const count = toRef(state, "count");
+
+count.value++;
+</script>
+```
+
+修改 `count.value` 会同步影响 `state.count`。
+
+### toRefs
+
+`toRefs` 用于把响应式对象的所有属性都转成 ref：
+
+```vue
+<script setup>
+import { reactive, toRefs } from "vue";
+
+const state = reactive({
+  count: 0,
+  name: "Tom",
+});
+
+const { count, name } = toRefs(state);
+</script>
+```
+
+### 应用场景
+
+- 解构 `reactive` 对象并保留响应式。
+- 在组合式函数中返回响应式对象的多个字段。
+- 单独传递响应式对象的某个属性。
+
+### 注意事项
+
+- `toRefs` 只会转换对象当前已有属性。
+- 如果属性不存在，可以用 `toRef(obj, "key")` 创建连接。
+- 对 props 解构时也要注意响应式丢失问题。
+:::
