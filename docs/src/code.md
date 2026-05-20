@@ -1348,6 +1348,74 @@ console.log(fn(2)); // square(double(add(2))) = 36
 ```
 :::
 
+## 24、手写 Promise 重试函数
+- Promise 重试函数：用于异步任务失败后按指定次数重新执行。
+- 应用场景：
+  > - 网络请求偶发失败后重试。
+  > - 上传分片失败后重试。
+  > - 第三方接口短暂不可用时重试。
+- 实现原理：
+  > - 接收一个返回 Promise 的函数。
+  > - 执行失败后判断是否还有剩余重试次数。
+  > - 有剩余次数则等待一段时间后再次执行。
+  > - 次数耗尽后抛出最后一次错误。
+::: details 详情
+```js
+function sleep(delay) {
+  return new Promise(resolve => {
+    setTimeout(resolve, delay);
+  });
+}
+
+async function retry(task, times = 3, delay = 0) {
+  let lastError;
+
+  for (let i = 0; i <= times; i++) {
+    try {
+      return await task();
+    } catch (error) {
+      lastError = error;
+
+      if (i === times) {
+        break;
+      }
+
+      if (delay > 0) {
+        await sleep(delay);
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+// 测试 Promise 重试函数
+let count = 0;
+
+retry(
+  () => {
+    count++;
+
+    if (count < 3) {
+      return Promise.reject(new Error("请求失败"));
+    }
+
+    return Promise.resolve("请求成功");
+  },
+  3,
+  1000,
+).then(result => {
+  console.log(result); // 请求成功
+});
+```
+
+### 注意事项
+
+- `task` 必须是函数，不能直接传入已经执行过的 Promise。
+- 重试只适合幂等或可安全重复执行的任务。
+- 生产中可以增加指数退避、最大延迟、取消控制等能力。
+:::
+
 ## 23、手写 pipe 函数
 - pipe 函数：pipe 也用于函数组合，但执行顺序通常是从左到右。
 - 应用场景：
