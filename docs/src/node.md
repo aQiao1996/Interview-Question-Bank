@@ -1467,3 +1467,60 @@ parentPort.postMessage(result);
 - 应使用线程池复用 worker，避免频繁创建销毁。
 - 主线程和 worker 通信需要考虑数据序列化成本。
 :::
+
+## 24、Node.js Stream 中背压是什么
+背压是指数据写入速度大于消费速度时，系统通过暂停或减缓数据生产来避免内存持续堆积。
+
+::: details 详情
+### 为什么会有背压
+
+在 Stream 中，如果 readable 读取数据很快，但 writable 写入很慢，数据会不断堆积到缓冲区。
+
+如果不控制生产速度，可能导致：
+
+- 内存占用持续上涨。
+- 进程响应变慢。
+- 大文件处理时进程崩溃。
+
+### write 的返回值
+
+`writable.write(chunk)` 会返回一个布尔值：
+
+- `true`：缓冲区还能继续接收数据。
+- `false`：缓冲区已达到阈值，应暂停写入。
+
+当缓冲区排空后，会触发 `drain` 事件。
+
+```js
+function writeData(writable, chunks) {
+  let index = 0;
+
+  function write() {
+    let canWrite = true;
+
+    while (index < chunks.length && canWrite) {
+      canWrite = writable.write(chunks[index]);
+      index++;
+    }
+
+    if (index < chunks.length) {
+      writable.once("drain", write);
+    } else {
+      writable.end();
+    }
+  }
+
+  write();
+}
+```
+
+### pipe 如何处理背压
+
+使用 `readable.pipe(writable)` 时，Node.js 会自动处理背压：当写入端处理不过来时暂停读取，等写入端恢复后继续读取。
+
+### 注意事项
+
+- 处理大文件时优先使用 Stream，不要一次性读入内存。
+- 手动写入 Stream 时要关注 `write()` 返回值和 `drain` 事件。
+- 背压是流式处理稳定性的关键机制。
+:::
