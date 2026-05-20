@@ -903,3 +903,56 @@ state.user.name = "Jerry"; // 可以修改嵌套对象
 - 如果原始对象本身被修改，只读代理仍然能反映最新值。
 - 对外暴露状态时，常用 `readonly` 防止调用方直接修改内部状态。
 :::
+
+## 20、vue3 中 customRef 有什么作用
+`customRef` 用于创建一个自定义 ref，让开发者自己控制依赖收集和更新触发时机。
+
+::: details 详情
+### 基本概念
+
+普通 `ref` 在读取 `.value` 时会收集依赖，在修改 `.value` 时会触发更新。
+
+`customRef` 会把 `track` 和 `trigger` 暴露出来：
+
+- `track`：手动收集依赖。
+- `trigger`：手动触发依赖更新。
+
+### 防抖 ref 示例
+
+```js
+import { customRef } from "vue";
+
+function useDebouncedRef(value, delay = 300) {
+  let timer;
+
+  return customRef((track, trigger) => {
+    return {
+      get() {
+        track();
+        return value;
+      },
+      set(newValue) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          value = newValue;
+          trigger();
+        }, delay);
+      },
+    };
+  });
+}
+```
+
+### 应用场景
+
+- 输入框防抖。
+- 控制响应式更新频率。
+- 和外部状态系统集成。
+- 对响应式读写行为做定制封装。
+
+### 注意事项
+
+- `get` 中通常需要调用 `track()`，否则依赖不会被收集。
+- `set` 中需要在合适时机调用 `trigger()`，否则视图不会更新。
+- 不建议在普通状态下滥用，只有需要自定义更新时机时才使用。
+:::
