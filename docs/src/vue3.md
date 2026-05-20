@@ -1016,3 +1016,55 @@ function handleReset() {
 - 只暴露必要的稳定接口，不要把所有内部状态都暴露出去。
 - `defineExpose` 只能在 `<script setup>` 顶层使用。
 :::
+
+## 22、vue3 中 watch 如何清理副作用
+`watch` 中可以通过清理函数取消上一次副作用，避免异步请求、定时器或事件监听在数据变化后继续影响当前状态。
+
+::: details 详情
+### 为什么需要清理
+
+当监听值频繁变化时，旧的异步任务可能比新的异步任务更晚完成，导致旧结果覆盖新结果。
+
+例如搜索框输入时，用户连续输入多个关键字，如果不取消旧请求，就可能出现结果错乱。
+
+### onCleanup 用法
+
+```vue
+<script setup>
+import { ref, watch } from "vue";
+
+const keyword = ref("");
+const result = ref([]);
+
+watch(keyword, async (newKeyword, oldKeyword, onCleanup) => {
+  const controller = new AbortController();
+
+  onCleanup(() => {
+    controller.abort();
+  });
+
+  const response = await fetch(`/api/search?q=${newKeyword}`, {
+    signal: controller.signal,
+  });
+
+  result.value = await response.json();
+});
+</script>
+```
+
+当 `keyword` 再次变化时，Vue 会先执行上一次注册的清理函数，再执行新的回调。
+
+### 常见清理对象
+
+- 未完成的网络请求。
+- `setTimeout`、`setInterval`。
+- 事件监听器。
+- WebSocket 订阅。
+- 第三方库创建的实例或副作用。
+
+### 注意事项
+
+- 清理函数应在 watch 回调中同步注册，不要等异步逻辑后再注册。
+- `watchEffect` 也支持类似的清理机制。
+- 如果副作用和组件生命周期绑定，也要考虑组件卸载时的清理。
+:::
