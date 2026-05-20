@@ -952,3 +952,54 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 - `preload` 一旦加入浏览器列表，回退成本较高，需要谨慎。
 - HSTS 不能替代证书管理、TLS 配置和应用层安全措施。
 :::
+
+## 25、CSP 是什么，有什么作用
+CSP 是 Content Security Policy，内容安全策略，用于限制页面可以加载和执行哪些资源，主要用于降低 XSS 等攻击风险。
+
+::: details 详情
+### 基本示例
+
+服务端可以通过响应头设置 CSP：
+
+```http
+Content-Security-Policy: default-src 'self'; script-src 'self'; img-src 'self' https:
+```
+
+含义：
+
+- `default-src 'self'`：默认只允许加载同源资源。
+- `script-src 'self'`：脚本只能来自同源。
+- `img-src 'self' https:`：图片允许同源和 HTTPS 来源。
+
+### 常见指令
+
+- `default-src`：默认资源加载策略。
+- `script-src`：脚本加载策略。
+- `style-src`：样式加载策略。
+- `img-src`：图片加载策略。
+- `connect-src`：接口、WebSocket 等连接策略。
+- `frame-ancestors`：限制页面能否被其他页面 iframe 嵌入。
+
+### 作用
+
+- 限制恶意脚本执行。
+- 限制资源加载来源。
+- 降低 XSS 攻击成功后的影响范围。
+- 防止页面被不可信站点嵌入。
+
+### Report-Only 模式
+
+上线前可以先使用只报告不拦截的模式观察影响：
+
+```http
+Content-Security-Policy-Report-Only: default-src 'self'
+```
+
+这样可以收集违规报告，避免直接拦截导致线上功能异常。
+
+### 注意事项
+
+- CSP 不能替代输入过滤和输出转义。
+- 不建议随意使用 `'unsafe-inline'` 和 `'unsafe-eval'`。
+- 策略需要结合项目中的 CDN、统计脚本、监控脚本逐步收紧。
+:::
