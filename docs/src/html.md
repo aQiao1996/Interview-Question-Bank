@@ -796,3 +796,49 @@ window.opener.location = "https://fake.example.com";
 - 如果业务需要来源页面信息，不要随意加 `noreferrer`。
 - 现代浏览器对 `_blank` 的默认安全策略有所增强，但显式声明仍更清晰。
 :::
+
+## 24、fieldset 和 legend 标签有什么作用
+`fieldset` 和 `legend` 用于给一组相关表单控件建立语义分组，提升表单结构清晰度和可访问性。
+
+::: details 详情
+### 基本用法
+
+```html
+<form>
+  <fieldset>
+    <legend>收货地址</legend>
+
+    <label>
+      省份
+      <input name="province" />
+    </label>
+
+    <label>
+      城市
+      <input name="city" />
+    </label>
+  </fieldset>
+</form>
+```
+
+`legend` 会作为这一组表单控件的标题。
+
+### 适合场景
+
+- 单选框或复选框分组。
+- 地址、联系人、发票信息等表单区域。
+- 多步骤表单中的局部字段组。
+- 需要屏幕阅读器明确读出分组含义的表单。
+
+### 可访问性价值
+
+对于辅助技术来说，`fieldset` 能说明这组控件属于同一个语义区域，`legend` 能提供区域名称。
+
+这比只用 `div` 和普通文本标题更清晰。
+
+### 注意事项
+
+- `legend` 应作为 `fieldset` 的第一个子元素。
+- 不要为了视觉边框滥用 `fieldset`，它的核心价值是语义分组。
+- 复杂表单仍应配合 `label`、错误提示和合理的焦点管理。
+:::
