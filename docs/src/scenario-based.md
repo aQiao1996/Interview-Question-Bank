@@ -1585,3 +1585,59 @@ controller.abort();
 - 超时时间要结合业务场景设置，不能过短。
 - 取消请求后要区分取消错误和真实业务错误。
 :::
+
+## 25、多标签页之间如何同步登录状态
+多标签页登录状态同步用于处理一个页面登录、退出或刷新 Token 后，其他已打开页面能及时感知状态变化。
+
+::: details 详情
+### 常见场景
+
+- 一个标签页退出登录，其他标签页也应该跳转到登录页。
+- 一个标签页刷新了 Token，其他标签页需要更新本地状态。
+- 一个标签页登录成功，其他标签页需要恢复用户信息。
+
+### localStorage storage 事件
+
+`storage` 事件可以监听其他标签页对 `localStorage` 的修改。
+
+```js
+window.addEventListener("storage", event => {
+  if (event.key === "auth:logout") {
+    router.replace("/login");
+  }
+});
+
+function logout() {
+  localStorage.setItem("auth:logout", String(Date.now()));
+}
+```
+
+注意：`storage` 事件通常不会在触发修改的同一个标签页中触发，只会通知其他同源页面。
+
+### BroadcastChannel
+
+`BroadcastChannel` 更适合同源页面之间发送消息：
+
+```js
+const channel = new BroadcastChannel("auth");
+
+channel.onmessage = event => {
+  if (event.data.type === "logout") {
+    router.replace("/login");
+  }
+};
+
+function logout() {
+  channel.postMessage({
+    type: "logout",
+  });
+}
+```
+
+### 注意事项
+
+- 前端同步只是体验优化，接口仍要根据服务端登录态判断是否有效。
+- 退出登录时应清理本地 Token、用户信息和敏感缓存。
+- Token 刷新要避免多个标签页同时刷新造成并发问题。
+- 对兼容性要求高的项目，可以优先使用 `storage` 事件兜底。
+:::
