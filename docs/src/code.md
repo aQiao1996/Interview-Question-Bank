@@ -1510,3 +1510,89 @@ console.log(result); // 你好，Tom，今天是 周三
 - 如果模板来自用户输入，需要注意 XSS 风险。
 - 复杂场景应使用成熟模板引擎或框架能力。
 :::
+
+## 26、手写带 once 和 off 的 EventEmitter
+- EventEmitter：用于实现事件订阅、发布、取消订阅和一次性订阅。
+- 应用场景：
+  > - 组件通信。
+  > - 插件系统事件通知。
+  > - Node.js 事件模型理解。
+- 实现原理：
+  > - 使用 Map 保存事件名和监听函数集合。
+  > - `on` 负责订阅事件。
+  > - `off` 负责移除监听函数。
+  > - `once` 包装原函数，执行一次后自动移除。
+  > - `emit` 按顺序执行当前事件的监听函数。
+::: details 详情
+```js
+class EventEmitter {
+  constructor() {
+    this.events = new Map();
+  }
+
+  on(eventName, listener) {
+    if (!this.events.has(eventName)) {
+      this.events.set(eventName, new Set());
+    }
+
+    this.events.get(eventName).add(listener);
+
+    return () => this.off(eventName, listener);
+  }
+
+  off(eventName, listener) {
+    const listeners = this.events.get(eventName);
+
+    if (!listeners) return;
+
+    listeners.delete(listener);
+
+    if (listeners.size === 0) {
+      this.events.delete(eventName);
+    }
+  }
+
+  once(eventName, listener) {
+    const wrapper = (...args) => {
+      this.off(eventName, wrapper);
+      listener(...args);
+    };
+
+    return this.on(eventName, wrapper);
+  }
+
+  emit(eventName, ...args) {
+    const listeners = this.events.get(eventName);
+
+    if (!listeners) return;
+
+    [...listeners].forEach(listener => {
+      listener(...args);
+    });
+  }
+}
+
+// 测试 EventEmitter
+const emitter = new EventEmitter();
+
+const unsubscribe = emitter.on("message", value => {
+  console.log("on:", value);
+});
+
+emitter.once("message", value => {
+  console.log("once:", value);
+});
+
+emitter.emit("message", "hello");
+emitter.emit("message", "world");
+
+unsubscribe();
+emitter.emit("message", "again");
+```
+
+### 注意事项
+
+- `emit` 时复制监听函数集合，可以避免遍历过程中增删监听导致异常。
+- `on` 返回取消订阅函数，使用起来更方便。
+- 实际工程中还可以增加最大监听数量、错误事件和通配符事件。
+:::
