@@ -956,3 +956,63 @@ function useDebouncedRef(value, delay = 300) {
 - `set` 中需要在合适时机调用 `trigger()`，否则视图不会更新。
 - 不建议在普通状态下滥用，只有需要自定义更新时机时才使用。
 :::
+
+## 21、vue3 中 defineExpose 有什么作用
+`defineExpose` 用于在 `<script setup>` 组件中显式暴露属性或方法，让父组件通过模板 ref 访问。
+
+::: details 详情
+### 为什么需要 defineExpose
+
+在 `<script setup>` 中，组件内部变量默认不会暴露给父组件实例。
+
+如果父组件需要通过 ref 调用子组件方法，需要子组件主动暴露：
+
+```vue
+<!-- Child.vue -->
+<script setup>
+import { ref } from "vue";
+
+const count = ref(0);
+
+function reset() {
+  count.value = 0;
+}
+
+defineExpose({
+  reset,
+});
+</script>
+```
+
+父组件中使用：
+
+```vue
+<script setup>
+import { ref } from "vue";
+import Child from "./Child.vue";
+
+const childRef = ref(null);
+
+function handleReset() {
+  childRef.value?.reset();
+}
+</script>
+
+<template>
+  <Child ref="childRef" />
+  <button @click="handleReset">重置</button>
+</template>
+```
+
+### 应用场景
+
+- 表单组件暴露 `validate`、`reset` 方法。
+- 弹窗组件暴露 `open`、`close` 方法。
+- 复杂组件向父组件提供少量命令式能力。
+
+### 注意事项
+
+- 优先使用 props 和 emits 通信，避免父组件过度依赖子组件内部实现。
+- 只暴露必要的稳定接口，不要把所有内部状态都暴露出去。
+- `defineExpose` 只能在 `<script setup>` 顶层使用。
+:::
