@@ -1335,3 +1335,41 @@ lockfile 会记录：
 - 应避免手动编辑 lockfile，依赖变更通过包管理器命令生成。
 - 应在 CI 中使用严格安装命令，例如 `pnpm install --frozen-lockfile`。
 :::
+
+## 22、生产环境 Source Map 应该如何处理
+生产环境 Source Map 能帮助定位线上压缩代码对应的源码位置，但也可能暴露源码细节，所以需要结合安全策略使用。
+
+::: details 详情
+### Source Map 的作用
+
+前端生产代码通常会经过压缩、混淆、合并，线上报错堆栈不容易直接定位源码。
+
+Source Map 可以把生产代码中的行列号映射回原始源码位置，配合错误监控平台能快速定位问题。
+
+### 常见处理方式
+
+- 不生成 Source Map：安全性高，但线上排查困难。
+- 生成但不上传 CDN：构建产物中保留映射文件，只上传到错误监控平台。
+- 生成并限制访问：通过鉴权、内网、白名单等方式限制 `.map` 文件访问。
+- 只在预发环境开启完整 Source Map，生产使用隐藏 Source Map。
+
+### Vite 示例
+
+```js
+// vite.config.js
+export default {
+  build: {
+    sourcemap: "hidden",
+  },
+};
+```
+
+`hidden` 会生成 Source Map，但不会在产物中追加 sourceMappingURL 注释，更适合配合监控平台上传。
+
+### 注意事项
+
+- 不建议直接把可公开访问的完整 Source Map 放到生产 CDN。
+- 发布时要保证监控平台中的 Source Map 和线上产物版本一致。
+- Source Map 上传后应关联版本号、commit hash 或 release id。
+- 如果源码包含敏感信息，应先清理，不要依赖 Source Map 策略兜底。
+:::
