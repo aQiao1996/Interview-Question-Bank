@@ -1305,3 +1305,53 @@ Vue2 会优先使用微任务，例如 `Promise.then`、`MutationObserver`，不
 - 多次数据修改会被合并，不代表每次修改都会触发一次 DOM 更新。
 - 需要读取更新后的 DOM 时再使用 `nextTick`，不要滥用。
 :::
+
+## 29、vue2 中函数式组件有什么特点
+Vue2 函数式组件是无状态、无实例的组件，适合只根据 props 渲染 UI 的轻量展示组件。
+
+::: details 详情
+### 基本写法
+
+```vue
+<template functional>
+  <button class="base-button" v-bind="data.attrs" v-on="listeners">
+    <slot />
+  </button>
+</template>
+```
+
+也可以使用 render 函数：
+
+```js
+export default {
+  functional: true,
+  props: {
+    text: String,
+  },
+  render(h, context) {
+    return h("span", context.props.text);
+  },
+};
+```
+
+### 特点
+
+- 没有组件实例，也没有 `this`。
+- 没有响应式 data。
+- 没有生命周期钩子。
+- 只依赖 props、slots、listeners、attrs 等上下文渲染。
+- 渲染开销相对更小。
+
+### 适合场景
+
+- 纯展示组件。
+- 简单包装组件。
+- 根据 props 返回不同结构的渲染组件。
+- 大量重复渲染的轻量节点。
+
+### 注意事项
+
+- 不能使用实例属性和实例方法。
+- 不适合有内部状态或复杂交互的组件。
+- Vue3 中函数式组件形式发生变化，普通函数即可作为函数式组件。
+:::
