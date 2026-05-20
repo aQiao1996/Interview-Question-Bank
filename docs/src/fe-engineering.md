@@ -1373,3 +1373,56 @@ export default {
 - Source Map 上传后应关联版本号、commit hash 或 release id。
 - 如果源码包含敏感信息，应先清理，不要依赖 Source Map 策略兜底。
 :::
+
+## 23、前端项目如何做代码分割
+代码分割是把打包产物拆成多个 chunk，避免首屏一次性加载全部代码，从而提升页面加载速度。
+
+::: details 详情
+### 常见方式
+
+#### 1. 路由级分割
+
+路由页面通常是最适合拆分的边界：
+
+```js
+const UserPage = () => import("./pages/UserPage.vue");
+```
+
+用户访问对应路由时，才加载该页面代码。
+
+#### 2. 组件级分割
+
+对体积较大、非首屏必需的组件进行异步加载：
+
+```js
+const ChartPanel = () => import("./components/ChartPanel.vue");
+```
+
+适合图表、富文本编辑器、地图、复杂弹窗等模块。
+
+#### 3. 第三方依赖分割
+
+构建工具可以把稳定的第三方依赖单独拆出，方便浏览器缓存。
+
+```js
+// vite.config.js
+export default {
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["vue"],
+        },
+      },
+    },
+  },
+};
+```
+
+### 注意事项
+
+- 不要拆得过细，否则会产生过多请求和调度成本。
+- 首屏关键代码不应过度异步化。
+- 大依赖要结合实际使用场景考虑按需加载。
+- 拆包后要观察首屏体积、请求瀑布流和缓存命中情况。
+:::
