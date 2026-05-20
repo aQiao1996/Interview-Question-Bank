@@ -1201,3 +1201,55 @@ export default MyPlugin;
 - 全局混入会影响所有组件，使用时要谨慎。
 - 插件内部要避免和已有实例属性、方法命名冲突。
 :::
+
+## 27、vue2 中 $attrs 和 $listeners 有什么作用
+`$attrs` 和 `$listeners` 常用于 Vue2 中间层组件透传属性和事件，避免组件层级变深后手动声明大量 props 和事件。
+
+::: details 详情
+### $attrs
+
+`$attrs` 包含父组件传入但当前组件没有声明为 `props` 的属性。
+
+```vue
+<template>
+  <input v-bind="$attrs" />
+</template>
+
+<script>
+export default {
+  inheritAttrs: false,
+};
+</script>
+```
+
+`inheritAttrs: false` 可以阻止这些属性自动挂到组件根元素上，便于手动控制透传位置。
+
+### $listeners
+
+`$listeners` 包含父组件传入的事件监听器，可以继续绑定到内部子组件或原生元素上。
+
+```vue
+<template>
+  <BaseInput v-bind="$attrs" v-on="$listeners" />
+</template>
+```
+
+这样父组件传入的属性和事件可以继续传递给 `BaseInput`。
+
+### 应用场景
+
+- 封装表单组件。
+- 封装二次包装组件。
+- 多层组件之间透传原生属性和事件。
+- 高阶组件或布局组件转发能力。
+
+### Vue3 中的变化
+
+Vue3 中 `$listeners` 被合并进 `$attrs`，事件监听也会作为 `onXxx` 形式出现在 attrs 中。
+
+### 注意事项
+
+- `$attrs` 不包含当前组件已经声明为 props 的属性。
+- Vue2 中 class 和 style 默认不包含在 `$attrs` 中。
+- 透传虽然方便，但过度使用会让组件接口不够明确。
+:::
