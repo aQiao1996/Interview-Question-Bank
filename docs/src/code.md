@@ -1347,3 +1347,47 @@ const fn = compose(square, double, add);
 console.log(fn(2)); // square(double(add(2))) = 36
 ```
 :::
+
+## 23、手写 pipe 函数
+- pipe 函数：pipe 也用于函数组合，但执行顺序通常是从左到右。
+- 应用场景：
+  > - 数据处理流水线。
+  > - 多个格式化函数按顺序执行。
+  > - 将复杂转换拆成多个小函数组合。
+- 实现原理：
+  > - 接收多个函数作为参数。
+  > - 返回一个新函数。
+  > - 新函数执行时，先执行最左侧函数。
+  > - 前一个函数的返回值作为后一个函数的入参。
+::: details 详情
+```js
+function pipe(...fns) {
+  if (fns.length === 0) {
+    return value => value;
+  }
+
+  if (fns.length === 1) {
+    return fns[0];
+  }
+
+  return function (...args) {
+    let result = fns[0](...args);
+
+    for (let i = 1; i < fns.length; i++) {
+      result = fns[i](result);
+    }
+
+    return result;
+  };
+}
+
+// 测试 pipe 函数
+const add = x => x + 1;
+const double = x => x * 2;
+const square = x => x * x;
+
+const fn = pipe(add, double, square);
+
+console.log(fn(2)); // square(double(add(2))) = 36
+```
+:::
