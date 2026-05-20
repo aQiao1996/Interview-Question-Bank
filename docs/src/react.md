@@ -1875,3 +1875,62 @@ function UserList({ users }) {
 - `key` 不是普通 props，组件内部不能通过 `props.key` 获取。
 - 如果组件确实需要这个值，应额外传入一个普通属性，例如 `id={user.id}`。
 :::
+
+## 29、React 中 useReducer 适合什么场景
+`useReducer` 是 React 内置的状态管理 Hook，适合管理更新逻辑较复杂或状态之间有关联的组件状态。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { useReducer } from "react";
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "increment":
+      return { count: state.count + 1 };
+    case "decrement":
+      return { count: state.count - 1 };
+    case "reset":
+      return { count: 0 };
+    default:
+      return state;
+  }
+}
+
+function Counter() {
+  const [state, dispatch] = useReducer(reducer, { count: 0 });
+
+  return (
+    <div>
+      <p>{state.count}</p>
+      <button onClick={() => dispatch({ type: "increment" })}>+</button>
+      <button onClick={() => dispatch({ type: "decrement" })}>-</button>
+      <button onClick={() => dispatch({ type: "reset" })}>重置</button>
+    </div>
+  );
+}
+```
+
+### 适合场景
+
+- 状态字段较多，并且彼此有关联。
+- 状态更新分支较多，用多个 `setState` 会分散逻辑。
+- 下一个状态依赖上一个状态。
+- 希望把状态更新逻辑从组件渲染逻辑中抽离出来。
+
+### 和 useState 的区别
+
+| 对比项 | useState | useReducer |
+| --- | --- | --- |
+| 适合状态 | 简单独立状态 | 复杂关联状态 |
+| 更新方式 | 直接 set | dispatch action |
+| 逻辑位置 | 通常在组件内 | 可抽到 reducer 中 |
+| 可维护性 | 简单场景更直观 | 复杂场景更清晰 |
+
+### 注意事项
+
+- `reducer` 应保持纯函数，不要在里面发请求或修改外部变量。
+- 状态很简单时没必要使用 `useReducer`。
+- `useReducer` 只解决组件内状态复杂度，不等同于全局状态管理。
+:::
