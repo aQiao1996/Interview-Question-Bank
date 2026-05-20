@@ -842,3 +842,56 @@ window.opener.location = "https://fake.example.com";
 - 不要为了视觉边框滥用 `fieldset`，它的核心价值是语义分组。
 - 复杂表单仍应配合 `label`、错误提示和合理的焦点管理。
 :::
+
+## 25、HTML 中 dialog 标签有什么作用
+`dialog` 是 HTML 原生弹窗元素，可以用于实现模态框、确认框等交互，并提供内置的打开、关闭和模态能力。
+
+::: details 详情
+### 基本用法
+
+```html
+<button id="open">打开弹窗</button>
+
+<dialog id="dialog">
+  <p>确认删除这条数据吗？</p>
+  <button id="cancel">取消</button>
+  <button id="confirm">确认</button>
+</dialog>
+```
+
+```js
+const dialog = document.querySelector("#dialog");
+
+document.querySelector("#open").addEventListener("click", () => {
+  dialog.showModal();
+});
+
+document.querySelector("#cancel").addEventListener("click", () => {
+  dialog.close();
+});
+```
+
+### 常用方法
+
+- `show()`：非模态方式打开。
+- `showModal()`：模态方式打开，会阻止页面其他区域交互。
+- `close()`：关闭弹窗。
+
+### 优点
+
+- 原生支持模态语义。
+- 可以配合 `::backdrop` 设置遮罩样式。
+- 不需要自己从零处理基础弹窗行为。
+
+```css
+dialog::backdrop {
+  background: rgb(0 0 0 / 40%);
+}
+```
+
+### 注意事项
+
+- 使用前需要确认目标浏览器兼容性。
+- 复杂弹窗仍要处理焦点、键盘交互和关闭逻辑。
+- 表单确认类弹窗可以结合 `method="dialog"` 使用。
+:::
