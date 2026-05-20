@@ -827,3 +827,39 @@ TLS 1.3 精简了握手流程，减少往返次数，并移除了一些不安全
 - 私钥必须妥善保存，泄露后会影响站点安全。
 - 开启 HTTPS 后仍需要关注 HSTS、证书续期和安全协议配置。
 :::
+
+## 22、Cookie 的 SameSite 属性有什么作用
+`SameSite` 用于限制浏览器在跨站请求中是否携带 Cookie，主要用于降低 CSRF 攻击风险。
+
+::: details 详情
+### 常见取值
+
+- `Strict`：最严格，跨站请求完全不携带 Cookie。
+- `Lax`：相对宽松，普通跨站子请求不携带 Cookie，但顶级导航的安全方法请求可能携带。
+- `None`：跨站请求也可以携带 Cookie，但必须同时设置 `Secure`。
+
+### 示例
+
+```http
+Set-Cookie: sessionId=abc123; HttpOnly; Secure; SameSite=Lax
+```
+
+如果需要在第三方场景中携带 Cookie：
+
+```http
+Set-Cookie: sessionId=abc123; HttpOnly; Secure; SameSite=None
+```
+
+### 和 CSRF 的关系
+
+CSRF 攻击依赖浏览器在跨站请求中自动携带目标站点 Cookie。
+
+设置 `SameSite=Lax` 或 `SameSite=Strict` 后，可以减少跨站请求自动带上登录态的情况，从而降低 CSRF 风险。
+
+### 注意事项
+
+- `SameSite` 不能替代服务端 CSRF Token、Referer/Origin 校验等防护。
+- `SameSite=None` 必须配合 `Secure`，也就是只能在 HTTPS 下使用。
+- 第三方登录、嵌入式页面、跨站单点登录等场景需要特别评估。
+- 不同浏览器历史版本对默认值和兼容性处理可能不同。
+:::
