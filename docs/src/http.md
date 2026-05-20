@@ -916,3 +916,39 @@ ETag: W/"abc123"
 - 分布式服务要保证不同节点对同一资源生成一致的 ETag。
 - 静态资源如果文件名带 hash，通常可以使用强缓存，ETag 压力会更小。
 :::
+
+## 24、HSTS 是什么，有什么作用
+HSTS 是 HTTP Strict Transport Security，用于告诉浏览器在一段时间内只能通过 HTTPS 访问当前站点。
+
+::: details 详情
+### 基本响应头
+
+```http
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+```
+
+含义：
+
+- `max-age`：策略有效时间，单位是秒。
+- `includeSubDomains`：对子域名也生效。
+- `preload`：表示希望加入浏览器预加载列表。
+
+### 解决什么问题
+
+如果用户第一次访问时输入的是 `http://example.com`，中间人可能在跳转到 HTTPS 前拦截请求。
+
+开启 HSTS 后，浏览器会记住该站点只能使用 HTTPS，后续访问会自动改成 HTTPS 请求。
+
+### 优点
+
+- 减少 HTTP 降级攻击风险。
+- 避免用户手动输入 HTTP 时产生不安全请求。
+- 强制浏览器使用 HTTPS 访问站点。
+
+### 注意事项
+
+- 启用前必须确保 HTTPS 配置稳定可用。
+- `includeSubDomains` 会影响所有子域名，启用前要确认子域名都支持 HTTPS。
+- `preload` 一旦加入浏览器列表，回退成本较高，需要谨慎。
+- HSTS 不能替代证书管理、TLS 配置和应用层安全措施。
+:::
