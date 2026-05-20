@@ -1144,3 +1144,60 @@ export default {
 
 Vue2 中可以用 mixin 做逻辑复用，但复杂项目中容易造成隐式依赖和命名冲突。Vue3 中更推荐使用 Composable 组合式函数来复用逻辑。
 :::
+
+## 26、vue2 插件的原理和使用方式是什么
+Vue2 插件通常用于给 Vue 应用扩展全局能力，例如全局组件、全局指令、实例方法、过滤器或混入逻辑。
+
+::: details 详情
+### 基本使用
+
+Vue2 中通过 `Vue.use()` 安装插件：
+
+```js
+import Vue from "vue";
+import MyPlugin from "./plugins/my-plugin";
+
+Vue.use(MyPlugin, {
+  prefix: "app",
+});
+```
+
+插件需要暴露一个 `install` 方法：
+
+```js
+const MyPlugin = {
+  install(Vue, options) {
+    Vue.component("BaseButton", {
+      template: "<button><slot /></button>",
+    });
+
+    Vue.prototype.$log = function (message) {
+      console.log(`[${options.prefix}]`, message);
+    };
+  },
+};
+
+export default MyPlugin;
+```
+
+### Vue.use 做了什么
+
+- 判断插件是否已经安装，避免重复安装。
+- 如果插件是对象，则调用插件的 `install` 方法。
+- 如果插件本身是函数，则直接执行该函数。
+- 调用时会把 Vue 构造函数和额外参数传给插件。
+
+### 常见能力
+
+- 注册全局组件：`Vue.component()`。
+- 注册全局指令：`Vue.directive()`。
+- 注册过滤器：`Vue.filter()`。
+- 挂载实例方法：`Vue.prototype.$xxx`。
+- 使用全局混入：`Vue.mixin()`。
+
+### 注意事项
+
+- 插件会影响全局 Vue 构造函数，应避免滥用。
+- 全局混入会影响所有组件，使用时要谨慎。
+- 插件内部要避免和已有实例属性、方法命名冲突。
+:::
