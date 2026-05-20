@@ -1934,3 +1934,54 @@ function Counter() {
 - 状态很简单时没必要使用 `useReducer`。
 - `useReducer` 只解决组件内状态复杂度，不等同于全局状态管理。
 :::
+
+## 30、React Context 有哪些性能问题
+React Context 适合跨层级传递数据，但如果使用不当，Provider 的 value 变化会导致所有消费该 Context 的组件重新渲染。
+
+::: details 详情
+### 常见问题
+
+```jsx
+<UserContext.Provider value={{ user, updateUser }}>
+  <App />
+</UserContext.Provider>
+```
+
+这里每次父组件渲染都会创建新的对象引用，即使 `user` 没变，消费该 Context 的组件也可能重新渲染。
+
+### 优化方式
+
+#### 1. 使用 useMemo 稳定 value
+
+```jsx
+const value = useMemo(() => {
+  return {
+    user,
+    updateUser,
+  };
+}, [user, updateUser]);
+
+return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+```
+
+#### 2. 拆分 Context
+
+不要把大量无关状态都放进同一个 Context。
+
+例如把用户信息、主题、权限拆成不同 Context，避免其中一个变化影响所有消费者。
+
+#### 3. 状态和操作拆分
+
+如果操作函数很稳定，可以把 state context 和 dispatch context 拆开，减少只使用操作函数的组件重渲染。
+
+### 适合和不适合的场景
+
+- 适合：主题、语言、登录用户、权限等低频变化数据。
+- 不适合：高频变化状态、复杂业务状态、大量列表项状态。
+
+### 注意事项
+
+- `React.memo` 不能阻止组件因自己消费的 Context 变化而重新渲染。
+- Context 不是状态管理库的完整替代品。
+- 高频更新场景可以考虑 Zustand、Redux、Jotai 等更细粒度的状态管理方案。
+:::
