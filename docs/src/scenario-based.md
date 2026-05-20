@@ -1523,3 +1523,65 @@ router.beforeEach((to, from, next) => {
 - 路由、菜单、按钮权限最好使用同一套权限数据来源。
 - 无权限时要提供合理提示，避免用户误以为系统异常。
 :::
+
+## 24、前端如何处理接口超时和请求取消
+接口超时和请求取消用于避免页面长时间等待无响应请求，也能减少过期请求对当前页面状态的影响。
+
+::: details 详情
+### 为什么需要处理
+
+常见问题包括：
+
+- 网络异常时页面一直 loading。
+- 用户切换页面后旧请求仍然回来更新状态。
+- 搜索、筛选等场景中旧请求覆盖新请求。
+- 大量无效请求占用浏览器连接和服务端资源。
+
+### fetch 中使用 AbortController
+
+```js
+function requestWithTimeout(url, timeout = 5000) {
+  const controller = new AbortController();
+
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, timeout);
+
+  return fetch(url, {
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timer);
+  });
+}
+```
+
+当请求超时后，`controller.abort()` 会取消请求。
+
+### 页面切换时取消请求
+
+在组件卸载或路由切换时，应取消未完成的请求：
+
+```js
+const controller = new AbortController();
+
+fetch("/api/list", {
+  signal: controller.signal,
+});
+
+// 组件卸载时
+controller.abort();
+```
+
+### 用户体验处理
+
+- 超时后给出明确提示。
+- 支持重新请求。
+- 对非关键接口可降级展示。
+- 对关键提交接口要确认请求是否真的失败，避免重复提交。
+
+### 注意事项
+
+- 请求取消不等于服务端一定停止处理，后端仍需做幂等。
+- 超时时间要结合业务场景设置，不能过短。
+- 取消请求后要区分取消错误和真实业务错误。
+:::
