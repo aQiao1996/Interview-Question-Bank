@@ -1524,3 +1524,60 @@ function writeData(writable, chunks) {
 - 手动写入 Stream 时要关注 `write()` 返回值和 `drain` 事件。
 - 背压是流式处理稳定性的关键机制。
 :::
+
+## 25、Node.js 中 AsyncLocalStorage 有什么作用
+`AsyncLocalStorage` 用于在异步调用链中保存和读取上下文数据，常用于记录 requestId、用户信息和链路追踪信息。
+
+::: details 详情
+### 为什么需要
+
+Node.js 中一次请求可能经过多层异步调用：
+
+- 中间件。
+- 数据库查询。
+- 外部接口请求。
+- 日志记录。
+- 业务 service。
+
+如果每层都手动传递 requestId，会让函数参数变得很臃肿。
+
+`AsyncLocalStorage` 可以让同一条异步链路中的代码共享上下文。
+
+### 基本用法
+
+```js
+const { AsyncLocalStorage } = require("async_hooks");
+const crypto = require("crypto");
+
+const asyncLocalStorage = new AsyncLocalStorage();
+
+function middleware(req, res, next) {
+  const requestId = crypto.randomUUID();
+
+  asyncLocalStorage.run({ requestId }, () => {
+    next();
+  });
+}
+
+function logger(message) {
+  const store = asyncLocalStorage.getStore();
+  console.log(`[${store?.requestId}] ${message}`);
+}
+```
+
+在后续异步调用中，`logger` 可以直接读取当前请求的 `requestId`。
+
+### 常见场景
+
+- 请求日志自动带上 requestId。
+- 链路追踪。
+- 多租户上下文。
+- 当前用户上下文。
+- APM 和监控埋点。
+
+### 注意事项
+
+- 不要在上下文中保存过大的对象，避免内存压力。
+- 需要注意异步边界，某些第三方库可能导致上下文丢失。
+- 它适合传递上下文信息，不适合替代正常的业务参数传递。
+:::
