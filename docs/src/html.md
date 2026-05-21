@@ -895,3 +895,49 @@ dialog::backdrop {
 - 复杂弹窗仍要处理焦点、键盘交互和关闭逻辑。
 - 表单确认类弹窗可以结合 `method="dialog"` 使用。
 :::
+
+## 26、HTML 中 template 标签有什么作用
+`template` 标签用于声明一段不会立即渲染的 HTML 模板内容，只有通过 JavaScript 克隆并插入页面后才会显示。
+
+::: details 详情
+### 基本用法
+
+```html
+<template id="user-card">
+  <article class="card">
+    <h3 class="name"></h3>
+    <p class="email"></p>
+  </article>
+</template>
+```
+
+```js
+const template = document.querySelector("#user-card");
+const fragment = template.content.cloneNode(true);
+
+fragment.querySelector(".name").textContent = "Tom";
+fragment.querySelector(".email").textContent = "tom@example.com";
+
+document.body.appendChild(fragment);
+```
+
+### 特点
+
+- 模板内容不会直接渲染到页面。
+- 模板内的图片、脚本等资源通常不会像普通 DOM 一样立即执行或加载。
+- 通过 `template.content` 可以拿到 `DocumentFragment`。
+- 适合和 Web Components、原生 DOM 操作配合使用。
+
+### 应用场景
+
+- 原生 JavaScript 生成重复 DOM。
+- Web Components 内部模板。
+- 延迟渲染某段结构。
+- 避免把模板内容直接显示在页面上。
+
+### 注意事项
+
+- `template` 只是原生模板容器，不提供数据绑定能力。
+- 插入页面前需要自己填充数据和绑定事件。
+- 如果项目使用 Vue、React 等框架，一般直接使用框架模板能力。
+:::
