@@ -1355,3 +1355,60 @@ export default {
 - 不适合有内部状态或复杂交互的组件。
 - Vue3 中函数式组件形式发生变化，普通函数即可作为函数式组件。
 :::
+
+## 30、vue2 中异步组件是什么
+Vue2 异步组件是指组件代码在需要渲染时再加载，常用于减少首屏包体积和实现路由或组件级按需加载。
+
+::: details 详情
+### 基本写法
+
+```js
+export default {
+  components: {
+    UserPanel: () => import("./UserPanel.vue"),
+  },
+};
+```
+
+当 `UserPanel` 首次需要渲染时，才会加载对应组件代码。
+
+### 高级写法
+
+Vue2 支持配置加载中、失败和超时时间：
+
+```js
+const AsyncComponent = () => ({
+  component: import("./UserPanel.vue"),
+  loading: LoadingComponent,
+  error: ErrorComponent,
+  delay: 200,
+  timeout: 3000,
+});
+```
+
+### 适合场景
+
+- 体积较大的业务组件。
+- 非首屏弹窗。
+- 图表、编辑器、地图等重型组件。
+- 路由页面按需加载。
+
+### 和路由懒加载
+
+Vue Router 中常见的懒加载写法本质也是异步组件：
+
+```js
+const routes = [
+  {
+    path: "/user",
+    component: () => import("./views/User.vue"),
+  },
+];
+```
+
+### 注意事项
+
+- 异步组件会带来额外请求，不能拆得过细。
+- 需要给重型组件提供 loading 或骨架屏体验。
+- 加载失败时要有错误兜底，避免页面空白。
+:::
