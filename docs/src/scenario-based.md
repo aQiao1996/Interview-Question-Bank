@@ -1641,3 +1641,58 @@ function logout() {
 - Token 刷新要避免多个标签页同时刷新造成并发问题。
 - 对兼容性要求高的项目，可以优先使用 `storage` 事件兜底。
 :::
+
+## 26、前端如何实现页面水印
+前端水印通常用于在页面上展示用户身份、工号、时间等信息，降低截图外泄后的追踪成本。
+
+::: details 详情
+### 常见实现方式
+
+#### 1. Canvas 生成背景图
+
+先用 Canvas 绘制水印，再作为背景图铺满页面：
+
+```js
+function createWatermark(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 240;
+  canvas.height = 160;
+
+  const ctx = canvas.getContext("2d");
+  ctx.rotate((-20 * Math.PI) / 180);
+  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
+  ctx.fillText(text, 20, 100);
+
+  return canvas.toDataURL("image/png");
+}
+```
+
+```js
+const watermark = document.createElement("div");
+watermark.style.position = "fixed";
+watermark.style.inset = "0";
+watermark.style.pointerEvents = "none";
+watermark.style.zIndex = "9999";
+watermark.style.backgroundImage = `url(${createWatermark("Tom 10001")})`;
+
+document.body.appendChild(watermark);
+```
+
+#### 2. DOM 重复渲染
+
+也可以创建多个半透明文本节点铺满页面，但 DOM 数量较多时性能和维护成本更高。
+
+### 防篡改思路
+
+- 使用 `MutationObserver` 监听水印节点是否被删除或样式被修改。
+- 水印节点使用较高层级和 `pointer-events: none`。
+- 关键页面进入时重新检查水印是否存在。
+
+### 注意事项
+
+- 前端水印不能彻底防止截图和篡改，只能提高追踪和攻击成本。
+- 敏感数据不要只依赖前端水印保护。
+- 水印内容要注意隐私，不要暴露过多个人信息。
+- 打印、导出 PDF、图片预览等场景也要考虑水印覆盖。
+:::
