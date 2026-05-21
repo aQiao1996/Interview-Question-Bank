@@ -941,3 +941,62 @@ document.body.appendChild(fragment);
 - 插入页面前需要自己填充数据和绑定事件。
 - 如果项目使用 Vue、React 等框架，一般直接使用框架模板能力。
 :::
+
+## 27、Web Components 中 custom elements 是什么
+Custom Elements 是 Web Components 的一部分，允许开发者注册自定义 HTML 标签，并封装自己的结构和行为。
+
+::: details 详情
+### 基本示例
+
+```js
+class UserCard extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+      <article>
+        <h3>${this.getAttribute("name")}</h3>
+      </article>
+    `;
+  }
+}
+
+customElements.define("user-card", UserCard);
+```
+
+使用：
+
+```html
+<user-card name="Tom"></user-card>
+```
+
+### 生命周期
+
+自定义元素常见生命周期包括：
+
+- `connectedCallback`：元素插入文档时调用。
+- `disconnectedCallback`：元素从文档移除时调用。
+- `attributeChangedCallback`：监听的属性变化时调用。
+- `adoptedCallback`：元素被移动到新文档时调用。
+
+### 命名规则
+
+自定义元素名称必须包含短横线，例如：
+
+```html
+<my-button></my-button>
+```
+
+这样可以避免和未来标准 HTML 标签冲突。
+
+### 应用场景
+
+- 跨框架复用组件。
+- 设计系统中的基础组件。
+- 嵌入式组件或微前端场景。
+- 和 Shadow DOM、template 配合封装 UI。
+
+### 注意事项
+
+- Web Components 是浏览器原生能力，但生态和开发体验与框架组件不同。
+- 复杂状态管理和数据流仍需要额外设计。
+- 样式隔离通常需要配合 Shadow DOM。
+:::
