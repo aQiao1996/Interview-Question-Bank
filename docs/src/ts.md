@@ -1501,3 +1501,69 @@ function example(a: any): any {
 - 不能直接调用通用实现
   > ts 只允许调用符合签名的重载方法，而不能直接调用通用实现。
 :::
+
+## 31、TypeScript 中条件类型是什么
+条件类型用于根据类型关系选择不同的类型结果，语法类似三元表达式。
+
+::: details 详情
+### 基本语法
+
+```ts
+T extends U ? X : Y
+```
+
+含义是：如果 `T` 可以赋值给 `U`，结果就是 `X`，否则结果就是 `Y`。
+
+### 基本示例
+
+```ts
+type IsString<T> = T extends string ? true : false;
+
+type A = IsString<string>; // true
+type B = IsString<number>; // false
+```
+
+### 常见用途
+
+#### 1. 根据输入类型决定返回类型
+
+```ts
+type Result<T> = T extends string ? string[] : T[];
+
+type A = Result<string>; // string[]
+type B = Result<number>; // number[]
+```
+
+#### 2. 配合 infer 提取类型
+
+```ts
+type GetArrayItem<T> = T extends Array<infer Item> ? Item : never;
+
+type A = GetArrayItem<string[]>; // string
+type B = GetArrayItem<number[]>; // number
+```
+
+#### 3. 实现工具类型
+
+```ts
+type MyExclude<T, U> = T extends U ? never : T;
+
+type A = MyExclude<"a" | "b" | "c", "a">; // "b" | "c"
+```
+
+### 分布式条件类型
+
+当条件类型作用于联合类型时，会自动分发：
+
+```ts
+type ToArray<T> = T extends any ? T[] : never;
+
+type A = ToArray<string | number>; // string[] | number[]
+```
+
+### 注意事项
+
+- 条件类型主要工作在类型层面，不会影响运行时代码。
+- 联合类型分发有时会带来意外结果，可以用 `[T] extends [U]` 关闭分发。
+- 复杂条件类型可读性较差，应控制嵌套深度。
+:::
