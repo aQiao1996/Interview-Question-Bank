@@ -1522,3 +1522,54 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 - 修改环境变量后通常需要重新构建，不能期待运行时自动变化。
 - 前端权限、计费、风控等关键逻辑不能依赖环境变量隐藏。
 :::
+
+## 26、package.json 中 sideEffects 有什么作用
+`sideEffects` 用于告诉打包工具哪些文件有副作用，从而帮助 Tree Shaking 更安全地删除未使用代码。
+
+::: details 详情
+### 什么是副作用
+
+副作用是指模块被导入后，即使没有使用它的导出，也会产生外部影响。
+
+例如：
+
+```js
+import "./global.css";
+import "./polyfill";
+```
+
+这类文件导入后会修改全局样式或全局对象，不能随意删除。
+
+### 基本配置
+
+如果项目所有模块都没有副作用，可以配置：
+
+```json
+{
+  "sideEffects": false
+}
+```
+
+如果部分文件有副作用，可以配置白名单：
+
+```json
+{
+  "sideEffects": [
+    "*.css",
+    "./src/polyfill.js"
+  ]
+}
+```
+
+### 和 Tree Shaking 的关系
+
+Tree Shaking 会尝试删除未使用代码，但如果打包工具不确定模块是否有副作用，就可能保守保留。
+
+`sideEffects` 可以帮助打包工具判断未使用模块是否能安全移除。
+
+### 注意事项
+
+- 配置 `sideEffects: false` 前要确认模块确实没有全局副作用。
+- CSS、polyfill、全局注册等文件通常需要保留。
+- 配置错误可能导致样式丢失、polyfill 不生效或全局初始化逻辑被删除。
+:::
