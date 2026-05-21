@@ -1596,3 +1596,66 @@ emitter.emit("message", "again");
 - `on` 返回取消订阅函数，使用起来更方便。
 - 实际工程中还可以增加最大监听数量、错误事件和通配符事件。
 :::
+
+## 27、手写 sleep 和 Promise 超时控制
+- `sleep`：返回一个在指定时间后完成的 Promise。
+- Promise 超时控制：给异步任务设置最大等待时间，超过后自动 reject。
+- 应用场景：
+  > - 延迟执行。
+  > - 请求超时兜底。
+  > - 动画步骤串行控制。
+  > - 轮询间隔控制。
+::: details 详情
+### 手写 sleep
+
+```js
+function sleep(delay) {
+  return new Promise(resolve => {
+    setTimeout(resolve, delay);
+  });
+}
+
+async function run() {
+  console.log("start");
+  await sleep(1000);
+  console.log("end");
+}
+```
+
+### 手写超时控制
+
+```js
+function withTimeout(promise, timeout, message = "timeout") {
+  let timer;
+
+  const timeoutPromise = new Promise((resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(message));
+    }, timeout);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timer);
+  });
+}
+```
+
+### 使用示例
+
+```js
+withTimeout(fetch("/api/user"), 3000, "请求超时")
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+  })
+  .catch(error => {
+    console.error(error.message);
+  });
+```
+
+### 注意事项
+
+- `Promise.race` 只能让外层 Promise 超时，不一定能真正取消原任务。
+- 如果是 `fetch`，要真正取消请求应配合 `AbortController`。
+- 超时后要清理定时器，避免无用回调残留。
+:::
