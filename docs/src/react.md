@@ -1985,3 +1985,50 @@ return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 - Context 不是状态管理库的完整替代品。
 - 高频更新场景可以考虑 Zustand、Redux、Jotai 等更细粒度的状态管理方案。
 :::
+
+## 31、React 中 Suspense 有什么作用
+`Suspense` 用于在子组件等待异步资源时展示降级 UI，常见于组件懒加载和支持 Suspense 的数据获取场景。
+
+::: details 详情
+### 组件懒加载
+
+最常见的场景是配合 `React.lazy` 实现组件级代码分割：
+
+```jsx
+import { Suspense, lazy } from "react";
+
+const UserPage = lazy(() => import("./UserPage"));
+
+function App() {
+  return (
+    <Suspense fallback={<div>加载中...</div>}>
+      <UserPage />
+    </Suspense>
+  );
+}
+```
+
+当 `UserPage` 对应的代码还没加载完成时，会先展示 `fallback`。
+
+### 解决什么问题
+
+- 避免异步组件加载时页面空白。
+- 给代码分割提供统一 loading 边界。
+- 可以把加载状态控制在局部区域。
+
+### fallback 的设计
+
+`fallback` 可以是：
+
+- loading 文案。
+- 骨架屏。
+- 局部占位组件。
+- 保持布局尺寸的占位内容。
+
+### 注意事项
+
+- `Suspense` 边界不宜过大，否则小区域加载会导致整块页面展示 fallback。
+- `React.lazy` 只支持默认导出组件。
+- 数据获取能否使用 Suspense 取决于具体框架或数据库方案。
+- 懒加载失败时还需要配合错误边界处理异常。
+:::
