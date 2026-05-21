@@ -1255,3 +1255,47 @@ defineOptions({
 - 它只能在 `<script setup>` 顶层使用。
 - 不适合放运行时动态逻辑，参数应该是静态可分析的对象。
 :::
+
+## 26、vue3 中 defineSlots 有什么作用
+`defineSlots` 用于在 `<script setup>` 中声明插槽类型，主要配合 TypeScript 提升插槽参数的类型提示和校验能力。
+
+::: details 详情
+### 基本用法
+
+```vue
+<script setup lang="ts">
+defineSlots<{
+  default(props: { message: string }): any;
+  footer(props: { count: number }): any;
+}>();
+</script>
+
+<template>
+  <slot message="hello" />
+  <slot name="footer" :count="10" />
+</template>
+```
+
+父组件使用插槽时，可以获得插槽 props 的类型提示。
+
+### 解决什么问题
+
+在复杂组件中，插槽往往会向父组件暴露数据，例如列表项、表格行、表单状态等。
+
+如果没有类型声明，父组件使用插槽参数时容易写错字段名或类型。
+
+`defineSlots` 可以让这些插槽契约更明确。
+
+### 应用场景
+
+- 表格组件暴露行数据。
+- 列表组件暴露 item 和 index。
+- 表单组件暴露校验状态。
+- 布局组件声明多个具名插槽。
+
+### 注意事项
+
+- `defineSlots` 是编译宏，不需要导入。
+- 它主要提供类型能力，不会改变运行时插槽行为。
+- 当前返回类型通常写 `any` 即可，重点是参数类型。
+:::
