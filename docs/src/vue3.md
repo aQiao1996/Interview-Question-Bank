@@ -1206,3 +1206,52 @@ const { count, name } = toRefs(state);
 - 如果属性不存在，可以用 `toRef(obj, "key")` 创建连接。
 - 对 props 解构时也要注意响应式丢失问题。
 :::
+
+## 25、vue3 中 defineOptions 有什么作用
+`defineOptions` 用于在 `<script setup>` 中声明组件选项，例如组件名、是否继承 attrs 等。
+
+::: details 详情
+### 为什么需要
+
+`<script setup>` 默认更偏向组合式写法，但有些选项仍然属于组件选项，例如 `name`、`inheritAttrs`。
+
+以前通常需要再写一个普通 `<script>`：
+
+```vue
+<script>
+export default {
+  name: "UserCard",
+  inheritAttrs: false,
+};
+</script>
+
+<script setup>
+// 组合式逻辑
+</script>
+```
+
+使用 `defineOptions` 后，可以直接写在 `<script setup>` 中。
+
+### 基本用法
+
+```vue
+<script setup>
+defineOptions({
+  name: "UserCard",
+  inheritAttrs: false,
+});
+</script>
+```
+
+### 常见场景
+
+- 给组件声明明确的 `name`，方便调试和递归组件使用。
+- 设置 `inheritAttrs: false`，手动控制 attrs 透传位置。
+- 在 `<script setup>` 中集中管理组件选项。
+
+### 注意事项
+
+- `defineOptions` 是编译宏，不需要从 `vue` 中导入。
+- 它只能在 `<script setup>` 顶层使用。
+- 不适合放运行时动态逻辑，参数应该是静态可分析的对象。
+:::
