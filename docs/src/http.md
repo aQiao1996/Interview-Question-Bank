@@ -1003,3 +1003,55 @@ Content-Security-Policy-Report-Only: default-src 'self'
 - 不建议随意使用 `'unsafe-inline'` 和 `'unsafe-eval'`。
 - 策略需要结合项目中的 CDN、统计脚本、监控脚本逐步收紧。
 :::
+
+## 26、HTTP 内容协商是什么
+内容协商是指客户端通过请求头告诉服务端自己能接受的内容类型、语言、编码等，服务端据此返回最合适的响应。
+
+::: details 详情
+### 常见请求头
+
+- `Accept`：客户端能接受的媒体类型。
+- `Accept-Language`：客户端偏好的语言。
+- `Accept-Encoding`：客户端支持的压缩编码。
+- `User-Agent`：客户端信息，有时服务端会据此做兼容处理。
+
+### Accept 示例
+
+```http
+Accept: application/json, text/plain, */*
+```
+
+表示客户端优先希望得到 JSON，也可以接受文本或其他类型。
+
+服务端响应时会通过 `Content-Type` 告诉客户端实际返回类型：
+
+```http
+Content-Type: application/json; charset=utf-8
+```
+
+### Accept-Language 示例
+
+```http
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
+```
+
+`q` 表示权重，值越大优先级越高。
+
+### Accept-Encoding 示例
+
+```http
+Accept-Encoding: gzip, br
+```
+
+服务端如果使用 Brotli 压缩，可以返回：
+
+```http
+Content-Encoding: br
+```
+
+### 注意事项
+
+- API 接口应明确返回 `Content-Type`，避免客户端解析错误。
+- 内容协商不应让接口行为过于隐式，关键差异最好体现在 URL、参数或版本中。
+- 压缩协商通常由 Web 服务器或 CDN 自动处理。
+:::
