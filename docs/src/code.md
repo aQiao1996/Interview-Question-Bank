@@ -1659,3 +1659,60 @@ withTimeout(fetch("/api/user"), 3000, "请求超时")
 - 如果是 `fetch`，要真正取消请求应配合 `AbortController`。
 - 超时后要清理定时器，避免无用回调残留。
 :::
+
+## 28、手写根据路径获取对象属性
+- 根据路径获取对象属性：通过字符串路径读取对象中的深层属性。
+- 应用场景：
+  > - 表单字段读取。
+  > - 配置项读取。
+  > - 表格列字段映射。
+  > - 安全访问嵌套对象属性。
+- 实现原理：
+  > - 将路径字符串转换成 key 数组。
+  > - 从对象根节点开始逐层读取。
+  > - 中间任意一层为空时返回默认值。
+::: details 详情
+```js
+function get(object, path, defaultValue) {
+  const keys = Array.isArray(path)
+    ? path
+    : path.replace(/\[(\w+)\]/g, ".$1").split(".");
+
+  let result = object;
+
+  for (const key of keys) {
+    if (result == null) {
+      return defaultValue;
+    }
+
+    result = result[key];
+  }
+
+  return result === undefined ? defaultValue : result;
+}
+
+// 测试 get 函数
+const data = {
+  user: {
+    profile: {
+      name: "Tom",
+    },
+    posts: [
+      {
+        title: "hello",
+      },
+    ],
+  },
+};
+
+console.log(get(data, "user.profile.name")); // Tom
+console.log(get(data, "user.posts[0].title")); // hello
+console.log(get(data, "user.age", 18)); // 18
+```
+
+### 注意事项
+
+- 这里的实现只处理常见点路径和简单数组下标。
+- 如果 key 本身包含 `.`，需要更复杂的路径解析规则。
+- 读取属性时要避免执行不可信对象上的 getter 产生副作用。
+:::
