@@ -1581,3 +1581,54 @@ function logger(message) {
 - 需要注意异步边界，某些第三方库可能导致上下文丢失。
 - 它适合传递上下文信息，不适合替代正常的业务参数传递。
 :::
+
+## 26、Node.js 中 diagnostics_channel 有什么作用
+`diagnostics_channel` 是 Node.js 提供的诊断通道模块，用于在应用和库之间发布、订阅诊断事件，常用于监控、链路追踪和性能分析。
+
+::: details 详情
+### 基本概念
+
+它提供一种低侵入的事件发布机制。业务库可以在关键位置发布诊断信息，监控系统可以订阅这些信息。
+
+```js
+const diagnosticsChannel = require("diagnostics_channel");
+
+const channel = diagnosticsChannel.channel("app.request");
+
+function handleRequest(req) {
+  channel.publish({
+    url: req.url,
+    method: req.method,
+  });
+}
+```
+
+订阅方：
+
+```js
+const diagnosticsChannel = require("diagnostics_channel");
+
+diagnosticsChannel.channel("app.request").subscribe(message => {
+  console.log("request:", message);
+});
+```
+
+### 适合场景
+
+- 框架或库暴露内部生命周期事件。
+- APM 采集请求、数据库、缓存等调用信息。
+- 性能分析和链路追踪。
+- 不希望业务代码强依赖具体监控 SDK 的场景。
+
+### 优点
+
+- 发布方和订阅方解耦。
+- 没有订阅者时开销较低。
+- 适合库和基础设施层提供可观测性扩展点。
+
+### 注意事项
+
+- 通道命名要稳定，避免随意修改导致订阅失效。
+- 传递的数据要控制大小，避免影响性能。
+- 不要在诊断消息中包含密码、Token 等敏感信息。
+:::
