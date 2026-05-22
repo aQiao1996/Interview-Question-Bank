@@ -1141,3 +1141,44 @@ Content-Type: text/html
 - 提示的资源必须准确，否则会浪费带宽。
 - 不应预加载低优先级或不确定会用到的资源。
 :::
+
+## 29、Fetch Metadata 请求头有什么作用
+Fetch Metadata 是浏览器自动携带的一组请求头，用于告诉服务端请求的来源关系和资源类型，帮助服务端防御跨站攻击。
+
+::: details 详情
+### 常见请求头
+
+- `Sec-Fetch-Site`：请求来源和目标站点的关系。
+- `Sec-Fetch-Mode`：请求模式，例如 `navigate`、`cors`、`no-cors`。
+- `Sec-Fetch-Dest`：请求目标类型，例如 `document`、`image`、`script`。
+- `Sec-Fetch-User`：是否由用户主动导航触发。
+
+### Sec-Fetch-Site 示例
+
+```http
+Sec-Fetch-Site: same-origin
+```
+
+常见值包括：
+
+- `same-origin`：同源请求。
+- `same-site`：同站但不同源。
+- `cross-site`：跨站请求。
+- `none`：用户直接输入地址或书签访问。
+
+### 防御思路
+
+服务端可以拒绝不符合预期的跨站请求：
+
+```txt
+如果 Sec-Fetch-Site 是 cross-site，并且接口是敏感写操作，则拒绝请求。
+```
+
+这可以辅助防御 CSRF、跨站资源滥用等问题。
+
+### 注意事项
+
+- Fetch Metadata 是安全增强手段，不应替代 CSRF Token、SameSite Cookie 等机制。
+- 需要给老浏览器或特殊客户端设计兼容策略。
+- 静态资源、开放 API、OAuth 回调等场景不能简单一刀切拒绝跨站请求。
+:::
