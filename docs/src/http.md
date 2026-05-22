@@ -1101,3 +1101,43 @@ CDN、浏览器缓存、代理服务器都可能缓存响应。
 - 如果响应和 Cookie 强相关，要谨慎缓存。
 - 静态资源通常只需要关注压缩相关的 `Vary: Accept-Encoding`。
 :::
+
+## 28、HTTP 103 Early Hints 是什么
+`103 Early Hints` 是一种临时响应状态码，服务端可以在最终响应前提前告诉浏览器需要预加载哪些关键资源。
+
+::: details 详情
+### 基本示例
+
+服务端先返回：
+
+```http
+HTTP/1.1 103 Early Hints
+Link: </assets/main.css>; rel=preload; as=style
+Link: </assets/main.js>; rel=modulepreload
+```
+
+随后再返回最终响应：
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/html
+```
+
+浏览器收到 103 后，可以提前开始请求 CSS、JS 等关键资源，减少等待 HTML 完整生成的时间。
+
+### 适合场景
+
+- 服务端渲染耗时较长。
+- HTML 生成前已经能确定关键静态资源。
+- CDN 或边缘节点可以提前返回资源提示。
+
+### 和 preload 的关系
+
+`103 Early Hints` 通常通过 `Link` 响应头表达预加载资源，本质上是把资源提示提前到最终 HTML 之前。
+
+### 注意事项
+
+- 浏览器、服务器和 CDN 都需要支持该能力。
+- 提示的资源必须准确，否则会浪费带宽。
+- 不应预加载低优先级或不确定会用到的资源。
+:::
