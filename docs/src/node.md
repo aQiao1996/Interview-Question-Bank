@@ -1751,3 +1751,52 @@ function task(signal) {
 - 超时 reject 不等于底层任务一定停止，最好使用 `AbortController` 传递取消信号。
 - 取消后要区分取消错误和真实业务错误。
 :::
+
+## 29、Node.js 中 timer.unref 和 timer.ref 有什么作用
+`timer.unref()` 和 `timer.ref()` 用于控制定时器是否会阻止 Node.js 进程退出。
+
+::: details 详情
+### 默认行为
+
+默认情况下，`setTimeout`、`setInterval` 创建的定时器会保持事件循环存活：
+
+```js
+setTimeout(() => {
+  console.log("timeout");
+}, 10000);
+```
+
+即使没有其他任务，进程也会等待这个定时器执行。
+
+### 使用 unref
+
+```js
+const timer = setTimeout(() => {
+  console.log("timeout");
+}, 10000);
+
+timer.unref();
+```
+
+调用 `unref()` 后，如果事件循环里没有其他需要处理的任务，进程可以直接退出，不必等待该定时器。
+
+### 使用 ref
+
+```js
+timer.ref();
+```
+
+`ref()` 用于恢复默认行为，让该定时器继续保持事件循环存活。
+
+### 常见场景
+
+- 后台心跳或监控上报，不希望它阻止进程退出。
+- 缓存清理、定时刷新等非关键任务。
+- CLI 工具中设置兜底超时，但不希望超时定时器拖住正常退出。
+
+### 注意事项
+
+- `unref()` 不会取消定时器，只是不再让它阻止进程退出。
+- 如果进程提前退出，`unref` 后的定时器回调可能不会执行。
+- 关键业务逻辑不要依赖 `unref` 定时器一定执行。
+:::
