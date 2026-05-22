@@ -1000,3 +1000,49 @@ customElements.define("user-card", UserCard);
 - 复杂状态管理和数据流仍需要额外设计。
 - 样式隔离通常需要配合 Shadow DOM。
 :::
+
+## 28、HTML 中 popover 属性有什么作用
+`popover` 是 HTML 原生弹出层能力，可以用于实现提示框、菜单、下拉面板等轻量浮层。
+
+::: details 详情
+### 基本用法
+
+```html
+<button popovertarget="menu">打开菜单</button>
+
+<div id="menu" popover>
+  <button>编辑</button>
+  <button>删除</button>
+</div>
+```
+
+点击按钮后，浏览器会自动控制 `#menu` 的显示和隐藏。
+
+### JavaScript 控制
+
+```js
+const menu = document.querySelector("#menu");
+
+menu.showPopover();
+menu.hidePopover();
+menu.togglePopover();
+```
+
+### 适合场景
+
+- 下拉菜单。
+- 轻量提示面板。
+- 操作菜单。
+- 非复杂模态浮层。
+
+### 和 dialog 的区别
+
+- `dialog` 更适合确认框、模态框等对话场景。
+- `popover` 更适合轻量浮层，不一定阻塞页面交互。
+
+### 注意事项
+
+- 使用前需要确认浏览器兼容性。
+- 复杂定位仍可能需要配合 CSS Anchor Positioning 或浮层库。
+- 需要关注键盘操作、焦点管理和无障碍体验。
+:::
