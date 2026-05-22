@@ -1097,3 +1097,53 @@ function closeDialog() {
 - 需要关注浏览器兼容性。
 - 它适合配合弹窗、抽屉、焦点管理一起使用。
 :::
+
+## 30、img 标签的 fetchpriority 属性有什么作用
+`fetchpriority` 用于提示浏览器资源的获取优先级，常用于优化首屏关键图片的加载表现。
+
+::: details 详情
+### 基本用法
+
+```html
+<img
+  src="/banner.jpg"
+  alt="首页主视觉"
+  width="1200"
+  height="600"
+  fetchpriority="high"
+/>
+```
+
+对于首屏 LCP 图片，可以设置 `fetchpriority="high"`，让浏览器更早、更积极地请求该资源。
+
+### 可选值
+
+- `high`：提示浏览器提高资源优先级。
+- `low`：提示浏览器降低资源优先级。
+- `auto`：由浏览器自行判断，默认值。
+
+### 和 loading 的关系
+
+`loading` 控制图片是否延迟加载，`fetchpriority` 控制资源请求优先级：
+
+```html
+<img src="/hero.jpg" alt="首屏图" fetchpriority="high" />
+<img src="/gallery.jpg" alt="列表图" loading="lazy" fetchpriority="low" />
+```
+
+首屏关键图片通常不应该设置 `loading="lazy"`，否则可能延迟 LCP。
+
+### 常见场景
+
+- 首页首屏大图。
+- 商品详情页主图。
+- 新闻或文章页首图。
+- 需要降低非关键图片请求优先级的长列表。
+
+### 注意事项
+
+- 它只是优先级提示，不保证浏览器一定按指定顺序请求。
+- 不要给大量资源都设置 `high`，否则会失去优先级意义。
+- 应配合明确的 `width`、`height`，减少布局偏移。
+- 需要结合性能数据判断是否真的改善 LCP。
+:::
