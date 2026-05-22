@@ -1567,3 +1567,53 @@ type A = ToArray<string | number>; // string[] | number[]
 - 联合类型分发有时会带来意外结果，可以用 `[T] extends [U]` 关闭分发。
 - 复杂条件类型可读性较差，应控制嵌套深度。
 :::
+
+## 32、TypeScript 中 infer 关键字有什么作用
+`infer` 用于在条件类型中声明一个待推断的类型变量，从已有类型结构中提取某一部分类型。
+
+::: details 详情
+### 基本用法
+
+```ts
+type GetReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+type A = GetReturnType<() => string>; // string
+type B = GetReturnType<() => Promise<number>>; // Promise<number>
+```
+
+这里的 `R` 会从函数返回值位置被推断出来。
+
+### 提取数组元素类型
+
+```ts
+type GetArrayItem<T> = T extends Array<infer Item> ? Item : never;
+
+type A = GetArrayItem<string[]>; // string
+type B = GetArrayItem<number[]>; // number
+```
+
+### 提取 Promise 内部类型
+
+```ts
+type UnwrapPromise<T> = T extends Promise<infer Value> ? Value : T;
+
+type A = UnwrapPromise<Promise<string>>; // string
+type B = UnwrapPromise<number>; // number
+```
+
+### 提取函数参数类型
+
+```ts
+type FirstParameter<T> = T extends (arg: infer P, ...args: any[]) => any
+  ? P
+  : never;
+
+type A = FirstParameter<(id: number, name: string) => void>; // number
+```
+
+### 注意事项
+
+- `infer` 只能在条件类型的 `extends` 子句中使用。
+- 它不是运行时关键字，只存在于类型系统中。
+- 复杂 `infer` 类型可读性较差，应优先保证类型工具易理解。
+:::
