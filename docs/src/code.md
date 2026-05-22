@@ -1773,3 +1773,63 @@ console.log(data.user.posts[0].title); // hello
 - 如果需要不可变更新，需要每一层都复制后再写入。
 - 对不可信 path 要做限制，避免写入 `__proto__` 等危险属性。
 :::
+
+## 30、手写 pick 和 omit 函数
+- `pick`：从对象中挑选指定 key，返回新对象。
+- `omit`：从对象中排除指定 key，返回新对象。
+- 应用场景：
+  > - 表单提交前筛选字段。
+  > - 删除敏感字段。
+  > - 构造接口参数。
+  > - 对对象做浅层字段裁剪。
+::: details 详情
+### 手写 pick
+
+```js
+function pick(object, keys) {
+  return keys.reduce((result, key) => {
+    if (Object.prototype.hasOwnProperty.call(object, key)) {
+      result[key] = object[key];
+    }
+
+    return result;
+  }, {});
+}
+```
+
+### 手写 omit
+
+```js
+function omit(object, keys) {
+  const keySet = new Set(keys);
+  const result = {};
+
+  Object.keys(object).forEach(key => {
+    if (!keySet.has(key)) {
+      result[key] = object[key];
+    }
+  });
+
+  return result;
+}
+```
+
+### 测试
+
+```js
+const user = {
+  id: 1,
+  name: "Tom",
+  password: "123456",
+};
+
+console.log(pick(user, ["id", "name"])); // { id: 1, name: "Tom" }
+console.log(omit(user, ["password"])); // { id: 1, name: "Tom" }
+```
+
+### 注意事项
+
+- 这里实现的是浅拷贝。
+- 如果字段值是对象，结果中仍然共享同一个引用。
+- 处理敏感数据时，后端仍应做字段过滤，不能只依赖前端。
+:::
