@@ -1046,3 +1046,54 @@ menu.togglePopover();
 - 复杂定位仍可能需要配合 CSS Anchor Positioning 或浮层库。
 - 需要关注键盘操作、焦点管理和无障碍体验。
 :::
+
+## 29、HTML 中 inert 属性有什么作用
+`inert` 用于让某个元素子树变为不可交互状态，用户无法聚焦、点击或通过辅助技术访问其中内容。
+
+::: details 详情
+### 基本用法
+
+```html
+<main inert>
+  <button>无法点击</button>
+  <a href="/profile">无法聚焦</a>
+</main>
+```
+
+设置 `inert` 后，元素内部的可交互内容会从交互和焦点顺序中移除。
+
+### 常见场景
+
+- 打开模态框时，让背景页面不可交互。
+- 抽屉打开时禁用主内容区域。
+- 页面进入加载或锁定状态时临时禁用一块区域。
+
+### 和 disabled 的区别
+
+- `disabled` 主要用于表单控件。
+- `inert` 可以作用于一整棵 DOM 子树。
+- `inert` 会影响焦点和辅助技术访问。
+
+### 示例
+
+```js
+const page = document.querySelector("main");
+const dialog = document.querySelector("dialog");
+
+function openDialog() {
+  page.inert = true;
+  dialog.showModal();
+}
+
+function closeDialog() {
+  page.inert = false;
+  dialog.close();
+}
+```
+
+### 注意事项
+
+- 使用时要确保关闭浮层后恢复 `inert` 状态。
+- 需要关注浏览器兼容性。
+- 它适合配合弹窗、抽屉、焦点管理一起使用。
+:::
