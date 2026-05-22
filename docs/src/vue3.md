@@ -1403,3 +1403,50 @@ const attrs = useAttrs();
 - 如果组件有多根节点，Vue 不会自动决定 attrs 应该挂到哪里，需要手动绑定。
 - 对明确属于组件 API 的字段，优先声明为 props，而不是长期依赖 attrs。
 :::
+
+## 29、vue3 中 useSlots 有什么作用
+`useSlots` 用于在 `<script setup>` 中访问当前组件接收到的插槽，常用于判断插槽是否存在或在渲染函数中手动调用插槽。
+
+::: details 详情
+### 基本用法
+
+```vue
+<script setup>
+import { computed, useSlots } from "vue";
+
+const slots = useSlots();
+
+const hasFooter = computed(() => Boolean(slots.footer));
+</script>
+
+<template>
+  <section class="panel">
+    <div class="body">
+      <slot />
+    </div>
+
+    <footer v-if="hasFooter">
+      <slot name="footer" />
+    </footer>
+  </section>
+</template>
+```
+
+### 常见场景
+
+- 判断某个具名插槽是否传入。
+- 根据插槽是否存在决定是否渲染外层结构。
+- 在渲染函数或 JSX 中手动调用插槽。
+- 封装布局组件、面板组件、弹窗组件。
+
+### 和 defineSlots 的区别
+
+- `useSlots` 是运行时 API，用于访问实际传入的插槽。
+- `defineSlots` 是编译宏，主要提供 TypeScript 类型声明。
+
+### 注意事项
+
+- 插槽是函数，调用时才会返回 VNode。
+- 模板中优先直接使用 `<slot />`，只有需要逻辑判断或手动调用时再用 `useSlots`。
+- 不要把插槽内容当成普通字符串或 DOM 直接处理。
+:::
