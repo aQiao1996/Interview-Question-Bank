@@ -2032,3 +2032,57 @@ function App() {
 - 数据获取能否使用 Suspense 取决于具体框架或数据库方案。
 - 懒加载失败时还需要配合错误边界处理异常。
 :::
+
+## 32、React 中 useTransition 有什么作用
+`useTransition` 用于把一部分状态更新标记为非紧急更新，让 React 优先处理用户输入等紧急交互，从而减少卡顿感。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { useState, useTransition } from "react";
+
+function SearchList({ list }) {
+  const [keyword, setKeyword] = useState("");
+  const [query, setQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handleChange(event) {
+    const value = event.target.value;
+
+    setKeyword(value);
+
+    startTransition(() => {
+      setQuery(value);
+    });
+  }
+
+  const result = list.filter(item => item.includes(query));
+
+  return (
+    <>
+      <input value={keyword} onChange={handleChange} />
+      {isPending && <span>更新中...</span>}
+      {result.map(item => (
+        <div key={item}>{item}</div>
+      ))}
+    </>
+  );
+}
+```
+
+输入框状态是紧急更新，列表筛选是非紧急更新。
+
+### 适合场景
+
+- 输入框联动大列表渲染。
+- Tab 切换后渲染复杂内容。
+- 路由切换中保留当前交互响应。
+- 大量计算或复杂组件树更新。
+
+### 注意事项
+
+- `useTransition` 不会让计算变快，只是调整更新优先级。
+- 如果计算本身很重，仍需要 memo、虚拟列表、Web Worker 等手段。
+- 不要把输入框 value 本身放进 transition，否则输入可能变得不跟手。
+:::
