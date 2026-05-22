@@ -1708,3 +1708,64 @@ cache-key = pnpm-store-${hash(pnpm-lock.yaml)}
 - 出现诡异构建问题时，可以先清理缓存验证。
 - CI 缓存要有过期策略，避免长期占用空间。
 :::
+
+## 30、Changesets 在前端工程中有什么作用
+Changesets 用于管理包版本变更和发布说明，常见于组件库、工具库和 Monorepo 项目。
+
+::: details 详情
+### 解决什么问题
+
+在多人协作的包发布流程中，需要回答三个问题：
+
+- 哪些包发生了变更。
+- 版本号应该如何升级。
+- 发布说明应该写什么。
+
+Changesets 通过变更记录文件把这些信息提前沉淀下来，避免发布时临时补版本和 changelog。
+
+### 基本流程
+
+开发者提交功能时生成 changeset：
+
+```bash
+pnpm changeset
+```
+
+生成的文件通常包含：
+
+```md
+---
+"@scope/button": minor
+---
+
+新增 loading 状态。
+```
+
+发布前执行版本更新：
+
+```bash
+pnpm changeset version
+```
+
+它会根据 changeset 自动更新包版本和 changelog。
+
+### 版本类型
+
+- `patch`：修复问题，向后兼容。
+- `minor`：新增能力，向后兼容。
+- `major`：破坏性变更。
+
+### 常见场景
+
+- 组件库多包发布。
+- Monorepo 内多个 npm 包联动发版。
+- 自动生成 changelog。
+- 在 CI 中做自动版本 PR 和发布。
+
+### 注意事项
+
+- changeset 文件应该和功能代码一起提交。
+- 版本类型要符合语义化版本规范。
+- 内部依赖包联动升级时，要确认依赖关系是否正确更新。
+- Changesets 适合包发布管理，不是业务应用部署工具。
+:::
