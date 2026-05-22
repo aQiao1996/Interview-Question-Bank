@@ -1412,3 +1412,60 @@ const routes = [
 - 需要给重型组件提供 loading 或骨架屏体验。
 - 加载失败时要有错误兜底，避免页面空白。
 :::
+
+## 31、vue2 中为什么需要 Vue.set
+Vue2 使用 `Object.defineProperty` 实现响应式，无法自动拦截对象新增属性和部分数组下标修改，因此需要 `Vue.set` 或 `this.$set` 手动让新增属性变成响应式。
+
+::: details 详情
+### 对象新增属性
+
+直接新增属性不会触发视图更新：
+
+```js
+this.user.age = 18;
+```
+
+应该使用：
+
+```js
+this.$set(this.user, "age", 18);
+```
+
+或者：
+
+```js
+Vue.set(this.user, "age", 18);
+```
+
+### 数组下标修改
+
+直接通过下标修改数组项，在 Vue2 中也可能无法触发更新：
+
+```js
+this.list[0] = "new value";
+```
+
+可以使用：
+
+```js
+this.$set(this.list, 0, "new value");
+```
+
+或者使用数组变更方法：
+
+```js
+this.list.splice(0, 1, "new value");
+```
+
+### 为什么会这样
+
+Vue2 初始化响应式数据时，会遍历已有属性并通过 `Object.defineProperty` 定义 getter 和 setter。
+
+后续新增的属性没有经过这个过程，所以默认不是响应式的。
+
+### 注意事项
+
+- 最好在 `data` 中提前声明需要用到的字段。
+- 数组更新优先使用 `splice`、`push`、`pop` 等变更方法。
+- Vue3 基于 Proxy，已经解决了这类新增属性监听问题。
+:::
