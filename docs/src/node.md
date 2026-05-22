@@ -1689,3 +1689,65 @@ performance.measure("task", "task-start", "task-end");
 - 线上采集要控制频率和日志量。
 - 单次耗时容易受环境影响，应结合多次采样和实际业务指标分析。
 :::
+
+## 28、Node.js 中如何使用 AbortController 取消异步任务
+`AbortController` 用于给异步任务提供取消信号，常见于取消请求、超时控制和组件卸载后的任务清理。
+
+::: details 详情
+### 基本用法
+
+```js
+const controller = new AbortController();
+
+fetch("https://example.com/api", {
+  signal: controller.signal,
+});
+
+controller.abort();
+```
+
+调用 `abort()` 后，绑定了该 `signal` 的异步任务会收到取消信号。
+
+### 超时取消
+
+```js
+async function fetchWithTimeout(url, timeout = 3000) {
+  const controller = new AbortController();
+
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, timeout);
+
+  try {
+    return await fetch(url, {
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+```
+
+### 自定义异步任务支持取消
+
+```js
+function task(signal) {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new Error("aborted"));
+      return;
+    }
+
+    signal.addEventListener("abort", () => {
+      reject(new Error("aborted"));
+    });
+  });
+}
+```
+
+### 注意事项
+
+- 取消信号需要异步任务本身支持才会生效。
+- 超时 reject 不等于底层任务一定停止，最好使用 `AbortController` 传递取消信号。
+- 取消后要区分取消错误和真实业务错误。
+:::
