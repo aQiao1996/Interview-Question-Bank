@@ -1716,3 +1716,60 @@ console.log(get(data, "user.age", 18)); // 18
 - 如果 key 本身包含 `.`，需要更复杂的路径解析规则。
 - 读取属性时要避免执行不可信对象上的 getter 产生副作用。
 :::
+
+## 29、手写根据路径设置对象属性
+- 根据路径设置对象属性：通过字符串路径修改对象中的深层属性。
+- 应用场景：
+  > - 表单字段赋值。
+  > - 配置项更新。
+  > - 根据接口字段路径写入数据。
+  > - 和路径读取函数配套使用。
+- 实现原理：
+  > - 将路径字符串转换成 key 数组。
+  > - 从对象根节点开始逐层创建对象或数组。
+  > - 到最后一层时写入目标值。
+::: details 详情
+```js
+function set(object, path, value) {
+  const keys = Array.isArray(path)
+    ? path
+    : path.replace(/\[(\w+)\]/g, ".$1").split(".");
+
+  let current = object;
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+
+    if (i === keys.length - 1) {
+      current[key] = value;
+      return object;
+    }
+
+    const nextKey = keys[i + 1];
+
+    if (current[key] == null || typeof current[key] !== "object") {
+      current[key] = /^\d+$/.test(nextKey) ? [] : {};
+    }
+
+    current = current[key];
+  }
+
+  return object;
+}
+
+// 测试 set 函数
+const data = {};
+
+set(data, "user.profile.name", "Tom");
+set(data, "user.posts[0].title", "hello");
+
+console.log(data.user.profile.name); // Tom
+console.log(data.user.posts[0].title); // hello
+```
+
+### 注意事项
+
+- 这个实现会直接修改原对象。
+- 如果需要不可变更新，需要每一层都复制后再写入。
+- 对不可信 path 要做限制，避免写入 `__proto__` 等危险属性。
+:::
