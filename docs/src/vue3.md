@@ -1362,3 +1362,44 @@ const title = defineModel("title");
 - 不要在子组件中随意修改对象内部字段而不触发更新，复杂对象建议明确 emit。
 - 简单双向绑定适合用 `defineModel`，复杂状态流仍应优先使用单向数据流。
 :::
+
+## 28、vue3 中 useAttrs 有什么作用
+`useAttrs` 用于在 `<script setup>` 中访问父组件传入但没有被 props 声明接收的属性和事件。
+
+::: details 详情
+### 基本用法
+
+```vue
+<script setup>
+import { useAttrs } from "vue";
+
+const attrs = useAttrs();
+</script>
+
+<template>
+  <button class="base-button" v-bind="attrs">
+    <slot />
+  </button>
+</template>
+```
+
+父组件传入的 `id`、`class`、`aria-*`、事件监听等都可以通过 attrs 透传给内部元素。
+
+### 和 props 的区别
+
+- props 是组件明确声明的入参。
+- attrs 是没有被 props 接收的额外属性。
+- attrs 常用于二次封装组件时透传属性。
+
+### 常见场景
+
+- 封装按钮、输入框等基础组件。
+- 把父组件传入的原生属性透传给内部 DOM。
+- 多根节点组件中手动控制 attrs 绑定位置。
+
+### 注意事项
+
+- `useAttrs()` 返回的对象不是为了在业务中随意修改。
+- 如果组件有多根节点，Vue 不会自动决定 attrs 应该挂到哪里，需要手动绑定。
+- 对明确属于组件 API 的字段，优先声明为 props，而不是长期依赖 attrs。
+:::
