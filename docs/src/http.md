@@ -1182,3 +1182,55 @@ Sec-Fetch-Site: same-origin
 - 需要给老浏览器或特殊客户端设计兼容策略。
 - 静态资源、开放 API、OAuth 回调等场景不能简单一刀切拒绝跨站请求。
 :::
+
+## 30、SSE 和 WebSocket 有什么区别
+SSE（Server-Sent Events）和 WebSocket 都可以用于服务端主动推送消息，但它们的通信模型和适用场景不同。
+
+::: details 详情
+### SSE 是什么
+
+SSE 基于 HTTP 长连接，服务端可以持续向浏览器推送文本事件，浏览器通过 `EventSource` 接收：
+
+```js
+const source = new EventSource("/api/events");
+
+source.onmessage = (event) => {
+  console.log(event.data);
+};
+```
+
+服务端响应头通常类似：
+
+```http
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+```
+
+### WebSocket 是什么
+
+WebSocket 会在握手后建立全双工连接，客户端和服务端都可以主动发送消息，适合高频双向通信。
+
+### 主要区别
+
+| 对比项 | SSE | WebSocket |
+| --- | --- | --- |
+| 通信方向 | 服务端到客户端单向推送 | 客户端和服务端双向通信 |
+| 协议基础 | 基于 HTTP | 独立升级协议 |
+| 数据格式 | 文本事件 | 文本或二进制 |
+| 自动重连 | 浏览器原生支持 | 通常需要业务自己实现 |
+| 适合场景 | 通知、日志、进度、AI 流式输出 | 聊天、协作、游戏、实时双向交互 |
+
+### 选择建议
+
+- 只需要服务端持续推送，优先考虑 SSE。
+- 需要双向实时通信，选择 WebSocket。
+- 需要传输二进制数据，WebSocket 更合适。
+- 希望复用 HTTP 基础设施并降低复杂度，SSE 更简单。
+
+### 注意事项
+
+- SSE 主要适合文本数据，不适合大规模二进制传输。
+- WebSocket 需要额外考虑心跳、重连、鉴权和连接管理。
+- 代理、网关和服务端超时配置会影响长连接稳定性。
+:::
