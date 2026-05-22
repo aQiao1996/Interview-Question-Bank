@@ -1146,3 +1146,52 @@ input[type="radio"] {
 - 不应依赖它替代所有组件样式隔离方案。
 - 大型项目仍需要命名规范、层级管理和工程化配合。
 :::
+
+## 30、CSS 中 scroll-margin 和 scroll-padding 有什么作用
+`scroll-margin` 和 `scroll-padding` 都用于调整滚动定位时的偏移，常见于锚点跳转、`scrollIntoView` 和固定头部场景。
+
+::: details 详情
+### scroll-margin
+
+`scroll-margin` 作用在目标元素上，用于设置元素被滚动到可视区域时，和滚动容器边缘之间预留的距离。
+
+```css
+.section {
+  scroll-margin-top: 64px;
+}
+```
+
+当跳转到 `.section` 或调用 `scrollIntoView()` 时，浏览器会在顶部预留 `64px`，避免内容被固定导航遮住。
+
+### scroll-padding
+
+`scroll-padding` 作用在滚动容器上，用于设置滚动容器的内部滚动安全区域。
+
+```css
+html {
+  scroll-padding-top: 64px;
+}
+```
+
+它会影响锚点跳转、滚动吸附和部分滚动定位行为。
+
+### 两者区别
+
+- `scroll-margin` 写在被滚动到的目标元素上。
+- `scroll-padding` 写在滚动容器上。
+- `scroll-margin` 更适合单个元素需要特殊偏移的场景。
+- `scroll-padding` 更适合整个页面或容器有统一固定头部的场景。
+
+### 常见场景
+
+- 固定头部下的锚点跳转。
+- 调用 `element.scrollIntoView()` 后避免内容贴边。
+- 滚动吸附布局中预留安全距离。
+- 文档站点、后台详情页中的目录导航定位。
+
+### 注意事项
+
+- 先确认真正的滚动容器，样式要写在对应容器或目标元素上。
+- 固定头部高度变化时，可以配合 CSS 变量维护偏移值。
+- 它们只影响滚动定位偏移，不会改变元素真实布局尺寸。
+:::
