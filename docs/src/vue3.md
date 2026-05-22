@@ -1299,3 +1299,66 @@ defineSlots<{
 - 它主要提供类型能力，不会改变运行时插槽行为。
 - 当前返回类型通常写 `any` 即可，重点是参数类型。
 :::
+
+## 27、vue3 中 defineModel 有什么作用
+`defineModel` 用于在 `<script setup>` 中声明组件的 `v-model`，可以减少手写 `props` 和 `emit` 的样板代码。
+
+::: details 详情
+### 传统写法
+
+自定义组件支持 `v-model` 时，通常需要声明 `modelValue` 和 `update:modelValue`：
+
+```vue
+<script setup>
+const props = defineProps({
+  modelValue: String,
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+function updateValue(value) {
+  emit("update:modelValue", value);
+}
+</script>
+```
+
+### defineModel 写法
+
+```vue
+<script setup>
+const model = defineModel();
+</script>
+
+<template>
+  <input v-model="model" />
+</template>
+```
+
+`model.value` 的变化会自动触发父组件的 `v-model` 更新。
+
+### 命名 v-model
+
+```vue
+<script setup>
+const title = defineModel("title");
+</script>
+```
+
+父组件中使用：
+
+```vue
+<MyInput v-model:title="title" />
+```
+
+### 应用场景
+
+- 表单输入组件。
+- 弹窗显示隐藏状态。
+- 需要双向绑定的封装组件。
+
+### 注意事项
+
+- `defineModel` 是编译宏，不需要导入。
+- 不要在子组件中随意修改对象内部字段而不触发更新，复杂对象建议明确 emit。
+- 简单双向绑定适合用 `defineModel`，复杂状态流仍应优先使用单向数据流。
+:::
