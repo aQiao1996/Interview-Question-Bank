@@ -1632,3 +1632,60 @@ diagnosticsChannel.channel("app.request").subscribe(message => {
 - 传递的数据要控制大小，避免影响性能。
 - 不要在诊断消息中包含密码、Token 等敏感信息。
 :::
+
+## 27、Node.js 中 perf_hooks 有什么作用
+`perf_hooks` 是 Node.js 提供的性能测量模块，可以用于记录代码执行耗时、函数耗时和性能时间线。
+
+::: details 详情
+### 基本用法
+
+```js
+const { performance } = require("perf_hooks");
+
+const start = performance.now();
+
+doSomething();
+
+const end = performance.now();
+
+console.log(`cost: ${end - start}ms`);
+```
+
+`performance.now()` 返回高精度时间，比 `Date.now()` 更适合做性能测量。
+
+### 使用 mark 和 measure
+
+```js
+const { performance, PerformanceObserver } = require("perf_hooks");
+
+const observer = new PerformanceObserver(list => {
+  list.getEntries().forEach(entry => {
+    console.log(entry.name, entry.duration);
+  });
+});
+
+observer.observe({
+  entryTypes: ["measure"],
+});
+
+performance.mark("task-start");
+
+doSomething();
+
+performance.mark("task-end");
+performance.measure("task", "task-start", "task-end");
+```
+
+### 常见场景
+
+- 测量接口内部关键步骤耗时。
+- 分析启动耗时。
+- 对比不同实现的性能。
+- 采集业务函数执行时间。
+
+### 注意事项
+
+- 性能测量代码不要过度侵入业务逻辑。
+- 线上采集要控制频率和日志量。
+- 单次耗时容易受环境影响，应结合多次采样和实际业务指标分析。
+:::
