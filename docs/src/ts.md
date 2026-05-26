@@ -1617,3 +1617,63 @@ type A = FirstParameter<(id: number, name: string) => void>; // number
 - 它不是运行时关键字，只存在于类型系统中。
 - 复杂 `infer` 类型可读性较差，应优先保证类型工具易理解。
 :::
+
+## 33、TypeScript 中 satisfies 关键字有什么作用
+`satisfies` 用于检查一个表达式是否满足某个类型，同时尽量保留表达式自身更精确的类型推断。
+
+::: details 详情
+### 基本用法
+
+```ts
+type Route = {
+  path: string;
+  title: string;
+};
+
+const route = {
+  path: "/home",
+  title: "首页",
+} satisfies Route;
+```
+
+如果对象缺少字段或字段类型不匹配，TypeScript 会报错。
+
+### 和类型注解的区别
+
+```ts
+type Config = Record<string, "light" | "dark">;
+
+const config1: Config = {
+  theme: "dark",
+};
+
+const config2 = {
+  theme: "dark",
+} satisfies Config;
+```
+
+`config1.theme` 会被约束为 `"light" | "dark"`，而 `config2.theme` 可以保留更精确的 `"dark"` 字面量类型。
+
+### 和 as 断言的区别
+
+```ts
+const config = {
+  theme: "blue",
+} as Config;
+```
+
+`as` 是类型断言，可能绕过一部分类型检查；`satisfies` 是类型校验，不会强行把错误类型伪装成目标类型。
+
+### 常见场景
+
+- 校验配置对象。
+- 校验路由表、菜单表、主题表。
+- 保留对象字面量的精确类型。
+- 编写组件映射、权限映射等静态配置。
+
+### 注意事项
+
+- `satisfies` 不会改变运行时结果，只存在于类型检查阶段。
+- 它不是类型转换，也不会生成额外 JavaScript 代码。
+- 如果只是声明变量类型，普通类型注解仍然更直接。
+:::
