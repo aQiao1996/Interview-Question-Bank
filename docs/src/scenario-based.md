@@ -1861,3 +1861,58 @@ self.addEventListener("fetch", event => {
 - 敏感数据不应长期明文缓存。
 - 离线能力要有明确提示，避免用户误以为操作已经成功同步。
 :::
+
+## 30、前端如何设计全局错误兜底方案
+全局错误兜底用于捕获运行时异常、资源加载失败、接口异常和框架组件错误，避免问题静默发生，并为线上排查提供线索。
+
+::: details 详情
+### 需要覆盖的错误类型
+
+- JavaScript 运行时错误。
+- Promise 未处理异常。
+- 静态资源加载失败。
+- 接口请求失败。
+- React、Vue 等框架组件错误。
+
+### 浏览器全局监听
+
+```js
+window.addEventListener("error", event => {
+  console.log("error", event.message, event.filename, event.lineno);
+});
+
+window.addEventListener("unhandledrejection", event => {
+  console.log("promise error", event.reason);
+});
+```
+
+`error` 可以捕获同步运行时错误和部分资源加载错误，`unhandledrejection` 用于捕获未处理的 Promise 异常。
+
+### 框架层兜底
+
+Vue 可以使用 `app.config.errorHandler`，React 可以使用 Error Boundary 捕获组件渲染错误。
+
+```js
+app.config.errorHandler = (err, instance, info) => {
+  reportError({
+    err,
+    info,
+  });
+};
+```
+
+### 上报内容
+
+- 错误信息和堆栈。
+- 页面 URL、路由、用户操作路径。
+- 浏览器、系统、设备信息。
+- 接口状态码和 trace id。
+- 当前版本号、构建 hash。
+
+### 注意事项
+
+- 错误上报要做采样和限流，避免异常风暴。
+- 敏感信息需要脱敏。
+- Source Map 不应公开暴露，线上解析应放在内部服务。
+- 兜底方案不能替代业务显式错误处理，用户可感知错误仍要给出友好提示。
+:::
