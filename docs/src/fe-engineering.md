@@ -1769,3 +1769,50 @@ pnpm changeset version
 - 内部依赖包联动升级时，要确认依赖关系是否正确更新。
 - Changesets 适合包发布管理，不是业务应用部署工具。
 :::
+
+## 31、Corepack 在前端项目中有什么作用
+Corepack 用于管理包管理器版本，让团队在不同机器和 CI 环境中使用一致的 pnpm、Yarn 等工具版本。
+
+::: details 详情
+### 解决什么问题
+
+即使提交了 lockfile，如果团队成员使用的包管理器版本不同，也可能出现安装行为差异。
+
+Corepack 可以读取 `package.json` 中的 `packageManager` 字段：
+
+```json
+{
+  "packageManager": "pnpm@9.15.0"
+}
+```
+
+然后自动准备对应版本的包管理器。
+
+### 基本使用
+
+```bash
+corepack enable
+corepack prepare pnpm@9.15.0 --activate
+```
+
+启用后，执行 `pnpm install` 时会优先使用项目声明的 pnpm 版本。
+
+### 常见收益
+
+- 统一本地和 CI 的包管理器版本。
+- 减少 lockfile 因工具版本不同产生的无意义变更。
+- 降低新成员配置项目环境的成本。
+- 和 `pnpm install --frozen-lockfile` 配合，提高依赖安装稳定性。
+
+### 和 lockfile 的关系
+
+- lockfile 锁定依赖版本和依赖树。
+- Corepack 锁定包管理器版本。
+- 两者配合才能更好地保证安装结果一致。
+
+### 注意事项
+
+- CI 镜像中的 Node.js 版本需要支持 Corepack。
+- 项目应明确声明 `packageManager` 字段。
+- 不要在同一个项目中混用 npm、Yarn、pnpm 的 lockfile。
+:::
