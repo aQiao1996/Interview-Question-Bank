@@ -1833,3 +1833,62 @@ console.log(omit(user, ["password"])); // { id: 1, name: "Tom" }
 - 如果字段值是对象，结果中仍然共享同一个引用。
 - 处理敏感数据时，后端仍应做字段过滤，不能只依赖前端。
 :::
+
+## 31、手写 deepEqual 深度比较函数
+深度比较用于判断两个值在结构和内容上是否相等，常见于缓存判断、表单脏检查和测试断言。
+
+::: details 详情
+### 实现思路
+
+- 先用 `Object.is` 处理基本类型、`NaN`、`-0` 等特殊值。
+- 如果任意一方不是对象，直接返回 `false`。
+- 比较对象的 key 数量。
+- 递归比较每个 key 对应的值。
+
+### 基础实现
+
+```js
+function deepEqual(a, b) {
+  if (Object.is(a, b)) {
+    return true;
+  }
+
+  if (a === null || b === null || typeof a !== "object" || typeof b !== "object") {
+    return false;
+  }
+
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+
+  if (aKeys.length !== bKeys.length) {
+    return false;
+  }
+
+  for (const key of aKeys) {
+    if (!Object.prototype.hasOwnProperty.call(b, key)) {
+      return false;
+    }
+
+    if (!deepEqual(a[key], b[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+```
+
+### 测试
+
+```js
+console.log(deepEqual({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })); // true
+console.log(deepEqual([1, 2, 3], [1, 2, 3])); // true
+console.log(deepEqual({ a: 1 }, { a: "1" })); // false
+```
+
+### 注意事项
+
+- 这个版本没有处理循环引用。
+- 没有特殊处理 `Date`、`RegExp`、`Map`、`Set` 等对象。
+- 面试中可以先写基础版本，再说明如何扩展边界情况。
+:::
