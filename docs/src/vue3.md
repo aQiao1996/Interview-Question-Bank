@@ -1494,3 +1494,55 @@ export function useGlobalMessage() {
 - 如果只是组件通信，优先使用 props、emit、provide/inject 或状态管理。
 - 在 `<script setup>` 中需要暴露给父组件的内容，应优先使用 `defineExpose`。
 :::
+
+## 31、vue3 中 v-once 有什么作用
+`v-once` 用于让元素或组件只渲染一次，后续响应式数据变化时不再更新这部分 DOM。
+
+::: details 详情
+### 基本用法
+
+```vue
+<template>
+  <h1 v-once>{{ title }}</h1>
+</template>
+```
+
+首次渲染后，即使 `title` 后续发生变化，这个标题也不会重新渲染。
+
+### 适合场景
+
+- 静态文案或静态说明。
+- 初始化后不会变化的协议内容。
+- 大块静态 DOM。
+- 确认不需要响应式更新的展示区域。
+
+### 和 v-memo 的区别
+
+- `v-once` 是只渲染一次，后续永不更新。
+- `v-memo` 是根据依赖数组判断是否跳过更新。
+- `v-once` 更简单，但适用范围更窄。
+- `v-memo` 更灵活，适合列表或复杂子树的条件缓存。
+
+### 示例
+
+```vue
+<template>
+  <section>
+    <header v-once>
+      <h1>{{ initialTitle }}</h1>
+      <p>{{ initialDesc }}</p>
+    </header>
+
+    <p>{{ count }}</p>
+  </section>
+</template>
+```
+
+`header` 只会渲染一次，`count` 仍会正常响应更新。
+
+### 注意事项
+
+- 不要用于需要随状态更新的内容。
+- 如果数据来自异步接口，要确认首次渲染时数据已经准备好。
+- 性能优化前应先确认瓶颈，避免为了微小收益牺牲可维护性。
+:::
