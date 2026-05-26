@@ -1186,3 +1186,49 @@ function closeDialog() {
 - 不应脱离真实性能数据盲目设置。
 - 图片仍应设置合适尺寸、压缩格式和 `width`、`height`，避免布局偏移。
 :::
+
+## 32、HTML 中 inputmode 属性有什么作用
+`inputmode` 用于提示浏览器在输入时展示哪种软键盘，常用于优化移动端表单输入体验。
+
+::: details 详情
+### 基本用法
+
+```html
+<input type="text" inputmode="numeric" placeholder="请输入验证码" />
+```
+
+在移动端，`inputmode="numeric"` 通常会唤起数字键盘。
+
+### 常见取值
+
+- `text`：普通文本输入。
+- `numeric`：数字键盘，适合验证码、纯数字编号。
+- `decimal`：小数输入。
+- `tel`：电话键盘。
+- `email`：邮箱输入键盘。
+- `url`：URL 输入键盘。
+- `search`：搜索输入键盘。
+
+### 和 type 的区别
+
+`type` 定义输入控件的语义和校验规则，`inputmode` 主要影响输入键盘。
+
+```html
+<input type="text" inputmode="numeric" maxlength="6" />
+```
+
+验证码通常不适合用 `type="number"`，因为它可能带来前导零丢失、滚轮修改、浏览器默认样式等问题。
+
+### 常见场景
+
+- 短信验证码。
+- 手机号输入。
+- 金额输入。
+- 邮箱、URL、搜索框输入体验优化。
+
+### 注意事项
+
+- `inputmode` 是提示，不是严格校验。
+- 表单校验仍需要前端和后端共同处理。
+- 不同浏览器和系统键盘表现可能略有差异。
+:::
