@@ -1916,3 +1916,72 @@ app.config.errorHandler = (err, instance, info) => {
 - Source Map 不应公开暴露，线上解析应放在内部服务。
 - 兜底方案不能替代业务显式错误处理，用户可感知错误仍要给出友好提示。
 :::
+
+## 31、前端如何排查和优化页面长任务
+页面长任务通常指主线程连续执行时间过长的任务，会阻塞渲染和用户输入，导致页面卡顿、点击无响应或动画掉帧。
+
+::: details 详情
+### 如何发现长任务
+
+- Chrome DevTools Performance 面板查看 Main 线程。
+- 关注超过 `50ms` 的 Long Task。
+- 观察 INP、FID、TBT 等性能指标。
+- 线上通过 PerformanceObserver 采集长任务。
+
+```js
+const observer = new PerformanceObserver(list => {
+  for (const entry of list.getEntries()) {
+    console.log("long task", entry.duration);
+  }
+});
+
+observer.observe({ entryTypes: ["longtask"] });
+```
+
+### 常见原因
+
+- 一次性渲染大量 DOM。
+- 大数组同步计算、排序、过滤。
+- JSON 大对象解析。
+- 复杂正则或递归计算。
+- 第三方脚本执行时间过长。
+
+### 优化手段
+
+- 拆分任务，把大任务切成多个小任务。
+- 使用虚拟列表减少 DOM 数量。
+- 把 CPU 密集型任务放到 Web Worker。
+- 使用 `requestAnimationFrame` 处理和渲染相关的任务。
+- 使用 `requestIdleCallback` 处理低优先级后台任务。
+- 减少首屏不必要的第三方脚本。
+
+### 示例：任务分片
+
+```js
+function runChunks(list, handler, size = 100) {
+  let index = 0;
+
+  function next() {
+    const end = Math.min(index + size, list.length);
+
+    while (index < end) {
+      handler(list[index]);
+      index++;
+    }
+
+    if (index < list.length) {
+      setTimeout(next, 0);
+    }
+  }
+
+  next();
+}
+```
+
+### 注意事项
+
+- 优化前先定位瓶颈，不要凭感觉改。
+- 分片会增加总耗时，但能改善交互响应。
+- Worker 适合计算密集任务，不适合频繁操作 DOM。
+- 第三方脚本也要纳入性能预算和监控。
+:::
