@@ -1450,3 +1450,47 @@ const hasFooter = computed(() => Boolean(slots.footer));
 - 模板中优先直接使用 `<slot />`，只有需要逻辑判断或手动调用时再用 `useSlots`。
 - 不要把插槽内容当成普通字符串或 DOM 直接处理。
 :::
+
+## 30、vue3 中 getCurrentInstance 有什么作用
+`getCurrentInstance` 用于获取当前组件的内部实例，通常用于访问组件实例上下文、全局属性或编写底层工具函数。
+
+::: details 详情
+### 基本用法
+
+```vue
+<script setup>
+import { getCurrentInstance } from "vue";
+
+const instance = getCurrentInstance();
+
+console.log(instance?.appContext);
+</script>
+```
+
+它只能在组件初始化阶段的同步代码中调用，例如 `setup` 或生命周期钩子内部。
+
+### 常见用途
+
+- 访问 `appContext.config.globalProperties`。
+- 在组件库内部获取当前组件上下文。
+- 编写需要依赖组件实例的底层工具。
+- 调试组件实例信息。
+
+### 访问全局属性
+
+```js
+import { getCurrentInstance } from "vue";
+
+export function useGlobalMessage() {
+  const instance = getCurrentInstance();
+  return instance?.appContext.config.globalProperties.$message;
+}
+```
+
+### 注意事项
+
+- 业务代码中不建议频繁依赖 `getCurrentInstance`，容易和组件内部实现耦合。
+- 异步回调中直接调用可能拿不到当前实例。
+- 如果只是组件通信，优先使用 props、emit、provide/inject 或状态管理。
+- 在 `<script setup>` 中需要暴露给父组件的内容，应优先使用 `defineExpose`。
+:::
