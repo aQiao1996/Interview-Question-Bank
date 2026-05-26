@@ -1840,3 +1840,58 @@ const mod = await import("./config.js");
 - 使用 `createRequire` 时要明确它的解析基准路径。
 - 如果依赖本身已经支持 ESM，优先使用标准 `import`。
 :::
+
+## 31、Node.js 中 AsyncResource 有什么作用
+`AsyncResource` 用于手动创建和管理异步资源，帮助 Node.js 正确追踪自定义异步任务的上下文。
+
+::: details 详情
+### 为什么需要 AsyncResource
+
+Node.js 可以自动追踪大部分内置异步操作，例如定时器、Promise、文件 I/O。
+
+但如果你封装了自定义异步调度逻辑，例如任务队列、线程池回调、事件桥接，就可能需要手动告诉 Node.js：这个回调属于某个异步资源。
+
+### 基本示例
+
+```js
+const { AsyncResource } = require("node:async_hooks");
+
+class TaskResource extends AsyncResource {
+  constructor() {
+    super("TaskResource");
+  }
+
+  run(callback) {
+    this.runInAsyncScope(callback);
+    this.emitDestroy();
+  }
+}
+
+const task = new TaskResource();
+
+task.run(() => {
+  console.log("run task");
+});
+```
+
+`runInAsyncScope` 会在该异步资源的上下文中执行回调。
+
+### 常见场景
+
+- 自定义任务队列。
+- 封装原生插件或线程池回调。
+- 需要配合 `AsyncLocalStorage` 保持请求上下文。
+- 链路追踪和日志上下文传播。
+
+### 和 AsyncLocalStorage 的关系
+
+- `AsyncLocalStorage` 用于保存和读取异步上下文数据。
+- `AsyncResource` 用于帮助自定义异步资源正确传播上下文。
+- 业务开发通常直接用 `AsyncLocalStorage`，框架和底层库更可能用到 `AsyncResource`。
+
+### 注意事项
+
+- 使用后要在合适时机调用 `emitDestroy()`，避免资源追踪信息长期保留。
+- 不要为了普通 Promise 或定时器滥用它。
+- 它更偏底层能力，面试中重点说明使用场景和上下文传播问题。
+:::
