@@ -1800,3 +1800,43 @@ timer.ref();
 - 如果进程提前退出，`unref` 后的定时器回调可能不会执行。
 - 关键业务逻辑不要依赖 `unref` 定时器一定执行。
 :::
+
+## 30、Node.js 中 createRequire 有什么作用
+`createRequire` 用于在 ES Module 中创建一个 CommonJS 风格的 `require` 函数，方便加载只支持 `require` 的资源或依赖。
+
+::: details 详情
+### 基本用法
+
+```js
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+
+const pkg = require("./package.json");
+```
+
+在 ESM 文件中没有内置的 `require`、`__dirname`、`__filename`，如果需要兼容 CommonJS 加载方式，就可以使用 `createRequire`。
+
+### 常见场景
+
+- 在 ESM 项目中读取 `package.json`。
+- 加载只支持 CommonJS 的包。
+- 迁移 CommonJS 项目到 ESM 时做兼容过渡。
+- 在工具链脚本中复用已有的 `require.resolve` 能力。
+
+### 和动态 import 的区别
+
+```js
+const mod = await import("./config.js");
+```
+
+- `import()` 是异步的，遵循 ESM 加载规则。
+- `require()` 是同步的，遵循 CommonJS 加载规则。
+- `createRequire` 更适合兼容 CommonJS 依赖或 JSON 加载。
+
+### 注意事项
+
+- 不建议在新代码中无节制混用 ESM 和 CommonJS。
+- 使用 `createRequire` 时要明确它的解析基准路径。
+- 如果依赖本身已经支持 ESM，优先使用标准 `import`。
+:::
