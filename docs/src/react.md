@@ -2086,3 +2086,54 @@ function SearchList({ list }) {
 - 如果计算本身很重，仍需要 memo、虚拟列表、Web Worker 等手段。
 - 不要把输入框 value 本身放进 transition，否则输入可能变得不跟手。
 :::
+
+## 33、React 中 useDeferredValue 有什么作用
+`useDeferredValue` 用于延迟更新某个值，让 React 优先处理更紧急的渲染，从而改善输入、点击等交互体验。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { useDeferredValue, useMemo, useState } from "react";
+
+function SearchList({ list }) {
+  const [keyword, setKeyword] = useState("");
+  const deferredKeyword = useDeferredValue(keyword);
+
+  const result = useMemo(() => {
+    return list.filter(item => item.includes(deferredKeyword));
+  }, [list, deferredKeyword]);
+
+  return (
+    <>
+      <input value={keyword} onChange={e => setKeyword(e.target.value)} />
+      {result.map(item => (
+        <div key={item}>{item}</div>
+      ))}
+    </>
+  );
+}
+```
+
+输入框使用最新的 `keyword`，列表筛选使用延迟后的 `deferredKeyword`。
+
+### 适合场景
+
+- 输入框联动大列表。
+- 搜索条件变化后渲染复杂结果。
+- 父组件值频繁变化，但子组件渲染成本较高。
+- 希望保留旧内容，等新内容准备好后再更新。
+
+### 和 useTransition 的区别
+
+- `useTransition` 是把一段状态更新标记为低优先级。
+- `useDeferredValue` 是把某个值的更新延后。
+- `useTransition` 更适合你能控制 `setState` 的场景。
+- `useDeferredValue` 更适合值来自 props 或外部状态，当前组件不能直接控制更新来源的场景。
+
+### 注意事项
+
+- `useDeferredValue` 不会减少计算量，只是调整渲染优先级。
+- 如果列表很大，仍需要虚拟列表、缓存计算或服务端搜索。
+- 延迟值可能短时间落后于最新输入，UI 上要能接受这种状态。
+:::
