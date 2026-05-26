@@ -1257,3 +1257,61 @@ footer a {
 - `:where()` 很适合降低组件库默认样式的覆盖成本。
 - `:is()` 参数中如果包含高优先级选择器，整体优先级也会变高。
 :::
+
+## 32、CSS Grid 中 subgrid 有什么作用
+`subgrid` 允许子网格继承父级 Grid 的行或列轨道，让嵌套内容在同一套网格线上对齐。
+
+::: details 详情
+### 问题背景
+
+普通嵌套 Grid 会创建自己的网格轨道，子元素很难和父级网格列线保持一致。
+
+```css
+.parent {
+  display: grid;
+  grid-template-columns: 120px 1fr 80px;
+}
+
+.child {
+  display: grid;
+}
+```
+
+`.child` 内部的列不会自动继承 `.parent` 的列定义。
+
+### 使用 subgrid
+
+```css
+.parent {
+  display: grid;
+  grid-template-columns: 120px 1fr 80px;
+}
+
+.card {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+```
+
+这样 `.card` 内部子元素可以沿用父级的列轨道。
+
+### 常见场景
+
+- 表单 label、内容、操作按钮跨多行对齐。
+- 卡片列表内部字段和外层网格对齐。
+- 复杂后台表格或详情布局。
+- 多层嵌套布局中保持列线一致。
+
+### 和普通 Grid 的区别
+
+- 普通 Grid 自己定义行列轨道。
+- `subgrid` 复用父级的行或列轨道。
+- `subgrid` 更强调跨层级对齐。
+
+### 注意事项
+
+- 需要关注浏览器兼容性。
+- `subgrid` 依赖父级本身是 Grid 布局。
+- 如果只是简单局部排列，普通 Grid 或 Flex 更直接。
+:::
