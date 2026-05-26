@@ -1892,3 +1892,86 @@ console.log(deepEqual({ a: 1 }, { a: "1" })); // false
 - 没有特殊处理 `Date`、`RegExp`、`Map`、`Set` 等对象。
 - 面试中可以先写基础版本，再说明如何扩展边界情况。
 :::
+
+## 32、手写 groupBy 数组分组函数
+`groupBy` 用于按照指定规则把数组元素分组，常见于列表聚合、表格分组和数据统计。
+
+::: details 详情
+### 实现思路
+
+- 遍历数组。
+- 根据传入函数计算分组 key。
+- 如果分组不存在，先初始化为空数组。
+- 把当前元素放入对应分组。
+
+### 基础实现
+
+```js
+function groupBy(array, iteratee) {
+  return array.reduce((result, item, index) => {
+    const key = iteratee(item, index, array);
+
+    if (!Object.prototype.hasOwnProperty.call(result, key)) {
+      result[key] = [];
+    }
+
+    result[key].push(item);
+
+    return result;
+  }, {});
+}
+```
+
+### 支持字符串字段
+
+```js
+function groupBy(array, iteratee) {
+  const getKey =
+    typeof iteratee === "function" ? iteratee : item => item?.[iteratee];
+
+  return array.reduce((result, item, index) => {
+    const key = getKey(item, index, array);
+
+    if (!Object.prototype.hasOwnProperty.call(result, key)) {
+      result[key] = [];
+    }
+
+    result[key].push(item);
+
+    return result;
+  }, {});
+}
+```
+
+### 测试
+
+```js
+const users = [
+  { name: "Tom", role: "admin" },
+  { name: "Jack", role: "user" },
+  { name: "Lucy", role: "admin" },
+];
+
+console.log(groupBy(users, "role"));
+```
+
+输出：
+
+```js
+{
+  admin: [
+    { name: "Tom", role: "admin" },
+    { name: "Lucy", role: "admin" },
+  ],
+  user: [
+    { name: "Jack", role: "user" },
+  ],
+}
+```
+
+### 注意事项
+
+- 对象 key 会被转换成字符串。
+- 如果分组 key 可能是对象，可以考虑使用 `Map`。
+- 真实业务中要明确空值、缺失字段和非法数据的处理规则。
+:::
