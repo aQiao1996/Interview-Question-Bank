@@ -1895,3 +1895,60 @@ task.run(() => {
 - 不要为了普通 Promise 或定时器滥用它。
 - 它更偏底层能力，面试中重点说明使用场景和上下文传播问题。
 :::
+
+## 32、Node.js 中 crypto 模块常见用途有哪些
+`crypto` 是 Node.js 内置加密模块，常用于哈希、签名、随机数生成、密码存储和数据加解密。
+
+::: details 详情
+### 哈希摘要
+
+```js
+const crypto = require("node:crypto");
+
+const hash = crypto
+  .createHash("sha256")
+  .update("hello")
+  .digest("hex");
+
+console.log(hash);
+```
+
+哈希常用于文件完整性校验、缓存 key 和内容摘要。
+
+### 生成随机值
+
+```js
+const token = crypto.randomBytes(32).toString("hex");
+```
+
+`randomBytes` 适合生成验证码种子、token、盐值等安全随机数据。
+
+### HMAC 签名
+
+```js
+const sign = crypto
+  .createHmac("sha256", "secret")
+  .update("payload")
+  .digest("hex");
+```
+
+HMAC 常用于接口签名、Webhook 验签和防篡改校验。
+
+### 密码存储
+
+密码不应该直接用普通哈希存储，应使用带盐的慢哈希算法，例如 `scrypt`、`bcrypt`、`argon2`。
+
+```js
+crypto.scrypt("password", "salt", 64, (err, derivedKey) => {
+  if (err) throw err;
+  console.log(derivedKey.toString("hex"));
+});
+```
+
+### 注意事项
+
+- 不要自己设计加密算法。
+- 密码不能明文存储，也不应只做一次普通 SHA 哈希。
+- 随机数要使用 `crypto.randomBytes`，不要用 `Math.random` 生成安全 token。
+- 密钥要放在安全配置或密钥管理服务中，不要提交到代码仓库。
+:::
