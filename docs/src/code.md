@@ -1975,3 +1975,74 @@ console.log(groupBy(users, "role"));
 - 如果分组 key 可能是对象，可以考虑使用 `Map`。
 - 真实业务中要明确空值、缺失字段和非法数据的处理规则。
 :::
+
+## 33、手写数组去重函数
+数组去重用于移除数组中的重复元素，常见实现包括 `Set` 去重、循环判断去重和按字段去重。
+
+::: details 详情
+### 使用 Set 去重
+
+```js
+function unique(array) {
+  return [...new Set(array)];
+}
+```
+
+测试：
+
+```js
+console.log(unique([1, 2, 2, 3, 3, 4])); // [1, 2, 3, 4]
+```
+
+这种方式简洁，适合基本类型数组。
+
+### 使用 includes 去重
+
+```js
+function unique(array) {
+  const result = [];
+
+  for (const item of array) {
+    if (!result.includes(item)) {
+      result.push(item);
+    }
+  }
+
+  return result;
+}
+```
+
+### 对象数组按字段去重
+
+```js
+function uniqueBy(array, key) {
+  const map = new Map();
+
+  for (const item of array) {
+    if (!map.has(item[key])) {
+      map.set(item[key], item);
+    }
+  }
+
+  return [...map.values()];
+}
+```
+
+测试：
+
+```js
+const list = [
+  { id: 1, name: "Tom" },
+  { id: 1, name: "Tom again" },
+  { id: 2, name: "Jack" },
+];
+
+console.log(uniqueBy(list, "id"));
+```
+
+### 注意事项
+
+- `Set` 对对象去重时比较的是引用地址。
+- `includes` 对 `NaN` 可以正确判断，但整体时间复杂度较高。
+- 对象数组去重要先明确保留第一项还是最后一项。
+:::
