@@ -1315,3 +1315,64 @@ footer a {
 - `subgrid` 依赖父级本身是 Grid 布局。
 - 如果只是简单局部排列，普通 Grid 或 Flex 更直接。
 :::
+
+## 33、CSS Nesting 原生嵌套有什么作用
+CSS Nesting 允许在原生 CSS 中书写嵌套规则，减少重复选择器，让组件样式结构更清晰。
+
+::: details 详情
+### 基本用法
+
+```css
+.card {
+  padding: 16px;
+
+  & .title {
+    font-weight: 600;
+  }
+
+  &:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  }
+}
+```
+
+`&` 表示当前选择器。
+
+### 等价写法
+
+上面的代码大致等价于：
+
+```css
+.card {
+  padding: 16px;
+}
+
+.card .title {
+  font-weight: 600;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+```
+
+### 和 Sass 嵌套的区别
+
+- CSS Nesting 是浏览器原生能力。
+- Sass 嵌套需要预处理器编译。
+- 原生嵌套语法更受 CSS 规范限制。
+- 不能完全照搬 Sass 的所有写法。
+
+### 适合场景
+
+- 组件局部样式。
+- 状态选择器，例如 `:hover`、`:focus-visible`。
+- 主题或容器下的局部规则。
+- 减少重复父选择器。
+
+### 注意事项
+
+- 不要嵌套过深，否则会生成复杂选择器。
+- 嵌套不会自动带来样式隔离，仍要注意命名冲突。
+- 需要关注目标浏览器兼容性和构建工具处理方式。
+:::
