@@ -1469,3 +1469,48 @@ Vue2 初始化响应式数据时，会遍历已有属性并通过 `Object.define
 - 数组更新优先使用 `splice`、`push`、`pop` 等变更方法。
 - Vue3 基于 Proxy，已经解决了这类新增属性监听问题。
 :::
+
+## 32、vue2 中 Vue.extend 有什么作用
+`Vue.extend` 用于基于一个组件配置对象创建 Vue 子类构造器，常见于 Vue2 中动态创建组件实例。
+
+::: details 详情
+### 基本用法
+
+```js
+const ToastConstructor = Vue.extend({
+  template: "<div>{{ message }}</div>",
+  data() {
+    return {
+      message: "提示内容",
+    };
+  },
+});
+
+const instance = new ToastConstructor();
+instance.$mount();
+document.body.appendChild(instance.$el);
+```
+
+这样可以不通过模板声明，而是通过 JavaScript 动态创建组件。
+
+### 常见场景
+
+- 全局 Toast。
+- Message 提示。
+- Confirm 弹窗。
+- Loading 服务。
+- 组件库中的命令式调用 API。
+
+### 和 Vue.component 的区别
+
+- `Vue.component` 用于注册全局组件，通常在模板中使用。
+- `Vue.extend` 用于创建组件构造器，可以手动 `new` 实例。
+- `Vue.extend` 更适合命令式组件。
+
+### 注意事项
+
+- 动态创建的实例要在不用时调用 `$destroy()`。
+- 同时要移除挂载到页面上的 DOM。
+- 滥用命令式创建会让组件生命周期和状态管理变复杂。
+- Vue3 中这类场景通常使用 `createApp` 或框架/组件库封装能力。
+:::
