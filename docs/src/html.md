@@ -1232,3 +1232,48 @@ function closeDialog() {
 - 表单校验仍需要前端和后端共同处理。
 - 不同浏览器和系统键盘表现可能略有差异。
 :::
+
+## 33、HTML 中 enterkeyhint 属性有什么作用
+`enterkeyhint` 用于提示移动端软键盘回车键显示什么文案或图标，从而让输入行为更符合当前场景。
+
+::: details 详情
+### 基本用法
+
+```html
+<input type="search" enterkeyhint="search" placeholder="搜索商品" />
+```
+
+在移动端键盘上，回车键可能显示为“搜索”。
+
+### 常见取值
+
+- `enter`：普通换行或确认。
+- `done`：完成。
+- `go`：前往。
+- `next`：下一项。
+- `previous`：上一项。
+- `search`：搜索。
+- `send`：发送。
+
+### 常见场景
+
+```html
+<input type="text" enterkeyhint="next" placeholder="姓名" />
+<input type="search" enterkeyhint="search" placeholder="搜索" />
+<textarea enterkeyhint="send" placeholder="输入消息"></textarea>
+```
+
+不同输入场景可以提示用户下一步行为。
+
+### 和 inputmode 的区别
+
+- `inputmode` 影响键盘布局，例如数字键盘、邮箱键盘。
+- `enterkeyhint` 影响回车键的语义提示。
+- 两者可以一起使用，优化移动端表单体验。
+
+### 注意事项
+
+- 它只是提示，不保证所有浏览器和输入法都完全遵守。
+- 实际提交、搜索、发送逻辑仍需要 JavaScript 或表单行为处理。
+- 多输入框表单中可以配合焦点管理提升填写效率。
+:::
