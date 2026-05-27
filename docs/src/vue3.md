@@ -1546,3 +1546,57 @@ export function useGlobalMessage() {
 - 如果数据来自异步接口，要确认首次渲染时数据已经准备好。
 - 性能优化前应先确认瓶颈，避免为了微小收益牺牲可维护性。
 :::
+
+## 32、vue3 中 onRenderTracked 和 onRenderTriggered 有什么作用
+`onRenderTracked` 和 `onRenderTriggered` 是 Vue3 的调试钩子，用于分析组件渲染时追踪了哪些响应式依赖，以及哪些依赖触发了重新渲染。
+
+::: details 详情
+### 基本用法
+
+```vue
+<script setup>
+import { onRenderTracked, onRenderTriggered } from "vue";
+
+onRenderTracked(event => {
+  console.log("tracked", event);
+});
+
+onRenderTriggered(event => {
+  console.log("triggered", event);
+});
+</script>
+```
+
+### onRenderTracked
+
+当组件渲染过程中读取响应式数据时触发。
+
+它可以帮助你知道：
+
+- 当前组件依赖了哪些响应式数据。
+- 是否意外读取了过多状态。
+- 某个状态为什么会和渲染产生关联。
+
+### onRenderTriggered
+
+当响应式依赖变化并触发组件重新渲染时触发。
+
+它可以帮助你定位：
+
+- 是哪个 key 触发了更新。
+- 更新类型是 set、add 还是 delete。
+- 是否存在无意义的重复渲染。
+
+### 常见场景
+
+- 排查组件为什么频繁重新渲染。
+- 分析响应式依赖是否过大。
+- 优化复杂组件或大列表性能。
+- 调试组合式函数带来的隐式依赖。
+
+### 注意事项
+
+- 这两个钩子主要用于开发调试，不适合写业务逻辑。
+- 生产环境通常不应该依赖它们。
+- 如果只是普通性能优化，应优先使用 Vue DevTools、拆分组件、缓存计算等手段。
+:::
