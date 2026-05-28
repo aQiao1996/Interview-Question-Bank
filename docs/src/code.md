@@ -2046,3 +2046,69 @@ console.log(uniqueBy(list, "id"));
 - `includes` 对 `NaN` 可以正确判断，但整体时间复杂度较高。
 - 对象数组去重要先明确保留第一项还是最后一项。
 :::
+
+## 34、手写数组 chunk 分块函数
+`chunk` 用于把数组按指定大小拆分成多个子数组，常见于分页处理、批量请求和任务分批执行。
+
+::: details 详情
+### 实现思路
+
+- 按指定 size 遍历数组。
+- 每次截取一段作为子数组。
+- 把子数组放入结果数组。
+
+### 基础实现
+
+```js
+function chunk(array, size) {
+  if (!Array.isArray(array)) {
+    return [];
+  }
+
+  if (size <= 0) {
+    return [];
+  }
+
+  const result = [];
+
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+
+  return result;
+}
+```
+
+### 测试
+
+```js
+console.log(chunk([1, 2, 3, 4, 5], 2));
+// [[1, 2], [3, 4], [5]]
+
+console.log(chunk([1, 2, 3], 3));
+// [[1, 2, 3]]
+```
+
+### reduce 实现
+
+```js
+function chunk(array, size) {
+  return array.reduce((result, item, index) => {
+    const groupIndex = Math.floor(index / size);
+
+    if (!result[groupIndex]) {
+      result[groupIndex] = [];
+    }
+
+    result[groupIndex].push(item);
+    return result;
+  }, []);
+}
+```
+
+### 注意事项
+
+- `size` 小于等于 0 时要明确返回结果或抛错。
+- `slice` 会返回浅拷贝，子数组中的对象仍然共享引用。
+- 用于批量请求时，还需要配合并发控制，而不只是分块。
+:::
