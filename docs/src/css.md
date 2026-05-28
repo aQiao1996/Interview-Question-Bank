@@ -1376,3 +1376,56 @@ CSS Nesting 允许在原生 CSS 中书写嵌套规则，减少重复选择器，
 - 嵌套不会自动带来样式隔离，仍要注意命名冲突。
 - 需要关注目标浏览器兼容性和构建工具处理方式。
 :::
+
+## 34、CSS 中 @property 有什么作用
+`@property` 用于注册 CSS 自定义属性，让自定义属性拥有类型、初始值和继承行为，并支持更稳定的动画过渡。
+
+::: details 详情
+### 基本用法
+
+```css
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.box {
+  --angle: 0deg;
+  background: conic-gradient(from var(--angle), red, blue, red);
+  transition: --angle 1s;
+}
+
+.box:hover {
+  --angle: 360deg;
+}
+```
+
+普通 CSS 变量通常只是字符串替换，注册后浏览器可以知道它的类型。
+
+### 配置项
+
+- `syntax`：声明属性类型，例如 `<length>`、`<color>`、`<angle>`。
+- `initial-value`：初始值。
+- `inherits`：是否继承。
+
+### 解决什么问题
+
+- 让自定义属性可以按类型参与动画。
+- 避免非法值导致不可预期结果。
+- 给自定义属性设置明确初始值。
+- 控制自定义属性是否继承。
+
+### 常见场景
+
+- 渐变角度动画。
+- 主题颜色过渡。
+- 数值型 CSS 变量动画。
+- 复杂组件内部的样式状态管理。
+
+### 注意事项
+
+- 需要关注浏览器兼容性。
+- `initial-value` 必须符合 `syntax` 定义。
+- 并不是所有 CSS 变量都需要注册，普通复用值直接用自定义属性即可。
+:::
