@@ -1600,3 +1600,66 @@ onRenderTriggered(event => {
 - 生产环境通常不应该依赖它们。
 - 如果只是普通性能优化，应优先使用 Vue DevTools、拆分组件、缓存计算等手段。
 :::
+
+## 33、vue3 中 app.config.globalProperties 有什么作用
+`app.config.globalProperties` 用于在 Vue 应用实例上注册全局属性，组件内部可以通过实例访问这些属性。
+
+::: details 详情
+### 基本用法
+
+```js
+const app = createApp(App);
+
+app.config.globalProperties.$message = {
+  success(text) {
+    console.log(text);
+  },
+};
+
+app.mount("#app");
+```
+
+在组件中可以通过 `this.$message` 访问。
+
+### 和 Vue2 的区别
+
+Vue2 中常见写法是：
+
+```js
+Vue.prototype.$message = message;
+```
+
+Vue3 取消了全局 `Vue` 构造器，改为基于应用实例配置：
+
+```js
+app.config.globalProperties.$message = message;
+```
+
+这样多个 Vue 应用之间的全局配置可以相互隔离。
+
+### 常见场景
+
+- 注册全局消息提示。
+- 注册埋点方法。
+- 注册格式化工具。
+- 插件向组件暴露全局能力。
+
+### 在 script setup 中如何访问
+
+`<script setup>` 中没有 `this`，如果要访问全局属性，通常可以封装 composable：
+
+```js
+import { getCurrentInstance } from "vue";
+
+export function useMessage() {
+  const instance = getCurrentInstance();
+  return instance?.appContext.config.globalProperties.$message;
+}
+```
+
+### 注意事项
+
+- 不要把所有工具都挂到全局属性上，容易形成隐式依赖。
+- TypeScript 项目中需要补充类型声明。
+- 业务代码优先使用显式 import，插件或框架级能力再考虑全局属性。
+:::
