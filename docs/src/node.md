@@ -1952,3 +1952,61 @@ crypto.scrypt("password", "salt", 64, (err, derivedKey) => {
 - 随机数要使用 `crypto.randomBytes`，不要用 `Math.random` 生成安全 token。
 - 密钥要放在安全配置或密钥管理服务中，不要提交到代码仓库。
 :::
+
+## 33、Node.js 服务如何做优雅关闭
+优雅关闭是指服务收到退出信号后，不再接收新请求，同时等待正在处理的请求、数据库连接和后台任务安全结束。
+
+::: details 详情
+### 为什么需要优雅关闭
+
+如果服务直接退出，可能导致：
+
+- 正在处理的请求中断。
+- 数据库事务未完成。
+- 日志或监控数据未写入。
+- 消息队列任务处理一半。
+- 负载均衡仍把流量打到即将退出的实例。
+
+### 监听退出信号
+
+```js
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+function shutdown() {
+  console.log("start graceful shutdown");
+}
+```
+
+容器、进程管理器或用户中断通常会发送这些信号。
+
+### 关闭 HTTP 服务
+
+```js
+const server = app.listen(3000);
+
+function shutdown() {
+  server.close(() => {
+    console.log("http server closed");
+    process.exit(0);
+  });
+}
+```
+
+`server.close()` 会停止接收新连接，并等待已有连接结束。
+
+### 还需要处理什么
+
+- 关闭数据库连接池。
+- 停止消费消息队列。
+- 等待后台任务完成或安全中断。
+- 刷新日志和监控上报。
+- 设置最大等待时间，避免永远无法退出。
+
+### 注意事项
+
+- 不要一收到信号就立刻 `process.exit()`。
+- 优雅关闭要配合负载均衡摘流。
+- Kubernetes 场景要结合 `preStop`、探针和 `terminationGracePeriodSeconds`。
+- 关闭流程要能重复调用，避免多个信号导致重复清理。
+:::
