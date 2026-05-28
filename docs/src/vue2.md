@@ -1514,3 +1514,73 @@ document.body.appendChild(instance.$el);
 - 滥用命令式创建会让组件生命周期和状态管理变复杂。
 - Vue3 中这类场景通常使用 `createApp` 或框架/组件库封装能力。
 :::
+
+## 33、vue2 中 provide 和 inject 有什么作用
+`provide` 和 `inject` 用于跨层级组件通信，祖先组件提供数据，后代组件可以直接注入使用。
+
+::: details 详情
+### 基本用法
+
+祖先组件：
+
+```js
+export default {
+  provide() {
+    return {
+      theme: this.theme,
+    };
+  },
+  data() {
+    return {
+      theme: "dark",
+    };
+  },
+};
+```
+
+后代组件：
+
+```js
+export default {
+  inject: ["theme"],
+  mounted() {
+    console.log(this.theme);
+  },
+};
+```
+
+### 适合场景
+
+- 组件库表单上下文。
+- 多层级主题配置。
+- 父级向深层子组件传递公共方法。
+- 避免多层 props 透传。
+
+### 默认不是响应式
+
+Vue2 中直接 provide 普通值时，后代拿到的值默认不会随着祖先数据变化自动更新。
+
+如果需要响应式，可以 provide 一个响应式对象：
+
+```js
+provide() {
+  return {
+    state: this.state,
+  };
+},
+data() {
+  return {
+    state: {
+      theme: "dark",
+    },
+  };
+}
+```
+
+### 注意事项
+
+- `provide/inject` 会形成隐式依赖，滥用后数据流不清晰。
+- 不适合替代 Vuex 或全局状态管理。
+- 组件库内部使用较多，普通业务中要谨慎使用。
+- 注入的数据来源不直观，维护时需要文档或类型约束辅助。
+:::
