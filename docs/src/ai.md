@@ -5052,3 +5052,55 @@ modelC + promptV1 + evalSet
 - 新模型可能更贵、更慢，不能只看质量提升。
 - 实验结果要沉淀为模型路由规则，而不是只靠人工感觉。
 :::
+
+## 51、AI 流式输出如何选择 SSE、WebSocket 和 fetch stream
+AI 流式输出可以用 SSE、WebSocket 或 fetch stream 实现，选择时要看通信方向、兼容性、服务端复杂度和业务交互需求。
+
+::: details 详情
+### SSE
+
+SSE 适合服务端持续向客户端推送文本：
+
+- 浏览器原生支持 `EventSource`。
+- 自动重连能力较好。
+- 实现简单，适合聊天回答流。
+- 主要是单向通信。
+
+适合普通 AI 问答、知识库问答、生成进度推送。
+
+### WebSocket
+
+WebSocket 是全双工通信：
+
+- 客户端和服务端都可以主动发送消息。
+- 适合复杂实时交互。
+- 需要自己处理心跳、重连和连接状态。
+- 服务端连接管理成本更高。
+
+适合多人协作、实时语音、复杂 Agent 控制台。
+
+### fetch stream
+
+`fetch` 可以读取响应流：
+
+```js
+const response = await fetch("/api/chat");
+const reader = response.body.getReader();
+```
+
+它适合和普通 HTTP 接口保持一致，也方便携带请求体和自定义鉴权头。
+
+### 选择建议
+
+- 普通文本生成：优先 SSE 或 fetch stream。
+- 需要双向实时控制：选 WebSocket。
+- 要兼容现有 HTTP API：fetch stream 更自然。
+- 需要简单服务端推送：SSE 更轻量。
+
+### 注意事项
+
+- 流式输出要处理取消、中断、超时和重试。
+- 前端不要每个 token 都触发重渲染，可以做节流更新。
+- 服务端要在用户取消后终止模型请求，避免继续消耗成本。
+- 代理、网关和 CDN 可能会缓冲响应，需要确认链路支持流式传输。
+:::
