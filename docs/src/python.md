@@ -650,3 +650,73 @@ user.update({"age": 20})
 - 协程不是自动并行，它仍然运行在线程中。
 - 选择并发模型要结合任务类型、依赖库和部署环境。
 :::
+
+## 12、Python 中 asyncio 的核心概念有哪些
+`asyncio` 是 Python 标准库中的异步 I/O 框架，核心是事件循环、协程、任务和 await。
+
+::: details 详情
+### 协程函数
+
+使用 `async def` 定义协程函数：
+
+```python
+async def fetch_data():
+    return "data"
+```
+
+调用协程函数不会立即执行，而是返回一个协程对象。
+
+### await
+
+`await` 用于等待一个可等待对象完成：
+
+```python
+async def main():
+    result = await fetch_data()
+    print(result)
+```
+
+### 事件循环
+
+事件循环负责调度协程执行：
+
+```python
+import asyncio
+
+asyncio.run(main())
+```
+
+`asyncio.run` 会创建事件循环、运行协程，并在结束后关闭事件循环。
+
+### Task
+
+`Task` 用于把协程包装成可调度任务：
+
+```python
+async def main():
+    task1 = asyncio.create_task(fetch_data())
+    task2 = asyncio.create_task(fetch_data())
+
+    result1 = await task1
+    result2 = await task2
+```
+
+这样多个 I/O 任务可以并发等待。
+
+### gather
+
+```python
+results = await asyncio.gather(
+    fetch_data(),
+    fetch_data(),
+)
+```
+
+`gather` 常用于并发执行多个异步任务。
+
+### 注意事项
+
+- `asyncio` 适合 I/O 密集型任务，不适合直接加速 CPU 密集计算。
+- 异步代码中不要调用阻塞函数，否则会阻塞整个事件循环。
+- 需要使用支持异步的库，例如异步 HTTP 客户端、异步数据库驱动。
+:::
