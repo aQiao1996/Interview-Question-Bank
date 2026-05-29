@@ -150,3 +150,62 @@ def add_item(item, result=None):
 - 有时可以故意利用这个特性做缓存，但业务代码中不建议这样写。
 - 面试中要说清“定义时计算一次”和“共享同一个可变对象”。
 :::
+
+## 4、Python 中迭代器和生成器有什么区别
+迭代器是实现了迭代协议的对象，生成器是一种更方便创建迭代器的方式，通常通过 `yield` 定义。
+
+::: details 详情
+### 迭代器协议
+
+一个对象如果实现了 `__iter__` 和 `__next__`，就可以作为迭代器：
+
+```python
+class Counter:
+    def __init__(self, max_value):
+        self.current = 0
+        self.max_value = max_value
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current >= self.max_value:
+            raise StopIteration
+        self.current += 1
+        return self.current
+```
+
+### 生成器
+
+使用 `yield` 可以更简单地创建迭代器：
+
+```python
+def counter(max_value):
+    current = 0
+    while current < max_value:
+        current += 1
+        yield current
+```
+
+调用生成器函数不会立即执行函数体，而是返回一个生成器对象。
+
+### 主要区别
+
+- 迭代器是概念和协议。
+- 生成器是创建迭代器的一种语法工具。
+- 生成器会自动保存函数执行状态。
+- 生成器适合惰性计算和处理大数据流。
+
+### 常见场景
+
+- 逐行读取大文件。
+- 分批处理数据。
+- 构建数据流管道。
+- 避免一次性把大量数据加载到内存。
+
+### 注意事项
+
+- 生成器通常只能顺序消费一次。
+- 消费完后再次遍历不会重新产生数据，需要重新创建生成器。
+- 面试中可以从“迭代协议、yield、惰性求值、内存优势”几个角度回答。
+:::
