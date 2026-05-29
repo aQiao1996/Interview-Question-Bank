@@ -1062,3 +1062,65 @@ from os import path
 - 避免模块文件名和标准库重名，例如 `json.py`、`sys.py`。
 - 循环导入可能导致部分初始化的问题，应通过拆分模块或延迟导入解决。
 :::
+
+## 18、Python 类型注解有什么作用
+类型注解用于描述变量、函数参数和返回值的类型，帮助提升可读性、静态检查和 IDE 提示能力。
+
+::: details 详情
+### 基本用法
+
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+```
+
+类型注解不会在运行时自动强制校验类型，它主要服务于静态分析和代码理解。
+
+### 变量注解
+
+```python
+name: str = "Tom"
+age: int = 18
+tags: list[str] = ["python", "backend"]
+```
+
+### Optional 和 Union
+
+```python
+from typing import Optional, Union
+
+def find_user(user_id: int) -> Optional[str]:
+    return None
+
+def parse(value: Union[str, int]) -> str:
+    return str(value)
+```
+
+在较新的 Python 版本中，也可以写：
+
+```python
+def parse(value: str | int) -> str:
+    return str(value)
+```
+
+### 常见工具
+
+- mypy。
+- pyright。
+- pylance。
+- IDE 自动补全和类型提示。
+
+### 好处
+
+- 函数签名更清晰。
+- 降低维护成本。
+- 更早发现类型错误。
+- 方便大型项目协作。
+- 改善编辑器提示和重构体验。
+
+### 注意事项
+
+- 类型注解不是运行时校验。
+- 动态数据仍需要显式校验，例如接口入参、配置文件、用户输入。
+- 类型写得过于复杂会降低可读性，应平衡精确性和维护性。
+:::
