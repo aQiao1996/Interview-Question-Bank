@@ -462,3 +462,74 @@ def managed():
 - 文件、锁、连接池、事务都适合上下文管理。
 - 不要在 `__exit__` 中静默吞掉重要异常。
 :::
+
+## 9、Python 中 *args 和 **kwargs 有什么作用
+`*args` 用于接收可变数量的位置参数，`**kwargs` 用于接收可变数量的关键字参数。
+
+::: details 详情
+### *args
+
+```python
+def add(*args):
+    return sum(args)
+
+print(add(1, 2, 3))  # 6
+```
+
+函数内部的 `args` 是一个 `tuple`。
+
+### **kwargs
+
+```python
+def print_user(**kwargs):
+    print(kwargs)
+
+print_user(name="Tom", age=18)
+```
+
+函数内部的 `kwargs` 是一个 `dict`。
+
+### 混合使用
+
+参数顺序通常是：
+
+```python
+def func(a, b=1, *args, **kwargs):
+    pass
+```
+
+更完整的顺序可以包含仅限关键字参数：
+
+```python
+def func(a, *args, debug=False, **kwargs):
+    pass
+```
+
+### 参数解包
+
+调用函数时也可以使用 `*` 和 `**` 解包：
+
+```python
+def add(a, b):
+    return a + b
+
+nums = [1, 2]
+print(add(*nums))
+
+data = {"a": 1, "b": 2}
+print(add(**data))
+```
+
+### 常见场景
+
+- 封装装饰器。
+- 转发函数参数。
+- 编写通用工具函数。
+- 框架回调函数接收扩展参数。
+
+### 注意事项
+
+- `args` 和 `kwargs` 只是约定名称，关键是 `*` 和 `**`。
+- 滥用可变参数会让函数签名不清晰。
+- 公共 API 应尽量保留明确参数，避免调用方不知道能传什么。
+:::
