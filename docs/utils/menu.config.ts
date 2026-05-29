@@ -8,6 +8,7 @@ export default [
   { text: "vue3", link: "/vue3" },
   { text: "react", link: "/react" },
   { text: "node", link: "/node" },
+  { text: "python", link: "/python" },
   { text: "http", link: "/http" },
   { text: "AI", link: "/ai" },
   { text: "场景题", link: "/scenario-based" },
