@@ -337,3 +337,61 @@ threads = [threading.Thread(target=cpu_task) for _ in range(4)]
 - 多进程可以利用多核，但进程间通信成本更高。
 - 面试中要区分 CPython、线程并发、CPU 并行和 I/O 并发。
 :::
+
+## 7、Python 中 is 和 == 有什么区别
+`==` 比较两个对象的值是否相等，`is` 比较两个变量是否引用同一个对象。
+
+::: details 详情
+### 基本示例
+
+```python
+a = [1, 2, 3]
+b = [1, 2, 3]
+
+print(a == b)  # True
+print(a is b)  # False
+```
+
+两个列表内容相同，所以 `==` 为 `True`；但它们是两个不同对象，所以 `is` 为 `False`。
+
+### None 判断
+
+判断是否为 `None` 时应该使用 `is`：
+
+```python
+if value is None:
+    pass
+```
+
+因为 `None` 是单例对象，使用 `is None` 语义更准确。
+
+### 小整数和字符串驻留
+
+```python
+a = 1
+b = 1
+print(a is b)  # 可能是 True
+```
+
+CPython 会缓存小整数和部分字符串，因此某些情况下 `is` 看起来也能比较值，但不要依赖这个行为。
+
+### 自定义对象
+
+`==` 会调用对象的 `__eq__` 方法：
+
+```python
+class User:
+    def __init__(self, id):
+        self.id = id
+
+    def __eq__(self, other):
+        return isinstance(other, User) and self.id == other.id
+```
+
+### 注意事项
+
+- 比较值用 `==`。
+- 判断是否同一个对象用 `is`。
+- 判断 `None` 用 `is None` 或 `is not None`。
+- 不要用 `is` 比较数字、字符串等普通值。
+:::
