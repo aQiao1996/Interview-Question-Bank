@@ -720,3 +720,75 @@ results = await asyncio.gather(
 - 异步代码中不要调用阻塞函数，否则会阻塞整个事件循环。
 - 需要使用支持异步的库，例如异步 HTTP 客户端、异步数据库驱动。
 :::
+
+## 13、Python 中 dataclass 有什么作用
+`dataclass` 用于简化数据类定义，自动生成 `__init__`、`__repr__`、`__eq__` 等方法。
+
+::: details 详情
+### 基本用法
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class User:
+    id: int
+    name: str
+    age: int = 18
+```
+
+创建对象：
+
+```python
+user = User(id=1, name="Tom")
+print(user)
+```
+
+`dataclass` 会自动生成构造函数和友好的打印结果。
+
+### 默认值
+
+```python
+@dataclass
+class User:
+    name: str
+    tags: list[str]
+```
+
+如果字段是可变对象，不要直接使用 `[]` 作为默认值，应使用 `field(default_factory=...)`：
+
+```python
+from dataclasses import dataclass, field
+
+@dataclass
+class User:
+    name: str
+    tags: list[str] = field(default_factory=list)
+```
+
+### 常见参数
+
+```python
+@dataclass(frozen=True)
+class Point:
+    x: int
+    y: int
+```
+
+- `frozen=True`：创建不可变对象。
+- `order=True`：生成排序比较方法。
+- `eq=True`：生成相等比较方法，默认开启。
+
+### 适合场景
+
+- DTO。
+- 配置对象。
+- 简单值对象。
+- 函数返回结构化数据。
+
+### 注意事项
+
+- `dataclass` 主要适合承载数据，不应塞入过多业务逻辑。
+- 可变默认值要使用 `default_factory`。
+- 如果需要数据校验，可以考虑 Pydantic 等库。
+:::
