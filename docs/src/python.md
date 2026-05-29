@@ -1124,3 +1124,67 @@ def parse(value: str | int) -> str:
 - 动态数据仍需要显式校验，例如接口入参、配置文件、用户输入。
 - 类型写得过于复杂会降低可读性，应平衡精确性和维护性。
 :::
+
+## 19、Python 项目为什么需要虚拟环境
+虚拟环境用于为不同项目隔离 Python 解释器环境和第三方依赖，避免项目之间依赖版本冲突。
+
+::: details 详情
+### 为什么需要虚拟环境
+
+如果所有项目共用全局环境，容易出现：
+
+- 项目 A 需要 Django 3，项目 B 需要 Django 5。
+- 升级一个包后影响其他项目。
+- 部署环境和本地环境不一致。
+- 依赖来源和版本难以追踪。
+
+虚拟环境可以让每个项目有独立依赖目录。
+
+### venv
+
+创建虚拟环境：
+
+```bash
+python -m venv .venv
+```
+
+激活虚拟环境：
+
+```bash
+source .venv/bin/activate
+```
+
+安装依赖：
+
+```bash
+pip install requests
+```
+
+### requirements.txt
+
+导出依赖：
+
+```bash
+pip freeze > requirements.txt
+```
+
+安装依赖：
+
+```bash
+pip install -r requirements.txt
+```
+
+### 常见工具
+
+- `venv`：标准库自带，轻量。
+- `pip`：包安装工具。
+- `pip-tools`：依赖锁定。
+- `poetry`：依赖管理和打包。
+- `uv`：更快的 Python 包管理工具。
+
+### 注意事项
+
+- 不要把 `.venv` 提交到代码仓库。
+- 应提交依赖声明文件，例如 `requirements.txt`、`pyproject.toml`、锁文件。
+- 团队要统一 Python 版本和依赖管理工具。
+:::
