@@ -792,3 +792,68 @@ class Point:
 - 可变默认值要使用 `default_factory`。
 - 如果需要数据校验，可以考虑 Pydantic 等库。
 :::
+
+## 14、Python 中 property 有什么作用
+`property` 可以把方法包装成属性访问形式，用于控制属性读取、设置和删除逻辑。
+
+::: details 详情
+### 基本用法
+
+```python
+class User:
+    def __init__(self, first_name, last_name):
+        self.first_name = first_name
+        self.last_name = last_name
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+```
+
+使用时像访问普通属性：
+
+```python
+user = User("Tom", "Smith")
+print(user.full_name)
+```
+
+### setter
+
+可以定义属性赋值逻辑：
+
+```python
+class User:
+    def __init__(self):
+        self._age = 0
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, value):
+        if value < 0:
+            raise ValueError("age must be positive")
+        self._age = value
+```
+
+### 解决什么问题
+
+- 保持属性访问语法简洁。
+- 在读取属性时动态计算。
+- 在设置属性时做校验。
+- 在不破坏调用方代码的情况下，把普通属性改成计算属性。
+
+### 常见场景
+
+- 只读属性。
+- 派生属性。
+- 参数校验。
+- 延迟计算。
+
+### 注意事项
+
+- `property` 中不要做过重计算，否则调用方可能误以为只是普通属性访问。
+- 内部真实字段通常使用 `_name` 这类约定命名。
+- 复杂缓存计算可以结合 `functools.cached_property`。
+:::
