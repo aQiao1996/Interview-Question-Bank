@@ -996,3 +996,69 @@ def outer():
 - 滥用闭包会让状态来源不直观。
 - 复杂状态管理可以考虑类，而不是过度使用闭包。
 :::
+
+## 17、Python 的模块导入机制是怎样的
+Python 导入模块时，会按照搜索路径查找模块，加载后执行模块顶层代码，并把模块对象缓存到 `sys.modules` 中。
+
+::: details 详情
+### 基本流程
+
+执行：
+
+```python
+import math
+```
+
+大致流程是：
+
+- 检查 `sys.modules` 中是否已有缓存。
+- 根据 `sys.path` 查找模块。
+- 加载模块文件。
+- 执行模块顶层代码。
+- 把模块对象放入当前命名空间。
+
+### sys.path
+
+`sys.path` 决定模块查找路径：
+
+```python
+import sys
+
+print(sys.path)
+```
+
+通常包括：
+
+- 当前脚本所在目录。
+- 环境变量 `PYTHONPATH`。
+- 标准库路径。
+- 第三方包路径。
+
+### 模块缓存
+
+模块第一次导入后会缓存：
+
+```python
+import sys
+
+print(sys.modules["math"])
+```
+
+后续再次 `import` 同一模块时，通常不会重复执行模块顶层代码。
+
+### import 和 from import
+
+```python
+import os
+from os import path
+```
+
+- `import os` 绑定模块名。
+- `from os import path` 把模块中的某个对象绑定到当前命名空间。
+
+### 注意事项
+
+- 模块顶层代码会在首次导入时执行，因此不要在顶层写重副作用逻辑。
+- 避免模块文件名和标准库重名，例如 `json.py`、`sys.py`。
+- 循环导入可能导致部分初始化的问题，应通过拆分模块或延迟导入解决。
+:::
