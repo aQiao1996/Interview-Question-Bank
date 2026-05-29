@@ -209,3 +209,81 @@ def counter(max_value):
 - 消费完后再次遍历不会重新产生数据，需要重新创建生成器。
 - 面试中可以从“迭代协议、yield、惰性求值、内存优势”几个角度回答。
 :::
+
+## 5、Python 装饰器是什么，如何实现
+装饰器本质上是一个接收函数并返回新函数的高阶函数，用于在不修改原函数代码的情况下增强功能。
+
+::: details 详情
+### 基本示例
+
+```python
+def log(func):
+    def wrapper(*args, **kwargs):
+        print(f"call {func.__name__}")
+        return func(*args, **kwargs)
+    return wrapper
+
+@log
+def hello(name):
+    return f"hello {name}"
+```
+
+`@log` 等价于：
+
+```python
+hello = log(hello)
+```
+
+### 保留原函数信息
+
+普通装饰器会让函数名变成 `wrapper`，可以使用 `functools.wraps`：
+
+```python
+from functools import wraps
+
+def log(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        print(f"call {func.__name__}")
+        return func(*args, **kwargs)
+    return wrapper
+```
+
+### 带参数的装饰器
+
+```python
+def repeat(times):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = None
+            for _ in range(times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+```
+
+使用：
+
+```python
+@repeat(3)
+def say():
+    print("hi")
+```
+
+### 常见场景
+
+- 日志记录。
+- 权限校验。
+- 性能统计。
+- 缓存。
+- 重试。
+- 事务管理。
+
+### 注意事项
+
+- 记得用 `functools.wraps` 保留元信息。
+- 装饰器不要隐藏过多业务逻辑，否则可读性会下降。
+- 多个装饰器叠加时要注意执行顺序。
+:::
