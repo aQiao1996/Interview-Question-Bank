@@ -926,3 +926,73 @@ except FileNotFoundError as error:
 - 捕获范围过大容易掩盖 bug。
 - `finally` 中也可能抛异常，要谨慎写清理逻辑。
 :::
+
+## 16、Python 中闭包和 nonlocal 有什么作用
+闭包是指内部函数引用了外部函数作用域中的变量，即使外部函数已经执行结束，这些变量仍然会被保留。
+
+::: details 详情
+### 闭包示例
+
+```python
+def make_counter():
+    count = 0
+
+    def counter():
+        return count
+
+    return counter
+```
+
+`counter` 引用了外层函数中的 `count`，这就是闭包。
+
+### nonlocal
+
+如果内部函数想修改外层作用域中的变量，需要使用 `nonlocal`：
+
+```python
+def make_counter():
+    count = 0
+
+    def counter():
+        nonlocal count
+        count += 1
+        return count
+
+    return counter
+
+c = make_counter()
+print(c())  # 1
+print(c())  # 2
+```
+
+没有 `nonlocal` 时，`count += 1` 会被认为是在内部函数中创建局部变量。
+
+### global 和 nonlocal 的区别
+
+- `global` 声明变量来自模块全局作用域。
+- `nonlocal` 声明变量来自外层非全局作用域。
+
+```python
+name = "global"
+
+def outer():
+    name = "outer"
+
+    def inner():
+        nonlocal name
+        name = "inner"
+```
+
+### 常见场景
+
+- 装饰器。
+- 函数工厂。
+- 保存私有状态。
+- 简单计数器或缓存。
+
+### 注意事项
+
+- 闭包会延长变量生命周期。
+- 滥用闭包会让状态来源不直观。
+- 复杂状态管理可以考虑类，而不是过度使用闭包。
+:::
