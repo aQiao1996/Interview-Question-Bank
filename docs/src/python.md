@@ -395,3 +395,70 @@ class User:
 - 判断 `None` 用 `is None` 或 `is not None`。
 - 不要用 `is` 比较数字、字符串等普通值。
 :::
+
+## 8、Python 中 with 语句和上下文管理器是什么
+`with` 语句用于管理资源的进入和退出，常见于文件、锁、数据库连接和事务处理。
+
+::: details 详情
+### 基本用法
+
+```python
+with open("demo.txt", "r", encoding="utf-8") as f:
+    content = f.read()
+```
+
+离开 `with` 代码块后，文件会自动关闭，即使中间发生异常也会执行清理逻辑。
+
+### 上下文管理器协议
+
+一个对象如果实现了 `__enter__` 和 `__exit__`，就可以作为上下文管理器：
+
+```python
+class Resource:
+    def __enter__(self):
+        print("enter")
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print("exit")
+```
+
+使用：
+
+```python
+with Resource() as resource:
+    print("using")
+```
+
+### __exit__ 的作用
+
+`__exit__` 可以接收异常信息：
+
+- `exc_type`：异常类型。
+- `exc_value`：异常对象。
+- `traceback`：调用栈信息。
+
+如果 `__exit__` 返回 `True`，异常会被吞掉；一般不建议随便吞异常。
+
+### contextlib
+
+可以用 `contextlib.contextmanager` 简化实现：
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def managed():
+    print("enter")
+    try:
+        yield
+    finally:
+        print("exit")
+```
+
+### 注意事项
+
+- `with` 的核心价值是保证资源释放。
+- 文件、锁、连接池、事务都适合上下文管理。
+- 不要在 `__exit__` 中静默吞掉重要异常。
+:::
