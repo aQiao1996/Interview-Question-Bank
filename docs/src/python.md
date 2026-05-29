@@ -533,3 +533,65 @@ print(add(**data))
 - 滥用可变参数会让函数签名不清晰。
 - 公共 API 应尽量保留明确参数，避免调用方不知道能传什么。
 :::
+
+## 10、Python 中 dict 有哪些特点
+`dict` 是 Python 中的哈希映射结构，用于存储键值对，具有快速查找、插入和删除能力。
+
+::: details 详情
+### 基本用法
+
+```python
+user = {
+    "name": "Tom",
+    "age": 18,
+}
+
+print(user["name"])
+```
+
+字典通过 key 查找 value，平均时间复杂度通常是 `O(1)`。
+
+### key 的要求
+
+字典的 key 必须是可哈希对象：
+
+```python
+data = {
+    "name": "Tom",
+    1: "one",
+    (1, 2): "point",
+}
+```
+
+`list`、`dict`、`set` 这类可变对象不能作为 key。
+
+### 有序性
+
+Python 3.7 起，`dict` 在语言层面保证保持插入顺序：
+
+```python
+data = {}
+data["a"] = 1
+data["b"] = 2
+data["c"] = 3
+
+print(list(data.keys()))  # ['a', 'b', 'c']
+```
+
+### 常见方法
+
+```python
+user.get("name")
+user.keys()
+user.values()
+user.items()
+user.update({"age": 20})
+```
+
+### 注意事项
+
+- 使用 `dict[key]` 访问不存在的 key 会抛出 `KeyError`。
+- 不确定 key 是否存在时可以用 `get`。
+- key 的哈希值和相等性会影响字典行为。
+- 字典保持插入顺序不等于按 key 排序。
+:::
