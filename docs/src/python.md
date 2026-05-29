@@ -287,3 +287,53 @@ def say():
 - 装饰器不要隐藏过多业务逻辑，否则可读性会下降。
 - 多个装饰器叠加时要注意执行顺序。
 :::
+
+## 6、Python 中 GIL 是什么，有什么影响
+GIL（Global Interpreter Lock，全局解释器锁）是 CPython 解释器中的一把全局锁，它使同一时刻只有一个线程执行 Python 字节码。
+
+::: details 详情
+### 为什么有 GIL
+
+CPython 使用引用计数管理对象生命周期。GIL 简化了对象内存管理和解释器内部状态的线程安全问题。
+
+它是 CPython 的实现细节，不是 Python 语言标准本身。
+
+### 对多线程的影响
+
+对于 CPU 密集型任务，多线程通常不能真正并行执行 Python 字节码：
+
+```python
+import threading
+
+def cpu_task():
+    total = 0
+    for i in range(10_000_000):
+        total += i
+
+threads = [threading.Thread(target=cpu_task) for _ in range(4)]
+```
+
+这种场景可能无法随着线程数增加明显变快。
+
+### I/O 密集型任务
+
+对于网络请求、文件读写、数据库访问等 I/O 密集型任务，多线程仍然有价值。
+
+线程在等待 I/O 时会释放执行机会，其他线程可以继续运行。
+
+### 如何处理 CPU 密集任务
+
+常见方案：
+
+- 使用 `multiprocessing` 多进程。
+- 使用 C 扩展或 NumPy 等释放 GIL 的库。
+- 把 CPU 任务交给任务队列或独立服务。
+- 使用适合并行计算的运行时或语言。
+
+### 注意事项
+
+- GIL 不等于 Python 线程没有用。
+- GIL 主要影响 CPU 密集型多线程并行。
+- 多进程可以利用多核，但进程间通信成本更高。
+- 面试中要区分 CPython、线程并发、CPU 并行和 I/O 并发。
+:::
