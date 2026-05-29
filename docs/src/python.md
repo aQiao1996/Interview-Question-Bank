@@ -857,3 +857,72 @@ class User:
 - 内部真实字段通常使用 `_name` 这类约定命名。
 - 复杂缓存计算可以结合 `functools.cached_property`。
 :::
+
+## 15、Python 异常处理有哪些最佳实践
+Python 异常处理用于捕获和处理运行时错误，好的异常处理应明确、可恢复、可排查，而不是简单吞掉错误。
+
+::: details 详情
+### 基本结构
+
+```python
+try:
+    result = int("abc")
+except ValueError as error:
+    print(f"invalid value: {error}")
+else:
+    print("success")
+finally:
+    print("cleanup")
+```
+
+- `except`：捕获异常。
+- `else`：没有异常时执行。
+- `finally`：无论是否异常都会执行。
+
+### 捕获具体异常
+
+不要随便写：
+
+```python
+try:
+    do_something()
+except Exception:
+    pass
+```
+
+更推荐捕获明确异常：
+
+```python
+try:
+    value = int(text)
+except ValueError:
+    value = 0
+```
+
+### 保留异常上下文
+
+重新抛出异常时，可以使用 `raise ... from ...`：
+
+```python
+try:
+    load_config()
+except FileNotFoundError as error:
+    raise RuntimeError("config file missing") from error
+```
+
+这样可以保留原始异常链。
+
+### 常见实践
+
+- 只捕获自己能处理的异常。
+- 不要用异常控制普通流程。
+- 日志中记录关键上下文。
+- 清理资源优先使用 `with`。
+- 自定义异常要表达业务含义。
+
+### 注意事项
+
+- 空 `except` 会隐藏真实问题。
+- 捕获范围过大容易掩盖 bug。
+- `finally` 中也可能抛异常，要谨慎写清理逻辑。
+:::
