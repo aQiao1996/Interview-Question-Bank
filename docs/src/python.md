@@ -1303,3 +1303,69 @@ print(sys.getsizeof(gen_data))
 - 列表推导式更直观，适合小数据。
 - 处理大文件、大数据流时优先考虑生成器表达式。
 :::
+
+## 22、Python 中 __new__ 和 __init__ 有什么区别
+`__new__` 负责创建对象，`__init__` 负责初始化对象。对象会先经过 `__new__`，再进入 `__init__`。
+
+::: details 详情
+### 执行顺序
+
+```python
+class User:
+    def __new__(cls, *args, **kwargs):
+        print("__new__")
+        return super().__new__(cls)
+
+    def __init__(self, name):
+        print("__init__")
+        self.name = name
+
+user = User("Tom")
+```
+
+输出顺序：
+
+```txt
+__new__
+__init__
+```
+
+### __new__
+
+`__new__` 是静态方法风格，接收类 `cls`，需要返回一个实例对象。
+
+常见用途：
+
+- 控制对象创建。
+- 实现单例模式。
+- 创建不可变对象的子类。
+
+### __init__
+
+`__init__` 接收已经创建好的实例 `self`，用于初始化属性。
+
+```python
+def __init__(self, name):
+    self.name = name
+```
+
+它不能返回非 `None` 的值。
+
+### 单例示例
+
+```python
+class Singleton:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+```
+
+### 注意事项
+
+- 普通业务类通常只需要写 `__init__`。
+- 如果 `__new__` 不返回当前类实例，`__init__` 可能不会按预期执行。
+- 面试中要说清“创建对象”和“初始化对象”的区别。
+:::
