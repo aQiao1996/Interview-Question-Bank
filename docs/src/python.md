@@ -1682,3 +1682,72 @@ def config():
 - 作用域越大，越要注意测试之间的状态污染。
 - 需要清理的资源优先使用 `yield fixture`。
 :::
+
+## 28、Flask 和 FastAPI 有什么区别
+Flask 和 FastAPI 都是 Python Web 框架，Flask 更轻量灵活，FastAPI 更强调类型注解、异步能力和自动 API 文档。
+
+::: details 详情
+### Flask
+
+Flask 是经典轻量 Web 框架：
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/hello")
+def hello():
+    return {"message": "hello"}
+```
+
+特点：
+
+- 简单灵活。
+- 生态成熟。
+- 扩展丰富。
+- 默认同步模型。
+
+### FastAPI
+
+FastAPI 基于类型注解和 ASGI：
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/hello")
+def hello():
+    return {"message": "hello"}
+```
+
+特点：
+
+- 使用类型注解做参数校验和文档生成。
+- 原生支持异步接口。
+- 自动生成 OpenAPI 和 Swagger 文档。
+- 适合构建 API 服务。
+
+### 主要区别
+
+| 对比项 | Flask | FastAPI |
+| --- | --- | --- |
+| 协议基础 | WSGI | ASGI |
+| 异步支持 | 不是核心优势 | 原生支持 |
+| 参数校验 | 依赖扩展或手写 | 基于类型和 Pydantic |
+| 自动文档 | 依赖扩展 | 内置支持 |
+| 生态成熟度 | 更老牌成熟 | 现代 API 生态强 |
+
+### 如何选择
+
+- 小型服务、传统 Web、已有 Flask 生态：可以选 Flask。
+- 新 API 服务、强类型校验、异步场景：可以选 FastAPI。
+- 团队已有技术栈和运维经验也很重要。
+
+### 注意事项
+
+- FastAPI 支持 async 不代表所有代码都会自动变快。
+- 如果内部仍调用阻塞库，异步接口也可能阻塞事件循环。
+- Flask 简单不代表不适合生产，关键看工程化和扩展设计。
+:::
