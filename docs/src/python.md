@@ -1552,3 +1552,68 @@ gc.collect()
 - 排查内存问题要关注引用链，而不是只看对象数量。
 - 引用计数是 CPython 主要机制，其他 Python 实现可能不同。
 :::
+
+## 26、Python 中 functools.lru_cache 有什么作用
+`functools.lru_cache` 用于缓存函数调用结果，避免相同参数重复计算。
+
+::: details 详情
+### 基本用法
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=128)
+def fib(n):
+    if n <= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)
+```
+
+相同参数再次调用时，会直接返回缓存结果。
+
+### maxsize
+
+```python
+@lru_cache(maxsize=256)
+def query(key):
+    return expensive_query(key)
+```
+
+`maxsize` 表示最多缓存多少个结果。超过后会按照 LRU（最近最少使用）策略淘汰。
+
+如果设置为 `None`，缓存不限制大小：
+
+```python
+@lru_cache(maxsize=None)
+def calc(n):
+    return n * n
+```
+
+### 查看缓存信息
+
+```python
+print(fib.cache_info())
+```
+
+可以看到命中次数、未命中次数、最大缓存数量和当前缓存数量。
+
+### 清空缓存
+
+```python
+fib.cache_clear()
+```
+
+### 适合场景
+
+- 纯函数。
+- 重复调用频繁。
+- 计算成本较高。
+- 参数空间有限。
+
+### 注意事项
+
+- 函数参数必须可哈希。
+- 不适合缓存依赖外部状态或实时数据的函数。
+- 缓存会占用内存，要设置合理 `maxsize`。
+- 方法使用 `lru_cache` 时，`self` 也会参与缓存 key。
+:::
