@@ -2116,3 +2116,69 @@ pickle.loads(untrusted_data)  # 危险
 - pickle 和 Python 版本、类定义有耦合。
 - 长期存储重要数据时，应优先选择稳定、可迁移的格式。
 :::
+
+## 35、Python 中 pathlib 相比 os.path 有什么优势
+`pathlib` 提供面向对象的路径处理方式，比传统 `os.path` 更直观、更易组合。
+
+::: details 详情
+### 基本用法
+
+```python
+from pathlib import Path
+
+path = Path("logs") / "app.log"
+print(path)
+```
+
+`/` 运算符可以拼接路径，代码可读性很好。
+
+### 读取和写入文件
+
+```python
+path = Path("demo.txt")
+
+path.write_text("hello", encoding="utf-8")
+content = path.read_text(encoding="utf-8")
+```
+
+`pathlib` 把常见文件操作也封装到了 Path 对象上。
+
+### 常见操作
+
+```python
+path.exists()
+path.is_file()
+path.is_dir()
+path.parent
+path.name
+path.suffix
+path.stem
+```
+
+### 遍历目录
+
+```python
+for file in Path(".").glob("*.py"):
+    print(file)
+```
+
+递归遍历：
+
+```python
+for file in Path(".").rglob("*.py"):
+    print(file)
+```
+
+### 和 os.path 的区别
+
+- `os.path` 主要是函数式 API。
+- `pathlib` 是面向对象 API。
+- `pathlib` 更容易链式组合路径和文件操作。
+- 新项目中通常优先使用 `pathlib`。
+
+### 注意事项
+
+- 需要字符串路径时可以使用 `str(path)`。
+- 跨平台路径处理优先使用 `Path`，不要手动拼接 `/` 或 `\\`。
+- 老代码中 `os.path` 很常见，实际项目可能两者并存。
+:::
