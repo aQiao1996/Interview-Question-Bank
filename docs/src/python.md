@@ -2182,3 +2182,68 @@ for file in Path(".").rglob("*.py"):
 - 跨平台路径处理优先使用 `Path`，不要手动拼接 `/` 或 `\\`。
 - 老代码中 `os.path` 很常见，实际项目可能两者并存。
 :::
+
+## 36、Python 项目如何管理环境变量和配置
+Python 项目通常通过环境变量、配置文件和配置类管理不同环境的数据库、密钥、日志级别等配置。
+
+::: details 详情
+### 为什么需要配置管理
+
+不同环境配置通常不同：
+
+- 开发环境。
+- 测试环境。
+- 预发布环境。
+- 生产环境。
+
+如果把配置写死在代码里，会导致部署困难，也容易泄露敏感信息。
+
+### 使用环境变量
+
+```python
+import os
+
+database_url = os.getenv("DATABASE_URL")
+debug = os.getenv("DEBUG", "false") == "true"
+```
+
+环境变量适合保存部署相关配置和敏感信息引用。
+
+### .env 文件
+
+开发环境中常使用 `.env` 文件：
+
+```txt
+DATABASE_URL=postgresql://localhost/app
+DEBUG=true
+```
+
+再通过工具加载，例如 `python-dotenv`。
+
+### 配置类
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Settings:
+    database_url: str
+    debug: bool = False
+```
+
+配置集中管理后，业务代码不需要到处读取环境变量。
+
+### 最佳实践
+
+- 敏感信息不要提交到代码仓库。
+- 给配置提供明确默认值和校验。
+- 启动时检查必需配置是否存在。
+- 不同环境使用不同配置来源。
+- 配置变更要可追踪。
+
+### 注意事项
+
+- `.env` 适合本地开发，不应直接当作生产密钥管理方案。
+- 生产密钥应放在密钥管理服务或部署平台配置中。
+- 配置读取最好集中在启动阶段，避免运行中配置状态不一致。
+:::
