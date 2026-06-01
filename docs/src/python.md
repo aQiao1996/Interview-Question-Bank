@@ -1988,3 +1988,70 @@ class User(BaseModel):
 - Pydantic 版本差异较大，v1 和 v2 的部分 API 不同。
 - 不要把复杂业务逻辑都塞进数据模型校验中。
 :::
+
+## 33、Python 中 logging 模块如何使用
+`logging` 是 Python 标准库中的日志模块，用于记录程序运行信息、错误和调试数据。
+
+::: details 详情
+### 基本用法
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info("service started")
+logging.warning("memory usage high")
+logging.error("request failed")
+```
+
+### 日志级别
+
+常见级别从低到高：
+
+- `DEBUG`
+- `INFO`
+- `WARNING`
+- `ERROR`
+- `CRITICAL`
+
+生产环境通常不会打开过多 `DEBUG` 日志。
+
+### Logger
+
+实际项目中更推荐创建 logger：
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+logger.info("hello")
+```
+
+`__name__` 可以帮助按模块区分日志来源。
+
+### Handler 和 Formatter
+
+- Handler 决定日志输出到哪里，例如控制台、文件、日志系统。
+- Formatter 决定日志格式。
+
+```python
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+handler.setFormatter(formatter)
+```
+
+### 最佳实践
+
+- 不要用 `print` 替代日志。
+- 日志中带上请求 ID、用户 ID、trace ID 等上下文。
+- 异常日志使用 `logger.exception` 保留堆栈。
+- 避免记录密码、token、身份证等敏感信息。
+
+### 注意事项
+
+- 日志太少不利于排查，太多会增加成本和噪音。
+- 线上日志要有轮转、采集和检索方案。
+- 多进程场景要注意文件日志并发写入问题。
+:::
