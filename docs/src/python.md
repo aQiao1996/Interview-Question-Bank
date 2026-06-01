@@ -1617,3 +1617,68 @@ fib.cache_clear()
 - 缓存会占用内存，要设置合理 `maxsize`。
 - 方法使用 `lru_cache` 时，`self` 也会参与缓存 key。
 :::
+
+## 27、Python 中 pytest 的 fixture 有什么作用
+`fixture` 是 pytest 中用于准备测试依赖的机制，可以复用测试数据、初始化资源，并在测试结束后清理资源。
+
+::: details 详情
+### 基本用法
+
+```python
+import pytest
+
+@pytest.fixture
+def user():
+    return {"name": "Tom", "age": 18}
+
+def test_user_name(user):
+    assert user["name"] == "Tom"
+```
+
+测试函数参数名和 fixture 名一致时，pytest 会自动注入。
+
+### 资源清理
+
+可以使用 `yield` 在测试后执行清理：
+
+```python
+@pytest.fixture
+def db_connection():
+    conn = create_connection()
+    yield conn
+    conn.close()
+```
+
+`yield` 前是准备逻辑，`yield` 后是清理逻辑。
+
+### scope
+
+fixture 可以设置作用域：
+
+```python
+@pytest.fixture(scope="module")
+def config():
+    return load_config()
+```
+
+常见作用域：
+
+- `function`：每个测试函数执行一次，默认值。
+- `class`：每个测试类执行一次。
+- `module`：每个模块执行一次。
+- `session`：整个测试会话执行一次。
+
+### 常见场景
+
+- 构造测试数据。
+- 初始化数据库连接。
+- 创建临时文件。
+- Mock 外部服务。
+- 登录测试用户。
+
+### 注意事项
+
+- fixture 不要做过多隐式逻辑，否则测试可读性会下降。
+- 作用域越大，越要注意测试之间的状态污染。
+- 需要清理的资源优先使用 `yield fixture`。
+:::
