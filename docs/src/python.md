@@ -1437,3 +1437,60 @@ class B(A):
 - 使用 `super()` 时，各类方法签名最好保持兼容。
 - 面试中重点说明 MRO 查找顺序、C3 线性化和 `super()` 的关系。
 :::
+
+## 24、Python 中 __slots__ 有什么作用
+`__slots__` 用于限制实例可以拥有的属性，并减少每个实例默认 `__dict__` 带来的内存开销。
+
+::: details 详情
+### 默认对象属性
+
+普通 Python 对象通常通过 `__dict__` 保存实例属性：
+
+```python
+class User:
+    pass
+
+user = User()
+user.name = "Tom"
+print(user.__dict__)
+```
+
+这种方式灵活，但每个实例都维护字典，会有额外内存开销。
+
+### 使用 __slots__
+
+```python
+class User:
+    __slots__ = ("name", "age")
+
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+```
+
+此时实例只能设置 `name` 和 `age`：
+
+```python
+user = User("Tom", 18)
+user.email = "tom@example.com"  # AttributeError
+```
+
+### 优点
+
+- 限制属性集合。
+- 减少内存占用。
+- 避免动态添加拼写错误的属性。
+
+### 适合场景
+
+- 大量创建的小对象。
+- 对象字段固定。
+- 对内存敏感的数据结构。
+
+### 注意事项
+
+- 使用 `__slots__` 会降低动态扩展属性的灵活性。
+- 继承场景下，父类和子类的 `__slots__` 都需要考虑。
+- 如果需要弱引用，需要在 `__slots__` 中加入 `"__weakref__"`。
+- 普通业务对象不一定需要使用它，先确认内存瓶颈。
+:::
