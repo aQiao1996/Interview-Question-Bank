@@ -2302,3 +2302,63 @@ print(is_valid)
 - 密码重置应使用一次性、短有效期 token。
 - 可以结合登录失败次数限制、验证码、多因素认证增强安全性。
 :::
+
+## 38、Python 中 re 模块常见用法有哪些
+`re` 是 Python 标准库中的正则表达式模块，常用于字符串匹配、提取、替换和校验。
+
+::: details 详情
+### 基本匹配
+
+```python
+import re
+
+text = "email: tom@example.com"
+match = re.search(r"\w+@\w+\.\w+", text)
+
+if match:
+    print(match.group())
+```
+
+`search` 会在字符串中查找第一个匹配项。
+
+### 常见方法
+
+```python
+re.match(pattern, text)     # 从开头匹配
+re.search(pattern, text)    # 查找任意位置
+re.findall(pattern, text)   # 返回所有匹配
+re.sub(pattern, repl, text) # 替换
+```
+
+### 编译正则
+
+如果正则会被重复使用，可以先编译：
+
+```python
+pattern = re.compile(r"\d+")
+result = pattern.findall("a1 b22 c333")
+```
+
+### 贪婪和非贪婪
+
+默认是贪婪匹配：
+
+```python
+re.findall(r"<.*>", "<a>1</a><b>2</b>")
+```
+
+非贪婪匹配：
+
+```python
+re.findall(r"<.*?>", "<a>1</a><b>2</b>")
+```
+
+`*?`、`+?`、`??` 都是非贪婪写法。
+
+### 注意事项
+
+- 正则适合规则明确的文本处理，不适合解析复杂 HTML。
+- 用户输入拼进正则时要注意转义。
+- 复杂正则可能带来性能问题，甚至造成 ReDoS 风险。
+- 可读性差的正则应拆分或添加注释。
+:::
