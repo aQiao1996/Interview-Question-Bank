@@ -1751,3 +1751,67 @@ def hello():
 - 如果内部仍调用阻塞库，异步接口也可能阻塞事件循环。
 - Flask 简单不代表不适合生产，关键看工程化和扩展设计。
 :::
+
+## 29、SQLAlchemy 中 ORM 和 Core 有什么区别
+SQLAlchemy 既提供 ORM，也提供 Core。ORM 通过对象映射数据库表，Core 更接近 SQL 表达式和数据库操作本身。
+
+::: details 详情
+### ORM
+
+ORM 把数据库表映射为 Python 类：
+
+```python
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+class Base(DeclarativeBase):
+    pass
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+```
+
+使用时操作对象：
+
+```python
+user = User(name="Tom")
+session.add(user)
+session.commit()
+```
+
+### Core
+
+Core 使用 SQL 表达式构建查询：
+
+```python
+from sqlalchemy import table, column, select
+
+users = table("users", column("id"), column("name"))
+stmt = select(users).where(users.c.name == "Tom")
+```
+
+它更接近 SQL，也更适合精细控制查询。
+
+### 主要区别
+
+| 对比项 | ORM | Core |
+| --- | --- | --- |
+| 抽象层级 | 更高 | 更接近 SQL |
+| 操作方式 | 操作对象 | 操作表和表达式 |
+| 适合场景 | 业务实体建模 | 复杂 SQL、批量操作 |
+| 学习成本 | 对业务更友好 | 对 SQL 更友好 |
+
+### 如何选择
+
+- 常规业务增删改查：ORM 更方便。
+- 复杂查询、批量写入、性能敏感 SQL：Core 更直接。
+- 实际项目中经常混用 ORM 和 Core。
+
+### 注意事项
+
+- ORM 不等于不用理解 SQL。
+- 要注意 N+1 查询问题。
+- 事务边界、连接池和 session 生命周期要设计清楚。
+:::
