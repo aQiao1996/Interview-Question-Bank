@@ -1369,3 +1369,71 @@ class Singleton:
 - 如果 `__new__` 不返回当前类实例，`__init__` 可能不会按预期执行。
 - 面试中要说清“创建对象”和“初始化对象”的区别。
 :::
+
+## 23、Python 中 MRO 是什么
+MRO（Method Resolution Order）是方法解析顺序，用于决定多继承场景下属性和方法的查找顺序。
+
+::: details 详情
+### 基本示例
+
+```python
+class A:
+    def say(self):
+        print("A")
+
+class B(A):
+    pass
+
+class C(A):
+    def say(self):
+        print("C")
+
+class D(B, C):
+    pass
+
+d = D()
+d.say()
+```
+
+Python 会按 `D` 的 MRO 顺序查找 `say` 方法。
+
+### 查看 MRO
+
+```python
+print(D.__mro__)
+print(D.mro())
+```
+
+输出类似：
+
+```txt
+(D, B, C, A, object)
+```
+
+### C3 线性化
+
+Python 使用 C3 线性化算法计算 MRO，目标是：
+
+- 子类优先于父类。
+- 保持父类声明顺序。
+- 同一个类只出现一次。
+- 避免菱形继承中重复调用。
+
+### super 的关系
+
+`super()` 并不是简单调用父类，而是按 MRO 找下一个类：
+
+```python
+class B(A):
+    def say(self):
+        super().say()
+```
+
+在多继承中，`super()` 的行为依赖当前类的 MRO。
+
+### 注意事项
+
+- 多继承容易增加理解成本，应谨慎使用。
+- 使用 `super()` 时，各类方法签名最好保持兼容。
+- 面试中重点说明 MRO 查找顺序、C3 线性化和 `super()` 的关系。
+:::
