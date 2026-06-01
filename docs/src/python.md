@@ -1934,3 +1934,57 @@ send_email.delay("tom@example.com")
 - Broker 和 Worker 都需要监控。
 - 不要把大对象直接塞进消息，传 ID 更稳妥。
 :::
+
+## 32、Pydantic 在 Python 项目中有什么作用
+Pydantic 用于基于类型注解进行数据校验、解析和序列化，常见于 FastAPI 请求参数、配置和数据模型。
+
+::: details 详情
+### 基本用法
+
+```python
+from pydantic import BaseModel
+
+class User(BaseModel):
+    id: int
+    name: str
+    age: int = 18
+
+user = User(id="1", name="Tom")
+print(user.id)  # 1
+```
+
+Pydantic 会根据类型注解解析和校验数据。
+
+### 数据校验
+
+```python
+from pydantic import BaseModel, Field
+
+class User(BaseModel):
+    name: str = Field(min_length=1)
+    age: int = Field(ge=0, le=120)
+```
+
+字段不符合规则时会抛出校验错误。
+
+### 常见场景
+
+- FastAPI 请求体校验。
+- 响应数据序列化。
+- 配置文件解析。
+- 环境变量校验。
+- 外部接口数据清洗。
+
+### 和 dataclass 的区别
+
+- `dataclass` 主要是简化数据类定义。
+- Pydantic 更强调运行时数据校验和类型转换。
+- 外部输入数据更适合用 Pydantic。
+- 内部简单数据结构可以用 `dataclass`。
+
+### 注意事项
+
+- 类型转换很方便，但也要注意隐式转换是否符合业务预期。
+- Pydantic 版本差异较大，v1 和 v2 的部分 API 不同。
+- 不要把复杂业务逻辑都塞进数据模型校验中。
+:::
