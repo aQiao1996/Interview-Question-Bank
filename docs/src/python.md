@@ -2055,3 +2055,64 @@ handler.setFormatter(formatter)
 - 线上日志要有轮转、采集和检索方案。
 - 多进程场景要注意文件日志并发写入问题。
 :::
+
+## 34、Python 中 json 和 pickle 有什么区别
+`json` 用于跨语言文本数据交换，`pickle` 用于 Python 对象序列化。两者用途、可读性和安全性都不同。
+
+::: details 详情
+### json
+
+```python
+import json
+
+data = {"name": "Tom", "age": 18}
+text = json.dumps(data, ensure_ascii=False)
+obj = json.loads(text)
+```
+
+特点：
+
+- 文本格式。
+- 跨语言通用。
+- 可读性较好。
+- 只支持基础数据类型。
+
+### pickle
+
+```python
+import pickle
+
+data = {"name": "Tom", "age": 18}
+binary = pickle.dumps(data)
+obj = pickle.loads(binary)
+```
+
+特点：
+
+- 二进制格式。
+- Python 专用。
+- 可以序列化更多 Python 对象。
+- 不适合跨语言数据交换。
+
+### 安全风险
+
+不要反序列化不可信来源的 pickle 数据：
+
+```python
+pickle.loads(untrusted_data)  # 危险
+```
+
+因为 pickle 反序列化可能执行任意代码。
+
+### 如何选择
+
+- 接口传输、配置文件、跨语言通信：使用 JSON。
+- Python 内部临时保存复杂对象：可以考虑 pickle。
+- 不可信数据：不要用 pickle 反序列化。
+
+### 注意事项
+
+- JSON 不支持直接序列化 datetime、set、自定义对象，需要转换。
+- pickle 和 Python 版本、类定义有耦合。
+- 长期存储重要数据时，应优先选择稳定、可迁移的格式。
+:::
