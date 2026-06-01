@@ -1873,3 +1873,64 @@ with Session() as session:
 - 外部接口调用不应长时间放在数据库事务中。
 - 后台任务和 Web 请求要分别管理 session 生命周期。
 :::
+
+## 31、Celery 在 Python 项目中有什么作用
+Celery 是 Python 常用的分布式任务队列，用于把耗时任务从 Web 请求中拆出来异步执行。
+
+::: details 详情
+### 解决什么问题
+
+Web 请求中不适合直接执行耗时任务，例如：
+
+- 发送邮件。
+- 生成报表。
+- 图片处理。
+- 文件解析。
+- 调用慢速第三方接口。
+- 定时任务。
+
+这些任务可以投递到 Celery，由 Worker 异步处理。
+
+### 基本组成
+
+Celery 常见组成：
+
+- Producer：投递任务的一方，通常是 Web 服务。
+- Broker：消息中间件，例如 Redis、RabbitMQ。
+- Worker：消费并执行任务。
+- Result Backend：保存任务结果，可选。
+
+### 简单示例
+
+```python
+from celery import Celery
+
+app = Celery("tasks", broker="redis://localhost:6379/0")
+
+@app.task
+def send_email(email):
+    print(f"send email to {email}")
+```
+
+调用：
+
+```python
+send_email.delay("tom@example.com")
+```
+
+### 常见能力
+
+- 异步任务。
+- 定时任务。
+- 失败重试。
+- 任务队列分组。
+- 并发 Worker。
+- 任务结果查询。
+
+### 注意事项
+
+- 任务要尽量幂等，避免重试导致重复副作用。
+- 长任务要设置超时和重试次数。
+- Broker 和 Worker 都需要监控。
+- 不要把大对象直接塞进消息，传 ID 更稳妥。
+:::
