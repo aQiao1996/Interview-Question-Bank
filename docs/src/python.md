@@ -2414,3 +2414,61 @@ print(a ^ b)  # 对称差集 {1, 2, 4, 5}
 - `list`、`dict`、`set` 不能直接作为 `set` 元素。
 - 如果需要不可变集合，可以使用 `frozenset`。
 :::
+
+## 40、Python 中 monkey patch 是什么
+Monkey patch 是指在运行时动态修改模块、类或对象的属性和方法，以改变其行为。
+
+::: details 详情
+### 基本示例
+
+```python
+class User:
+    def say(self):
+        return "hello"
+
+def new_say(self):
+    return "hi"
+
+User.say = new_say
+
+user = User()
+print(user.say())  # hi
+```
+
+这里在运行时替换了 `User.say` 方法。
+
+### 常见场景
+
+- 测试中替换外部依赖。
+- 临时修复第三方库行为。
+- 框架或插件修改运行时行为。
+- Mock 网络请求、数据库调用等。
+
+### 测试中的 monkeypatch
+
+pytest 提供了 `monkeypatch` fixture：
+
+```python
+def test_env(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "test")
+```
+
+测试结束后，pytest 会自动恢复修改。
+
+### 风险
+
+Monkey patch 很灵活，但也有明显风险：
+
+- 修改行为不直观。
+- 影响范围可能过大。
+- 调试困难。
+- 第三方库升级后容易失效。
+- 多线程或并发场景下可能引发不可预期问题。
+
+### 注意事项
+
+- 业务代码中应谨慎使用 monkey patch。
+- 测试中使用要控制作用范围并自动恢复。
+- 如果是长期需求，优先通过继承、组合、配置或明确扩展点实现。
+- 面试中可以强调它体现了 Python 的动态特性，但不是常规设计手段。
+:::
