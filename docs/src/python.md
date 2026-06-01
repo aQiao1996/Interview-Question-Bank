@@ -1815,3 +1815,61 @@ stmt = select(users).where(users.c.name == "Tom")
 - 要注意 N+1 查询问题。
 - 事务边界、连接池和 session 生命周期要设计清楚。
 :::
+
+## 30、Python Web 项目中数据库事务如何管理
+数据库事务用于保证一组数据库操作要么全部成功，要么全部回滚，避免数据处于不一致状态。
+
+::: details 详情
+### 事务基本概念
+
+事务通常关注 ACID：
+
+- 原子性：要么全部成功，要么全部失败。
+- 一致性：事务前后数据满足约束。
+- 隔离性：并发事务之间互不干扰或按隔离级别控制。
+- 持久性：提交后数据持久保存。
+
+### SQLAlchemy 示例
+
+```python
+try:
+    user = User(name="Tom")
+    session.add(user)
+    session.commit()
+except Exception:
+    session.rollback()
+    raise
+finally:
+    session.close()
+```
+
+出现异常时要回滚事务，最后释放 session。
+
+### 上下文管理
+
+更推荐使用上下文管理封装事务边界：
+
+```python
+with Session() as session:
+    with session.begin():
+        session.add(User(name="Tom"))
+```
+
+代码块正常结束时提交，异常时回滚。
+
+### Web 请求中的事务
+
+常见做法：
+
+- 每个请求创建独立 session。
+- 请求成功后提交。
+- 请求异常时回滚。
+- 请求结束后关闭 session。
+
+### 注意事项
+
+- 不要把 session 作为全局对象共享。
+- 事务范围不要过大，否则会增加锁竞争。
+- 外部接口调用不应长时间放在数据库事务中。
+- 后台任务和 Web 请求要分别管理 session 生命周期。
+:::
