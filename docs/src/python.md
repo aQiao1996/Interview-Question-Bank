@@ -2472,3 +2472,82 @@ Monkey patch 很灵活，但也有明显风险：
 - 如果是长期需求，优先通过继承、组合、配置或明确扩展点实现。
 - 面试中可以强调它体现了 Python 的动态特性，但不是常规设计手段。
 :::
+
+## 41、Python 中 collections 模块常用工具有哪些
+`collections` 模块提供了一组增强型容器类型，常用于计数、分组、队列、不可变记录结构等场景。
+
+::: details 详情
+### Counter
+
+`Counter` 用于统计元素出现次数。
+
+```python
+from collections import Counter
+
+counter = Counter(["a", "b", "a"])
+
+print(counter["a"])  # 2
+print(counter.most_common(1))  # [("a", 2)]
+```
+
+常用于词频统计、投票统计、数组元素计数。
+
+### defaultdict
+
+`defaultdict` 可以为不存在的 key 自动创建默认值。
+
+```python
+from collections import defaultdict
+
+groups = defaultdict(list)
+
+for name, team in [("Tom", "A"), ("Jerry", "A")]:
+    groups[team].append(name)
+
+print(groups["A"])  # ["Tom", "Jerry"]
+```
+
+它能减少手动判断 key 是否存在的样板代码。
+
+### deque
+
+`deque` 是双端队列，适合在两端高效插入和删除。
+
+```python
+from collections import deque
+
+queue = deque([1, 2, 3])
+queue.append(4)
+queue.appendleft(0)
+queue.pop()
+queue.popleft()
+```
+
+常用于队列、栈、滑动窗口、BFS。
+
+### namedtuple
+
+`namedtuple` 可以创建轻量级、不可变、带字段名的元组。
+
+```python
+from collections import namedtuple
+
+Point = namedtuple("Point", ["x", "y"])
+p = Point(1, 2)
+
+print(p.x, p.y)
+```
+
+如果需要更强的类型提示和默认值，现代 Python 项目中也常用 `dataclass`。
+
+### OrderedDict
+
+在现代 Python 中，普通 `dict` 已经保持插入顺序，但 `OrderedDict` 仍提供一些和顺序相关的专用能力，例如 `move_to_end()`。
+
+### 注意事项
+
+- 简单字典能解决的问题，不必强行使用 collections。
+- `defaultdict` 会在访问不存在 key 时创建默认值，调试时要注意副作用。
+- `deque` 适合两端操作，随机索引访问不如 list 直观。
+- 新项目中要结合 Python 版本选择普通 `dict`、`dataclass` 或 collections 工具。
+:::
