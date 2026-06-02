@@ -1318,3 +1318,51 @@ function closeDialog() {
 - 不要把大块频繁变化的内容都放进 live region。
 - Toast、表单校验、异步加载结果等场景要同时兼顾视觉提示和无障碍提示。
 :::
+
+## 35、HTML 表单中的 autocomplete 有什么作用
+`autocomplete` 用于提示浏览器是否可以自动填充表单字段，以及当前字段对应的语义类型，从而提升表单填写效率。
+
+::: details 详情
+### 基本用法
+
+```html
+<input name="email" autocomplete="email" />
+<input name="tel" autocomplete="tel" />
+<input name="name" autocomplete="name" />
+```
+
+浏览器可以根据字段语义填充用户保存过的信息。
+
+### 常见取值
+
+- `on`：允许自动填充。
+- `off`：提示浏览器不要自动填充。
+- `name`：姓名。
+- `email`：邮箱。
+- `tel`：电话。
+- `username`：用户名。
+- `current-password`：当前密码。
+- `new-password`：新密码。
+
+### 登录和注册场景
+
+```html
+<input name="username" autocomplete="username" />
+<input type="password" name="password" autocomplete="current-password" />
+```
+
+注册或改密时应使用：
+
+```html
+<input type="password" name="password" autocomplete="new-password" />
+```
+
+这样密码管理器可以更准确地区分当前密码和新密码。
+
+### 注意事项
+
+- `autocomplete="off"` 只是提示，浏览器或密码管理器不一定完全遵守。
+- 敏感字段要结合 HTTPS、权限校验和后端安全策略。
+- 字段的 `name`、`type`、`autocomplete` 应保持语义一致。
+- 合理设置自动填充可以减少移动端输入成本。
+:::
