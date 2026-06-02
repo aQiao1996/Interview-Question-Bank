@@ -2112,3 +2112,89 @@ function chunk(array, size) {
 - `slice` 会返回浅拷贝，子数组中的对象仍然共享引用。
 - 用于批量请求时，还需要配合并发控制，而不只是分块。
 :::
+
+## 35、手写 memoize 缓存函数
+`memoize` 用于缓存函数调用结果，当相同参数再次调用时直接返回缓存结果，适合纯函数和重复计算场景。
+
+::: details 详情
+### 基础实现
+
+```js
+function memoize(fn, resolver) {
+  const cache = new Map();
+
+  return function (...args) {
+    const key = resolver ? resolver(...args) : JSON.stringify(args);
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+    return result;
+  };
+}
+```
+
+### 使用示例
+
+```js
+function add(a, b) {
+  console.log("calculate");
+  return a + b;
+}
+
+const memoizedAdd = memoize(add);
+
+console.log(memoizedAdd(1, 2)); // calculate 3
+console.log(memoizedAdd(1, 2)); // 3，直接从缓存读取
+```
+
+### 自定义 key
+
+```js
+const getUser = memoize(
+  user => user.name,
+  user => user.id
+);
+```
+
+对象参数默认用 `JSON.stringify` 可能不稳定，也可能因为字段顺序、循环引用导致问题，所以可以提供 `resolver` 自定义缓存 key。
+
+### 带缓存上限
+
+```js
+function memoize(fn, maxSize = 100) {
+  const cache = new Map();
+
+  return function (...args) {
+    const key = JSON.stringify(args);
+
+    if (cache.has(key)) {
+      const value = cache.get(key);
+      cache.delete(key);
+      cache.set(key, value);
+      return value;
+    }
+
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+
+    if (cache.size > maxSize) {
+      const firstKey = cache.keys().next().value;
+      cache.delete(firstKey);
+    }
+
+    return result;
+  };
+}
+```
+
+### 注意事项
+
+- 只适合纯函数，函数结果依赖外部状态时不适合盲目缓存。
+- 缓存会占用内存，需要考虑清理或最大容量。
+- 参数是对象、函数、Symbol 时，key 生成策略要谨慎。
+- 异步函数缓存还要考虑失败结果是否缓存、并发请求是否复用同一个 Promise。
+:::
