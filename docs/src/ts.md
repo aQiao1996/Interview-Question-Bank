@@ -1677,3 +1677,75 @@ const config = {
 - 它不是类型转换，也不会生成额外 JavaScript 代码。
 - 如果只是声明变量类型，普通类型注解仍然更直接。
 :::
+
+## 34、TypeScript 中类型守卫是什么
+类型守卫用于在运行时判断某个值的具体类型，并让 TypeScript 在对应分支中收窄类型，从而安全访问该类型特有的属性或方法。
+
+::: details 详情
+### typeof 守卫
+
+```ts
+function format(value: string | number) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  return value.toFixed(2);
+}
+```
+
+在 `if` 分支中，`value` 会被收窄为 `string`。
+
+### instanceof 守卫
+
+```ts
+function getTime(value: Date | string) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  return new Date(value).getTime();
+}
+```
+
+适合判断类实例。
+
+### in 守卫
+
+```ts
+type Cat = { meow: () => void };
+type Dog = { bark: () => void };
+
+function speak(animal: Cat | Dog) {
+  if ("meow" in animal) {
+    animal.meow();
+  } else {
+    animal.bark();
+  }
+}
+```
+
+适合根据对象是否存在某个属性来区分联合类型。
+
+### 自定义类型谓词
+
+```ts
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function print(value: unknown) {
+  if (isString(value)) {
+    console.log(value.toUpperCase());
+  }
+}
+```
+
+`value is string` 告诉 TypeScript：当函数返回 `true` 时，`value` 可以视为 `string`。
+
+### 注意事项
+
+- 类型守卫必须和运行时判断一致，否则会造成类型安全假象。
+- 处理接口返回、表单输入、第三方数据时，不要只靠类型断言。
+- 复杂数据结构建议配合 schema 校验库，而不是手写大量判断。
+:::
