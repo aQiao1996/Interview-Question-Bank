@@ -2060,3 +2060,64 @@ node --trace-warnings app.js
 - 如果业务确实需要很多监听器，可以合理设置上限，但仍要解释原因。
 - 监听器闭包可能持有大对象、请求上下文或连接对象，长期不释放会放大内存问题。
 :::
+
+## 35、Node.js 中 module.exports 和 exports 有什么区别
+`module.exports` 是 CommonJS 模块真正导出的对象，`exports` 只是指向 `module.exports` 的一个初始引用。
+
+::: details 详情
+### 基本关系
+
+Node.js 在执行模块时，大致会把代码包一层函数：
+
+```js
+(function (exports, require, module, __filename, __dirname) {
+  // 模块代码
+});
+```
+
+初始情况下：
+
+```js
+exports === module.exports; // true
+```
+
+### 正确写法
+
+给导出对象添加属性时，两者效果类似：
+
+```js
+exports.foo = function () {};
+module.exports.bar = function () {};
+```
+
+最终 `require()` 拿到的是 `module.exports`。
+
+### 常见错误
+
+```js
+exports = function () {};
+```
+
+这样只是让局部变量 `exports` 指向了一个新函数，并没有改变 `module.exports`，所以不会按预期导出。
+
+如果要整体导出一个函数或类，应写：
+
+```js
+module.exports = function () {};
+```
+
+### 混用注意
+
+```js
+exports.name = "utils";
+module.exports = function () {};
+```
+
+一旦重新给 `module.exports` 赋值，之前挂在 `exports` 上的属性通常就不会再被导出。
+
+### 注意事项
+
+- 只添加多个属性时，可以用 `exports.xxx`。
+- 整体导出函数、类或对象时，使用 `module.exports = ...`。
+- 不要在同一个模块里随意混用两种风格，容易造成导出结果不符合预期。
+:::
