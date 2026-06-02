@@ -1663,3 +1663,55 @@ export function useMessage() {
 - TypeScript 项目中需要补充类型声明。
 - 业务代码优先使用显式 import，插件或框架级能力再考虑全局属性。
 :::
+
+## 34、vue3 中 style 里的 v-bind() 有什么作用
+Vue3 支持在单文件组件的 `<style>` 中使用 `v-bind()` 引用组件状态，编译后会通过 CSS 变量把响应式数据传递给样式。
+
+::: details 详情
+### 基本用法
+
+```vue
+<script setup>
+import { ref } from "vue";
+
+const color = ref("#42b883");
+</script>
+
+<template>
+  <button class="btn">提交</button>
+</template>
+
+<style scoped>
+.btn {
+  background: v-bind(color);
+}
+</style>
+```
+
+当 `color` 变化时，按钮背景色也会随之更新。
+
+### 编译后的思路
+
+Vue 会把 `v-bind(color)` 转成组件作用域内的 CSS 变量，然后在组件根节点上维护变量值。
+
+它不是运行时去改写整段 CSS，而是更新 CSS 变量。
+
+### 适合场景
+
+- 主题色。
+- 组件尺寸。
+- 动态间距。
+- 根据 props 控制局部样式。
+
+### 和动态 class/style 的区别
+
+- 动态 `:style` 适合少量直接内联样式。
+- 动态 class 适合有限状态切换。
+- `<style> v-bind()` 适合让动态值参与更完整的 CSS 规则，例如伪类、媒体查询附近的组件样式。
+
+### 注意事项
+
+- 表达式不要过复杂，复杂逻辑应放到 computed 中。
+- 高频变化的样式仍要关注重绘和布局成本。
+- `scoped` 样式下也可以使用，但要理解最终仍是 CSS 变量机制。
+:::
