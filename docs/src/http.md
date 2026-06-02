@@ -44,48 +44,6 @@ description: http面试题
 - TIME_WAIT：用于防止旧数据包干扰新连接，确保连接的可靠性。
 :::
 
-## 34、HTTP 中 Content-Disposition 响应头有什么作用
-`Content-Disposition` 用于告诉浏览器如何处理响应内容，常见用途是控制文件以内联方式展示，还是作为附件下载，并指定下载文件名。
-
-::: details 详情
-### 基本示例
-
-```http
-Content-Disposition: attachment; filename="report.pdf"
-```
-
-表示浏览器应把响应内容作为附件下载，默认文件名为 `report.pdf`。
-
-### 常见取值
-
-- `inline`：尽量在浏览器中直接展示，例如图片、PDF。
-- `attachment`：作为附件下载。
-- `filename`：指定文件名。
-- `filename*`：支持带编码的文件名，常用于中文文件名。
-
-### 中文文件名处理
-
-```http
-Content-Disposition: attachment; filename="report.pdf"; filename*=UTF-8''%E6%8A%A5%E5%91%8A.pdf
-```
-
-`filename*` 可以更好地处理非 ASCII 字符，兼容性要求较高时通常会同时提供 `filename` 和 `filename*`。
-
-### 常见场景
-
-- 文件下载接口。
-- 导出 Excel、CSV、PDF。
-- 预览或下载用户上传的附件。
-- 控制浏览器是否直接打开资源。
-
-### 注意事项
-
-- 文件名要做安全处理，避免换行注入和路径字符问题。
-- 下载接口仍要做权限校验，不能只依赖前端隐藏入口。
-- 如果响应内容类型不正确，浏览器行为可能和预期不同。
-- 大文件下载还要配合流式输出、Range 请求或异步导出方案。
-:::
-
 ## 2、HTTP 几个版本的区别
 ::: details 详情
 **HTTP/0.9 - 单行协议**
@@ -1421,4 +1379,46 @@ Retry-After: Wed, 28 May 2026 10:00:00 GMT
 - 非幂等请求不要盲目自动重试。
 - 前端要避免多个请求同时在同一时间重试。
 - 服务端限流时返回清晰错误码和 `Retry-After`，比只返回通用失败更友好。
+:::
+
+## 34、HTTP 中 Content-Disposition 响应头有什么作用
+`Content-Disposition` 用于告诉浏览器如何处理响应内容，常见用途是控制文件以内联方式展示，还是作为附件下载，并指定下载文件名。
+
+::: details 详情
+### 基本示例
+
+```http
+Content-Disposition: attachment; filename="report.pdf"
+```
+
+表示浏览器应把响应内容作为附件下载，默认文件名为 `report.pdf`。
+
+### 常见取值
+
+- `inline`：尽量在浏览器中直接展示，例如图片、PDF。
+- `attachment`：作为附件下载。
+- `filename`：指定文件名。
+- `filename*`：支持带编码的文件名，常用于中文文件名。
+
+### 中文文件名处理
+
+```http
+Content-Disposition: attachment; filename="report.pdf"; filename*=UTF-8''%E6%8A%A5%E5%91%8A.pdf
+```
+
+`filename*` 可以更好地处理非 ASCII 字符，兼容性要求较高时通常会同时提供 `filename` 和 `filename*`。
+
+### 常见场景
+
+- 文件下载接口。
+- 导出 Excel、CSV、PDF。
+- 预览或下载用户上传的附件。
+- 控制浏览器是否直接打开资源。
+
+### 注意事项
+
+- 文件名要做安全处理，避免换行注入和路径字符问题。
+- 下载接口仍要做权限校验，不能只依赖前端隐藏入口。
+- 如果响应内容类型不正确，浏览器行为可能和预期不同。
+- 大文件下载还要配合流式输出、Range 请求或异步导出方案。
 :::
