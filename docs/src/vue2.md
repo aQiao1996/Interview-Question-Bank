@@ -1584,3 +1584,58 @@ data() {
 - 组件库内部使用较多，普通业务中要谨慎使用。
 - 注入的数据来源不直观，维护时需要文档或类型约束辅助。
 :::
+
+## 34、vue2 中 $refs 有什么作用，有哪些限制
+`$refs` 用于访问通过 `ref` 标记的 DOM 元素或子组件实例，适合在少数需要命令式操作的场景中使用。
+
+::: details 详情
+### 基本用法
+
+```vue
+<template>
+  <input ref="inputRef" />
+</template>
+
+<script>
+export default {
+  mounted() {
+    this.$refs.inputRef.focus();
+  },
+};
+</script>
+```
+
+这里可以通过 `this.$refs.inputRef` 获取真实 DOM 节点。
+
+### 访问子组件
+
+```vue
+<Child ref="childRef" />
+```
+
+```js
+this.$refs.childRef.validate();
+```
+
+常见于表单校验、弹窗打开关闭、滚动定位等需要调用子组件方法的场景。
+
+### 什么时候能访问
+
+- `created` 阶段还没有挂载 DOM，通常访问不到。
+- `mounted` 后可以访问。
+- 条件渲染或列表渲染中的 ref 需要注意存在时机。
+- DOM 更新后立刻访问最新节点，可能需要配合 `this.$nextTick()`。
+
+### 限制
+
+- `$refs` 不是响应式的。
+- 不能依赖 `$refs` 驱动页面渲染。
+- `v-for` 中使用 ref 时会得到数组或多个引用，顺序要谨慎处理。
+- 过度使用 `$refs` 会让组件之间耦合变重。
+
+### 注意事项
+
+- 普通数据传递优先使用 props、emit 或状态管理。
+- `$refs` 更适合少量命令式操作。
+- 调用子组件方法时要保证子组件确实已挂载，避免空引用错误。
+:::
