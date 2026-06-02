@@ -1749,3 +1749,72 @@ function print(value: unknown) {
 - 处理接口返回、表单输入、第三方数据时，不要只靠类型断言。
 - 复杂数据结构建议配合 schema 校验库，而不是手写大量判断。
 :::
+
+## 35、TypeScript 中 never 类型有什么作用
+`never` 表示永远不会出现的值，常用于函数不会正常返回、联合类型被完全收窄后的不可达分支，以及条件类型中的过滤。
+
+::: details 详情
+### 不会正常返回的函数
+
+```ts
+function throwError(message: string): never {
+  throw new Error(message);
+}
+```
+
+函数抛出异常或无限循环时，可以返回 `never`。
+
+### 穷尽检查
+
+```ts
+type Status = "loading" | "success" | "error";
+
+function render(status: Status) {
+  switch (status) {
+    case "loading":
+      return "加载中";
+    case "success":
+      return "成功";
+    case "error":
+      return "失败";
+    default:
+      const exhaustiveCheck: never = status;
+      return exhaustiveCheck;
+  }
+}
+```
+
+如果以后给 `Status` 增加新成员但没有补充 `case`，`default` 中的 `never` 检查会报错。
+
+### 条件类型中过滤联合类型
+
+```ts
+type MyExclude<T, U> = T extends U ? never : T;
+
+type Result = MyExclude<"a" | "b" | "c", "a">;
+// "b" | "c"
+```
+
+联合类型中为 `never` 的分支会被移除。
+
+### 和 void 的区别
+
+- `void` 表示函数没有返回有意义的值。
+- `never` 表示函数根本不会正常返回。
+
+```ts
+function log(): void {
+  console.log("ok");
+}
+
+function loop(): never {
+  while (true) {}
+}
+```
+
+### 注意事项
+
+- `never` 经常出现在类型推导失败或类型交叉冲突时。
+- 如果变量意外变成 `never`，通常说明前面的类型收窄逻辑过度或联合类型设计有问题。
+- 穷尽检查是 `never` 在业务代码中非常实用的场景。
+:::
