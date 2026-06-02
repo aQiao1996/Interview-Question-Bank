@@ -1974,3 +1974,64 @@ main chunk gzip > 250KB 时阻断合并或发出告警
 - 拆包太细会增加请求数量和调度成本。
 - 优化前先确认首屏关键路径，不要盲目拆所有依赖。
 :::
+
+## 35、package.json 中 dependencies、devDependencies 和 peerDependencies 有什么区别
+`dependencies`、`devDependencies` 和 `peerDependencies` 用于描述不同类型的依赖关系，区别在于依赖是运行时需要、开发构建需要，还是要求使用方提供。
+
+::: details 详情
+### dependencies
+
+`dependencies` 是项目运行时需要的依赖。
+
+```json
+{
+  "dependencies": {
+    "axios": "^1.0.0"
+  }
+}
+```
+
+应用启动或库运行时必须依赖这些包。
+
+### devDependencies
+
+`devDependencies` 是开发、测试、构建阶段需要的依赖。
+
+```json
+{
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+```
+
+例如构建工具、测试框架、类型检查工具、格式化工具等。
+
+### peerDependencies
+
+`peerDependencies` 表示当前包希望宿主项目安装某个依赖，并且版本要满足要求。
+
+```json
+{
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  }
+}
+```
+
+组件库、插件、框架扩展通常会把 React、Vue、Webpack、Vite 等放到 `peerDependencies`，避免把宿主项目的核心库打包出多份。
+
+### 常见选择
+
+- 业务项目运行时要用：放 `dependencies`。
+- 只在开发构建中使用：放 `devDependencies`。
+- 库需要宿主项目提供：放 `peerDependencies`。
+- 库开发本身也要本地运行测试：通常同时在 `devDependencies` 中安装一份。
+
+### 注意事项
+
+- 组件库不要把 React/Vue 直接打进产物，通常应放到 `peerDependencies` 并配置 external。
+- peer 版本范围不要过窄，否则使用方容易安装冲突。
+- 依赖分类错误可能导致生产环境缺包、包体积变大或出现多实例问题。
+:::
