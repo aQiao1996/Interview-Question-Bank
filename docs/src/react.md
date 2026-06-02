@@ -2137,3 +2137,45 @@ function SearchList({ list }) {
 - 如果列表很大，仍需要虚拟列表、缓存计算或服务端搜索。
 - 延迟值可能短时间落后于最新输入，UI 上要能接受这种状态。
 :::
+
+## 34、React 中 Portal 有什么作用
+`Portal` 用于把组件渲染到父组件 DOM 层级之外的指定 DOM 节点中，但组件仍然保留在原来的 React 组件树里。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { createPortal } from "react-dom";
+
+function Modal({ children }) {
+  return createPortal(
+    <div className="modal">{children}</div>,
+    document.body
+  );
+}
+```
+
+这里 `Modal` 的 DOM 会渲染到 `body` 下，而不是当前组件所在的 DOM 节点内部。
+
+### 适合场景
+
+- 弹窗。
+- 抽屉。
+- Tooltip。
+- Dropdown。
+- 全局消息提示。
+
+这些组件通常需要脱离父级的 `overflow`、`z-index` 或定位上下文限制。
+
+### 事件冒泡
+
+Portal 只改变 DOM 挂载位置，不改变 React 组件树关系。
+
+因此 Portal 内部触发的 React 事件仍会沿着 React 组件树冒泡到父组件。
+
+### 注意事项
+
+- 要管理好弹窗容器节点的创建和销毁。
+- 弹窗类组件要处理焦点管理、键盘关闭和无障碍属性。
+- 不要只依赖 `z-index` 解决层级问题，必要时使用 Portal 把 DOM 放到统一层级。
+:::
