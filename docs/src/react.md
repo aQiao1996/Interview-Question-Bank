@@ -2179,3 +2179,53 @@ Portal 只改变 DOM 挂载位置，不改变 React 组件树关系。
 - 弹窗类组件要处理焦点管理、键盘关闭和无障碍属性。
 - 不要只依赖 `z-index` 解决层级问题，必要时使用 Portal 把 DOM 放到统一层级。
 :::
+
+## 35、React 中 StrictMode 有什么作用
+`StrictMode` 是 React 提供的开发辅助组件，用于在开发环境中发现潜在问题，例如不安全生命周期、副作用不纯和废弃 API 使用。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+```
+
+`StrictMode` 不会渲染额外 DOM。
+
+### 主要作用
+
+- 检查不安全的生命周期。
+- 提示废弃 API。
+- 帮助发现渲染阶段副作用。
+- 在开发环境中额外执行部分逻辑，暴露清理不完整的问题。
+
+### 为什么 useEffect 可能执行两次
+
+React 在开发环境下可能会对组件执行额外的挂载、卸载、再挂载流程，用来检查 effect 的清理逻辑是否正确。
+
+```jsx
+useEffect(() => {
+  const timer = setInterval(() => {}, 1000);
+
+  return () => {
+    clearInterval(timer);
+  };
+}, []);
+```
+
+如果没有正确清理定时器、订阅或请求，就可能在 StrictMode 下更容易暴露问题。
+
+### 注意事项
+
+- StrictMode 的额外检查只在开发环境生效。
+- 不要为了避免 effect 执行两次就直接移除 StrictMode。
+- effect 应该保证可清理、可重复执行。
+- 如果接口请求不希望重复触发，需要从请求去重、缓存或组件职责上设计，而不是依赖“只挂载一次”的假设。
+:::
