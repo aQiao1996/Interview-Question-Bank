@@ -1429,3 +1429,59 @@ CSS Nesting 允许在原生 CSS 中书写嵌套规则，减少重复选择器，
 - `initial-value` 必须符合 `syntax` 定义。
 - 并不是所有 CSS 变量都需要注册，普通复用值直接用自定义属性即可。
 :::
+
+## 35、CSS 中 scroll-snap 有什么作用
+`scroll-snap` 用于控制滚动容器在滚动结束后自动吸附到指定位置，常用于横向卡片、轮播、分页滚动和移动端滑动列表。
+
+::: details 详情
+### 基本用法
+
+```css
+.list {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.item {
+  flex: 0 0 80%;
+  scroll-snap-align: start;
+}
+```
+
+滚动 `.list` 时，滚动位置会吸附到 `.item` 的起始位置。
+
+### 常见属性
+
+- `scroll-snap-type`：定义滚动方向和吸附强度。
+- `scroll-snap-align`：定义子元素吸附到容器的哪个位置。
+- `scroll-snap-stop`：控制是否必须停在某个吸附点。
+- `scroll-padding`：设置容器吸附时的内边距。
+- `scroll-margin`：设置元素吸附时的外边距。
+
+### mandatory 和 proximity
+
+```css
+.container {
+  scroll-snap-type: x mandatory;
+}
+```
+
+- `mandatory`：滚动结束后必须吸附到某个点。
+- `proximity`：接近吸附点时才吸附，更柔和。
+
+### 常见场景
+
+- 移动端横向卡片列表。
+- Banner 轮播。
+- 图片预览。
+- 全屏分页滚动。
+- 日历、时间轴等滑动选择器。
+
+### 注意事项
+
+- 子元素尺寸要稳定，否则吸附位置可能跳动。
+- 不要过度使用 `mandatory`，可能影响用户自由滚动。
+- 需要兼顾键盘、触摸板和鼠标滚轮体验。
+- 如果是复杂轮播，仍要考虑无障碍、焦点管理和状态同步。
+:::
