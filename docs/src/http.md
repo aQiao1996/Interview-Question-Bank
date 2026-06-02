@@ -1422,3 +1422,56 @@ Content-Disposition: attachment; filename="report.pdf"; filename*=UTF-8''%E6%8A%
 - 如果响应内容类型不正确，浏览器行为可能和预期不同。
 - 大文件下载还要配合流式输出、Range 请求或异步导出方案。
 :::
+
+## 35、Content-Encoding 和 Transfer-Encoding 有什么区别
+`Content-Encoding` 描述响应实体内容本身使用了什么压缩或编码方式，`Transfer-Encoding` 描述消息在传输过程中的分块传输方式。
+
+::: details 详情
+### Content-Encoding
+
+```http
+Content-Encoding: br
+```
+
+表示响应体内容经过了 Brotli 压缩。浏览器需要先解压，才能得到原始内容。
+
+常见取值：
+
+- `gzip`
+- `br`
+- `deflate`
+
+它通常和请求头 `Accept-Encoding` 配合使用。
+
+### Transfer-Encoding
+
+```http
+Transfer-Encoding: chunked
+```
+
+表示响应体会被拆成多个 chunk 传输，服务端可以边生成边发送，而不必提前知道完整内容长度。
+
+### 核心区别
+
+| 对比项 | Content-Encoding | Transfer-Encoding |
+| --- | --- | --- |
+| 作用对象 | 响应实体内容 | HTTP 消息传输过程 |
+| 典型用途 | gzip、br 压缩 | chunked 分块传输 |
+| 客户端处理 | 解压得到原始内容 | 按分块组装消息体 |
+| 是否影响内容语义 | 会影响实体编码 | 不改变内容语义 |
+
+### 常见组合
+
+```http
+Content-Encoding: gzip
+Transfer-Encoding: chunked
+```
+
+这表示内容经过 gzip 压缩，同时传输时使用分块发送。
+
+### 注意事项
+
+- `Content-Length` 通常不能和 `Transfer-Encoding: chunked` 同时使用。
+- 压缩响应要配合 `Vary: Accept-Encoding`，避免缓存复用错误。
+- 前端看到的响应体通常已经被浏览器解压，不一定能直接感知原始传输编码。
+:::
