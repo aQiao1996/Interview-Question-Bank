@@ -2183,3 +2183,76 @@ import utils from "my-lib/utils";
 - 条件导出的顺序和兼容性要谨慎测试。
 - 它和 CommonJS 模块里的 `exports` 变量不是同一个概念。
 :::
+
+## 37、Node.js 中 process.cwd() 和 __dirname 有什么区别
+`process.cwd()` 返回当前进程的工作目录，`__dirname` 返回当前模块文件所在目录。两者都和路径有关，但语义完全不同。
+
+::: details 详情
+### process.cwd()
+
+```js
+console.log(process.cwd());
+```
+
+`process.cwd()` 取决于你从哪个目录启动 Node 进程。
+
+例如：
+
+```bash
+cd /app
+node src/index.js
+```
+
+此时 `process.cwd()` 通常是 `/app`。
+
+### __dirname
+
+```js
+console.log(__dirname);
+```
+
+`__dirname` 是当前模块文件所在目录。
+
+如果当前文件是：
+
+```txt
+/app/src/index.js
+```
+
+那么 `__dirname` 通常是：
+
+```txt
+/app/src
+```
+
+### 典型区别
+
+```js
+const path = require("path");
+
+const configFromCwd = path.resolve(process.cwd(), "config.json");
+const fileFromModule = path.resolve(__dirname, "template.html");
+```
+
+- 项目根目录下的配置文件，常用 `process.cwd()`。
+- 和当前模块放在一起的模板、静态文件，常用 `__dirname`。
+
+### ESM 中的 __dirname
+
+ESM 模块中没有内置 `__dirname`，可以这样模拟：
+
+```js
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+```
+
+### 注意事项
+
+- 启动目录变化会影响 `process.cwd()`。
+- `__dirname` 和代码文件位置绑定，更适合引用模块相邻资源。
+- CLI 工具通常以 `process.cwd()` 作为用户执行命令的项目目录。
+- 不要用字符串拼接路径，优先使用 `path.resolve` 或 `path.join`。
+:::
