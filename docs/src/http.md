@@ -1475,3 +1475,50 @@ Transfer-Encoding: chunked
 - 压缩响应要配合 `Vary: Accept-Encoding`，避免缓存复用错误。
 - 前端看到的响应体通常已经被浏览器解压，不一定能直接感知原始传输编码。
 :::
+
+## 36、Referrer-Policy 响应头有什么作用
+`Referrer-Policy` 用于控制浏览器在跳转、加载图片、脚本等请求时，是否携带 `Referer` 请求头以及携带多少来源信息。
+
+::: details 详情
+### 为什么需要
+
+`Referer` 可能包含当前页面 URL。如果 URL 中带有搜索词、用户标识、临时 token 等敏感信息，直接发送给第三方资源会带来隐私风险。
+
+`Referrer-Policy` 可以限制来源信息暴露范围。
+
+### 常见取值
+
+- `no-referrer`：完全不发送 `Referer`。
+- `origin`：只发送源，例如 `https://example.com/`。
+- `same-origin`：同源请求发送，跨源请求不发送。
+- `strict-origin`：HTTPS 到 HTTPS 只发送 origin，HTTPS 到 HTTP 不发送。
+- `strict-origin-when-cross-origin`：同源发送完整 URL，跨源只发送 origin，降级不发送。
+- `no-referrer-when-downgrade`：从 HTTPS 到 HTTP 不发送。
+
+### 基本示例
+
+```http
+Referrer-Policy: strict-origin-when-cross-origin
+```
+
+这是现代浏览器中常见的默认策略之一，兼顾分析需求和隐私保护。
+
+### HTML 中也可以设置
+
+```html
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+```
+
+单个链接也可以使用：
+
+```html
+<a href="https://example.com" rel="noreferrer">跳转</a>
+```
+
+### 注意事项
+
+- 不要把敏感信息放在 URL 查询参数中。
+- 如果业务依赖来源分析，要确认策略不会影响统计。
+- 防盗链不能只依赖 `Referer`，它可能为空或被伪造。
+- 涉及第三方资源时，建议收敛到只发送 origin 或不发送。
+:::
