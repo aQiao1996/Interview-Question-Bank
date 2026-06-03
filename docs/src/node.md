@@ -2121,3 +2121,65 @@ module.exports = function () {};
 - 整体导出函数、类或对象时，使用 `module.exports = ...`。
 - 不要在同一个模块里随意混用两种风格，容易造成导出结果不符合预期。
 :::
+
+## 36、package.json 中 exports 字段有什么作用
+`exports` 字段用于声明一个 npm 包允许外部导入哪些入口，以及在不同环境下使用哪些构建产物。它可以限制包的公开 API，并支持条件导出。
+
+::: details 详情
+### 基本用法
+
+```json
+{
+  "name": "my-lib",
+  "exports": {
+    ".": "./dist/index.js",
+    "./utils": "./dist/utils.js"
+  }
+}
+```
+
+使用方可以这样导入：
+
+```js
+import lib from "my-lib";
+import utils from "my-lib/utils";
+```
+
+没有在 `exports` 中声明的内部路径，通常不能再被直接导入。
+
+### 条件导出
+
+```json
+{
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}
+```
+
+这样 ESM、CommonJS 和 TypeScript 类型可以使用不同入口。
+
+### 解决什么问题
+
+- 明确包的公共入口。
+- 避免用户依赖内部文件路径。
+- 同时支持 ESM 和 CommonJS。
+- 为浏览器、Node、开发环境、生产环境提供不同产物。
+
+### 和 main/module 的关系
+
+- `main` 是传统 CommonJS 入口。
+- `module` 常用于声明 ESM 入口，但不是 Node 标准字段。
+- `exports` 更严格，也更适合现代包入口管理。
+
+### 注意事项
+
+- 配置 `exports` 后，未声明的深层路径可能会变成不可访问。
+- 发布库时要把类型文件、子路径入口一起声明清楚。
+- 条件导出的顺序和兼容性要谨慎测试。
+- 它和 CommonJS 模块里的 `exports` 变量不是同一个概念。
+:::
