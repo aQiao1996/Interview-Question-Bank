@@ -1755,3 +1755,58 @@ Vue 会把 `v-bind(color)` 转成组件作用域内的 CSS 变量，然后在组
 - 不要把需要响应式更新的内容放进 `v-pre`。
 - 用于代码展示时，仍要注意 HTML 转义和样式展示。
 :::
+
+## 36、vue3 中 shallowReactive 有什么作用
+`shallowReactive` 用于创建浅层响应式对象，只代理对象第一层属性，不会递归把深层对象也转换成响应式。
+
+::: details 详情
+### 基本用法
+
+```js
+import { shallowReactive } from "vue";
+
+const state = shallowReactive({
+  count: 0,
+  user: {
+    name: "Tom",
+  },
+});
+
+state.count++; // 会触发更新
+state.user.name = "Jerry"; // 深层属性本身不会触发更新
+```
+
+如果替换第一层属性，则会触发更新：
+
+```js
+state.user = {
+  name: "Jerry",
+};
+```
+
+### 和 reactive 的区别
+
+- `reactive` 会深层代理对象。
+- `shallowReactive` 只代理第一层属性。
+- 深层对象保持原样，不会自动变成响应式代理。
+
+### 适合场景
+
+- 状态对象很大，不希望深层递归代理。
+- 深层数据来自第三方库，不适合被 Vue 代理。
+- 只关心对象第一层引用变化。
+- 配合不可变数据更新方式使用。
+
+### 和 shallowRef 的区别
+
+- `shallowRef` 追踪 `.value` 是否被替换。
+- `shallowReactive` 追踪对象第一层属性读写。
+- 如果整个对象作为一个值管理，使用 `shallowRef` 更直接。
+- 如果需要多个第一层字段分别响应式，使用 `shallowReactive` 更合适。
+
+### 注意事项
+
+- 不要在同一棵状态树里混用太多深层和浅层响应式，容易造成心智负担。
+- 深层属性修改不更新是预期行为，不是 bug。
+- 如果需要手动触发浅层 ref 的更新，可以考虑 `triggerRef`，但它不适用于 `shallowReactive`。
+:::
