@@ -1818,3 +1818,66 @@ function loop(): never {
 - 如果变量意外变成 `never`，通常说明前面的类型收窄逻辑过度或联合类型设计有问题。
 - 穷尽检查是 `never` 在业务代码中非常实用的场景。
 :::
+
+## 36、TypeScript 中模板字面量类型有什么作用
+模板字面量类型可以在类型层面对字符串进行拼接和约束，常用于事件名、接口路径、CSS 类名、对象 key 等字符串规则建模。
+
+::: details 详情
+### 基本用法
+
+```ts
+type Size = "sm" | "md" | "lg";
+type ButtonClass = `btn-${Size}`;
+
+// "btn-sm" | "btn-md" | "btn-lg"
+```
+
+当联合类型出现在模板字面量中时，会自动展开成所有组合。
+
+### 组合多个联合类型
+
+```ts
+type Direction = "top" | "bottom";
+type Color = "red" | "blue";
+
+type ClassName = `${Direction}-${Color}`;
+// "top-red" | "top-blue" | "bottom-red" | "bottom-blue"
+```
+
+### 事件名推导
+
+```ts
+type Events<T> = {
+  [K in keyof T as `${string & K}Changed`]: (value: T[K]) => void;
+};
+
+type User = {
+  name: string;
+  age: number;
+};
+
+type UserEvents = Events<User>;
+```
+
+会生成 `nameChanged` 和 `ageChanged` 这类事件类型。
+
+### 字符串工具类型
+
+TypeScript 提供了一些内置字符串工具类型：
+
+- `Uppercase<T>`
+- `Lowercase<T>`
+- `Capitalize<T>`
+- `Uncapitalize<T>`
+
+```ts
+type Method = "get" | "post";
+type UpperMethod = Uppercase<Method>; // "GET" | "POST"
+```
+
+### 注意事项
+
+- 模板字面量类型只存在于类型系统，不会生成运行时代码。
+- 联合类型组合过多会导致类型膨胀，影响可读性和类型检查性能。
+- 适合描述有限的字符串规则，不适合替代运行时字符串校验。
+:::
