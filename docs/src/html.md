@@ -1366,3 +1366,62 @@ function closeDialog() {
 - 字段的 `name`、`type`、`autocomplete` 应保持语义一致。
 - 合理设置自动填充可以减少移动端输入成本。
 :::
+
+## 36、HTML 表单控件的 form 属性有什么作用
+`form` 属性用于把表单控件关联到指定表单，即使控件不写在 `<form>` 标签内部，也可以随目标表单一起提交。
+
+::: details 详情
+### 基本用法
+
+```html
+<form id="searchForm" action="/search">
+  <input name="keyword" />
+</form>
+
+<button type="submit" form="searchForm">搜索</button>
+```
+
+这里按钮虽然不在表单内部，但会提交 `id="searchForm"` 的表单。
+
+### 适用元素
+
+常见支持 `form` 属性的元素包括：
+
+- `button`
+- `input`
+- `select`
+- `textarea`
+- `fieldset`
+- `output`
+
+### 常见场景
+
+- 页面底部固定提交按钮。
+- 表单内容和操作按钮在布局上分离。
+- 弹窗中的按钮提交页面中的表单。
+- 后台页面中多个区域共享一个提交操作。
+
+### 和 form 属性相关的按钮属性
+
+按钮还可以覆盖表单默认行为：
+
+```html
+<button
+  type="submit"
+  form="searchForm"
+  formaction="/export"
+  formmethod="post"
+>
+  导出
+</button>
+```
+
+常见属性包括 `formaction`、`formmethod`、`formenctype`、`formtarget`、`formnovalidate`。
+
+### 注意事项
+
+- `form` 的值必须匹配目标表单的 `id`。
+- 页面中多个表单时要避免 id 写错导致提交错误。
+- 表单控件可以在视觉上分离，但语义和可访问性仍要保持清晰。
+- 复杂交互中仍要结合前端校验和后端校验。
+:::
