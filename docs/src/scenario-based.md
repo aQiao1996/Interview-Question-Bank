@@ -2202,3 +2202,68 @@ type SuggestStatus = "idle" | "loading" | "success" | "empty" | "error";
 - 联想面板要处理无障碍属性，例如 `role="listbox"` 和 `aria-activedescendant`。
 - 服务端也要做限流，不能只依赖前端防抖。
 :::
+
+## 36、前端如何实现复制到剪贴板功能
+复制到剪贴板通常优先使用 Clipboard API，并配合权限、安全上下文、失败降级和用户反馈来保证体验稳定。
+
+::: details 详情
+### Clipboard API
+
+```js
+async function copyText(text) {
+  await navigator.clipboard.writeText(text);
+}
+```
+
+`navigator.clipboard.writeText()` 是现代浏览器推荐的复制文本方式。
+
+### 使用条件
+
+Clipboard API 通常要求：
+
+- HTTPS 或 localhost 安全上下文。
+- 用户主动触发，例如点击按钮。
+- 浏览器支持对应 API。
+- 权限策略没有禁止剪贴板访问。
+
+### 降级方案
+
+旧浏览器可以使用隐藏 `textarea` 配合 `document.execCommand("copy")`：
+
+```js
+function fallbackCopy(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
+```
+
+虽然 `execCommand` 已不推荐，但在兼容旧环境时仍可能作为兜底。
+
+### 交互反馈
+
+- 复制成功后展示 Toast。
+- 复制失败时提示用户手动选择复制。
+- 按钮可以短暂显示“已复制”。
+- 不要在页面加载时自动复制，容易被浏览器拦截。
+
+### 常见场景
+
+- 复制链接。
+- 复制邀请码。
+- 复制命令行。
+- 复制代码块。
+- 复制表格或 JSON 结果。
+
+### 注意事项
+
+- 不要复制用户不可见或未确认的敏感内容。
+- 复制富文本、图片等内容时需要使用 `navigator.clipboard.write()`，兼容性和权限更复杂。
+- 失败分支要捕获异常，避免按钮点击后没有任何反馈。
+- 移动端浏览器和 WebView 兼容性要单独验证。
+:::
