@@ -1522,3 +1522,62 @@ Referrer-Policy: strict-origin-when-cross-origin
 - 防盗链不能只依赖 `Referer`，它可能为空或被伪造。
 - 涉及第三方资源时，建议收敛到只发送 origin 或不发送。
 :::
+
+## 37、Permissions-Policy 响应头有什么作用
+`Permissions-Policy` 用于控制页面和嵌入的 iframe 是否可以使用某些浏览器能力，例如摄像头、麦克风、定位、全屏等。
+
+::: details 详情
+### 基本示例
+
+```http
+Permissions-Policy: camera=(), microphone=(), geolocation=(self)
+```
+
+表示：
+
+- 禁止使用摄像头。
+- 禁止使用麦克风。
+- 只允许当前源使用定位。
+
+### 常见能力
+
+- `camera`
+- `microphone`
+- `geolocation`
+- `fullscreen`
+- `payment`
+- `clipboard-write`
+- `accelerometer`
+- `gyroscope`
+
+### 允许列表
+
+```http
+Permissions-Policy: geolocation=(self "https://map.example.com")
+```
+
+表示当前源和指定第三方源可以使用定位能力。
+
+常见写法：
+
+- `()`：完全禁用。
+- `(self)`：只允许当前源。
+- `("*")`：允许所有源，通常不建议。
+
+### 和 iframe 的关系
+
+即使响应头允许某个能力，iframe 还可能需要配合 `allow` 属性：
+
+```html
+<iframe src="..." allow="camera; microphone"></iframe>
+```
+
+浏览器会综合响应头、iframe allow 和用户授权结果来决定是否可用。
+
+### 注意事项
+
+- 它不能绕过用户授权，用户仍需要同意摄像头、定位等权限。
+- 默认禁止不需要的能力，可以减少被滥用风险。
+- 第三方 iframe 要按最小权限原则配置。
+- 旧名称 `Feature-Policy` 已逐步被 `Permissions-Policy` 替代。
+:::
