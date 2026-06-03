@@ -1881,3 +1881,70 @@ type UpperMethod = Uppercase<Method>; // "GET" | "POST"
 - 联合类型组合过多会导致类型膨胀，影响可读性和类型检查性能。
 - 适合描述有限的字符串规则，不适合替代运行时字符串校验。
 :::
+
+## 37、TypeScript 中索引访问类型是什么
+索引访问类型用于通过属性 key 从某个类型中取出对应属性的类型，语法类似对象取值，但发生在类型层面。
+
+::: details 详情
+### 基本用法
+
+```ts
+type User = {
+  id: number;
+  name: string;
+  active: boolean;
+};
+
+type UserName = User["name"]; // string
+type UserId = User["id"]; // number
+```
+
+`User["name"]` 表示取出 `User` 类型中 `name` 属性的类型。
+
+### 取多个属性类型
+
+```ts
+type UserValue = User["id" | "name"];
+// number | string
+```
+
+如果 key 是联合类型，结果也是对应属性类型的联合。
+
+### 配合 keyof
+
+```ts
+type ValueOf<T> = T[keyof T];
+
+type UserValues = ValueOf<User>;
+// number | string | boolean
+```
+
+`keyof T` 得到所有 key，`T[keyof T]` 得到所有属性值类型的联合。
+
+### 提取数组元素类型
+
+```ts
+const list = [
+  { id: 1, name: "Tom" },
+  { id: 2, name: "Jerry" },
+];
+
+type Item = (typeof list)[number];
+// { id: number; name: string }
+```
+
+数组类型用 `[number]` 可以取出元素类型。
+
+### 常见场景
+
+- 从接口类型中复用某个字段类型。
+- 提取数组元素类型。
+- 编写工具类型，例如 `Pick`、`ValueOf`。
+- 保持表单字段、接口字段、组件 props 类型一致。
+
+### 注意事项
+
+- key 必须存在于目标类型上，否则会报错。
+- 索引访问类型不会读取运行时对象，只是类型计算。
+- 复杂工具类型中要注意可读性，必要时拆成中间类型。
+:::
