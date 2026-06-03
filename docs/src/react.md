@@ -2229,3 +2229,57 @@ useEffect(() => {
 - effect 应该保证可清理、可重复执行。
 - 如果接口请求不希望重复触发，需要从请求去重、缓存或组件职责上设计，而不是依赖“只挂载一次”的假设。
 :::
+
+## 36、React 中 useInsertionEffect 有什么作用
+`useInsertionEffect` 用于在 DOM 变更后、布局副作用执行前插入样式，主要面向 CSS-in-JS 库作者，普通业务组件很少直接使用。
+
+::: details 详情
+### 执行时机
+
+React 的相关副作用执行顺序可以简化理解为：
+
+```txt
+DOM 更新 -> useInsertionEffect -> useLayoutEffect -> 浏览器绘制 -> useEffect
+```
+
+它比 `useLayoutEffect` 更早，适合在布局读取之前把样式插入好，避免测量布局时样式还没生效。
+
+### 基本示例
+
+```jsx
+import { useInsertionEffect } from "react";
+
+function useStyle(cssText) {
+  useInsertionEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = cssText;
+    document.head.appendChild(style);
+
+    return () => {
+      style.remove();
+    };
+  }, [cssText]);
+}
+```
+
+这类逻辑通常由样式库封装，业务代码不需要手写。
+
+### 适合场景
+
+- CSS-in-JS 运行时插入样式。
+- 样式库保证样式在布局计算前生效。
+- 避免样式插入过晚导致闪烁或布局测量错误。
+
+### 和 useLayoutEffect 的区别
+
+- `useInsertionEffect` 更早，专注样式插入。
+- `useLayoutEffect` 适合读取布局、同步修改 DOM。
+- `useInsertionEffect` 中不应读取 ref 或调度状态更新。
+
+### 注意事项
+
+- 普通业务副作用优先使用 `useEffect`。
+- 需要同步读取布局时使用 `useLayoutEffect`。
+- 不要把数据请求、事件订阅等业务逻辑放进 `useInsertionEffect`。
+- 服务端渲染场景下要由框架或样式库处理好样式收集和注入。
+:::
