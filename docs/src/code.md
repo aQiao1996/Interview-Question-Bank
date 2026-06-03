@@ -2198,3 +2198,71 @@ function memoize(fn, maxSize = 100) {
 - 参数是对象、函数、Symbol 时，key 生成策略要谨慎。
 - 异步函数缓存还要考虑失败结果是否缓存、并发请求是否复用同一个 Promise。
 :::
+
+## 36、手写 once 函数
+`once` 用于把一个函数包装成只执行一次的函数，后续再次调用时不再执行原函数，常用于初始化、事件绑定和一次性提交等场景。
+
+::: details 详情
+### 基础实现
+
+```js
+function once(fn) {
+  let called = false;
+  let result;
+
+  return function (...args) {
+    if (!called) {
+      called = true;
+      result = fn.apply(this, args);
+    }
+
+    return result;
+  };
+}
+```
+
+这里用闭包保存 `called` 和第一次执行结果。
+
+### 使用示例
+
+```js
+const init = once(function (name) {
+  console.log("init", name);
+  return `${name} done`;
+});
+
+console.log(init("app")); // init app，app done
+console.log(init("page")); // app done
+```
+
+第二次调用不会再执行原函数，会直接返回第一次的结果。
+
+### 为什么要保留 this
+
+```js
+const obj = {
+  count: 1,
+  add: once(function (num) {
+    this.count += num;
+    return this.count;
+  }),
+};
+```
+
+使用 `fn.apply(this, args)` 可以保留调用时的 `this` 和参数。
+
+### 异步函数场景
+
+```js
+const loadConfig = once(() => fetch("/config").then(res => res.json()));
+```
+
+如果原函数返回 Promise，后续调用会复用第一次返回的 Promise。
+
+### 注意事项
+
+- once 是否返回第一次结果，要根据业务约定明确。
+- 如果第一次执行失败，是否允许再次执行也要单独设计。
+- 包装后的函数会通过闭包持有第一次结果，结果很大时要注意内存占用。
+- once 和节流不同，once 是整个生命周期只执行一次。
+:::
