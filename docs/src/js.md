@@ -1024,3 +1024,59 @@ console.log(isEmpty(new Set([1])));  // false
 ```
 更推荐第三方库处理如 `lodash` 的 `isEmpty` 函数处理
 :::
+
+## 43、Object.hasOwn、hasOwnProperty 和 in 有什么区别
+`Object.hasOwn`、`hasOwnProperty` 和 `in` 都可以用于判断对象属性，但它们判断的范围和安全性不同。
+
+::: details 详情
+### Object.hasOwn
+
+```js
+const obj = { name: "Tom" };
+
+console.log(Object.hasOwn(obj, "name")); // true
+console.log(Object.hasOwn(obj, "toString")); // false
+```
+
+`Object.hasOwn(obj, key)` 只判断对象自身属性，不会查找原型链。
+
+### hasOwnProperty
+
+```js
+console.log(obj.hasOwnProperty("name")); // true
+```
+
+它也判断自身属性，但有两个问题：
+
+- 对象可能没有继承 `Object.prototype`。
+- 对象自身可能定义了同名的 `hasOwnProperty` 属性。
+
+更安全的旧写法是：
+
+```js
+Object.prototype.hasOwnProperty.call(obj, "name");
+```
+
+### in 操作符
+
+```js
+console.log("name" in obj); // true
+console.log("toString" in obj); // true
+```
+
+`in` 会检查对象自身属性和原型链属性。
+
+### 对比
+
+| 写法 | 是否查原型链 | 安全性 | 适合场景 |
+| --- | --- | --- | --- |
+| `Object.hasOwn(obj, key)` | 否 | 高 | 判断自有属性 |
+| `obj.hasOwnProperty(key)` | 否 | 一般 | 普通对象简单判断 |
+| `key in obj` | 是 | 高 | 判断属性是否可访问 |
+
+### 注意事项
+
+- 判断配置对象、接口字段时通常用 `Object.hasOwn`。
+- 判断某个能力是否存在时可以使用 `in`。
+- 不要用属性值是否为 truthy 来判断属性是否存在，因为值可能是 `0`、`false` 或空字符串。
+:::
