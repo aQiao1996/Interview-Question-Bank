@@ -2035,3 +2035,74 @@ main chunk gzip > 250KB 时阻断合并或发出告警
 - peer 版本范围不要过窄，否则使用方容易安装冲突。
 - 依赖分类错误可能导致生产环境缺包、包体积变大或出现多实例问题。
 :::
+
+## 36、CSS Modules 是什么，解决了什么问题
+CSS Modules 是一种通过构建工具把 CSS 类名局部化的方案，可以减少全局样式命名冲突，让样式和组件形成更明确的依赖关系。
+
+::: details 详情
+### 基本用法
+
+```css
+/* button.module.css */
+.primary {
+  color: white;
+  background: blue;
+}
+```
+
+```jsx
+import styles from "./button.module.css";
+
+function Button() {
+  return <button className={styles.primary}>提交</button>;
+}
+```
+
+构建后类名可能被转换成：
+
+```html
+<button class="button_primary__a1b2c">提交</button>
+```
+
+### 解决什么问题
+
+- 避免全局 class 命名冲突。
+- 让组件显式依赖自己的样式文件。
+- 删除组件时更容易发现无用样式。
+- 减少大型项目中样式互相覆盖的问题。
+
+### 常见能力
+
+```css
+.base {
+  padding: 8px;
+}
+
+.primary {
+  composes: base;
+  color: blue;
+}
+```
+
+`composes` 可以组合已有 class。
+
+如果需要声明全局选择器，可以使用：
+
+```css
+:global(.reset) {
+  margin: 0;
+}
+```
+
+### 和 scoped CSS 的区别
+
+- CSS Modules 通常通过构建工具生成 class 映射。
+- Vue scoped CSS 通过给元素和选择器添加作用域属性实现。
+- CSS Modules 更强调 JS/TS 中显式引用样式对象。
+
+### 注意事项
+
+- 全局样式、主题变量、reset 样式不适合全部放进 CSS Modules。
+- 类名动态拼接时要通过 `styles[name]` 或 classnames 工具处理。
+- 组件库要考虑生成的类名稳定性、覆盖能力和主题扩展方式。
+:::
