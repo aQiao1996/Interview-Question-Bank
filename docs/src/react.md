@@ -2283,3 +2283,67 @@ function useStyle(cssText) {
 - 不要把数据请求、事件订阅等业务逻辑放进 `useInsertionEffect`。
 - 服务端渲染场景下要由框架或样式库处理好样式收集和注入。
 :::
+
+## 37、React Fragment 有什么作用
+`Fragment` 用于在不额外创建 DOM 节点的情况下返回多个子元素，常用于组件必须返回单一根节点但又不希望多包一层元素的场景。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { Fragment } from "react";
+
+function UserInfo() {
+  return (
+    <Fragment>
+      <span>Tom</span>
+      <span>Admin</span>
+    </Fragment>
+  );
+}
+```
+
+最终 DOM 中不会多出一层 `Fragment` 节点。
+
+### 短语法
+
+```jsx
+function UserInfo() {
+  return (
+    <>
+      <span>Tom</span>
+      <span>Admin</span>
+    </>
+  );
+}
+```
+
+短语法更简洁，是日常开发最常见的写法。
+
+### 为什么不用 div 包裹
+
+多余的 `div` 可能带来问题：
+
+- 影响 CSS 布局，例如 flex、grid 子元素结构。
+- 破坏语义结构，例如 table、ul、dl 等标签层级。
+- 增加不必要的 DOM 节点。
+
+### 带 key 的 Fragment
+
+短语法不能写 `key`，列表中需要 key 时要使用完整写法：
+
+```jsx
+items.map(item => (
+  <Fragment key={item.id}>
+    <dt>{item.name}</dt>
+    <dd>{item.desc}</dd>
+  </Fragment>
+));
+```
+
+### 注意事项
+
+- Fragment 不能接收普通 DOM 属性，例如 `className`。
+- 需要样式或事件绑定时，仍然要使用真实 DOM 元素。
+- Fragment 只是减少 DOM 包装，不改变组件拆分和状态管理方式。
+:::
