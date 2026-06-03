@@ -1810,3 +1810,65 @@ state.user = {
 - 深层属性修改不更新是预期行为，不是 bug。
 - 如果需要手动触发浅层 ref 的更新，可以考虑 `triggerRef`，但它不适用于 `shallowReactive`。
 :::
+
+## 37、vue3 中 triggerRef 有什么作用
+`triggerRef` 用于手动触发一个浅层 ref 的依赖更新，常和 `shallowRef` 配合使用。
+
+::: details 详情
+### 为什么需要
+
+`shallowRef` 只追踪 `.value` 本身是否被替换，不会追踪对象内部字段变化：
+
+```js
+import { shallowRef } from "vue";
+
+const state = shallowRef({
+  count: 0,
+});
+
+state.value.count++;
+```
+
+上面修改了深层属性，但不会自动触发依赖更新。
+
+### 使用 triggerRef
+
+```js
+import { shallowRef, triggerRef } from "vue";
+
+const state = shallowRef({
+  count: 0,
+});
+
+function increment() {
+  state.value.count++;
+  triggerRef(state);
+}
+```
+
+调用 `triggerRef(state)` 后，依赖这个 shallowRef 的视图或副作用会重新执行。
+
+### 适合场景
+
+- 大对象内部做原地修改。
+- 第三方库实例内部状态变化。
+- 性能敏感场景中不希望深层响应式代理。
+- 明确由开发者控制何时更新视图。
+
+### 和直接替换 value 的区别
+
+```js
+state.value = {
+  ...state.value,
+  count: state.value.count + 1,
+};
+```
+
+直接替换 `.value` 也会触发更新。`triggerRef` 更适合你确实需要保留同一个对象引用，并且已经手动修改内部字段的场景。
+
+### 注意事项
+
+- `triggerRef` 只适用于 ref，尤其是 shallowRef 的典型场景。
+- 不要滥用手动触发，否则响应式数据流会变得不直观。
+- 如果深层字段经常变化，优先考虑 `ref`、`reactive` 或不可变更新。
+:::
