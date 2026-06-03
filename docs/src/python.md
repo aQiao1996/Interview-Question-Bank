@@ -2551,3 +2551,78 @@ print(p.x, p.y)
 - `deque` 适合两端操作，随机索引访问不如 list 直观。
 - 新项目中要结合 Python 版本选择普通 `dict`、`dataclass` 或 collections 工具。
 :::
+
+## 42、Python 中 contextlib 模块有什么作用
+`contextlib` 提供了一组创建和组合上下文管理器的工具，可以简化 `with` 语句相关代码，常用于资源管理、临时状态切换和异常控制。
+
+::: details 详情
+### contextmanager
+
+`@contextmanager` 可以用生成器函数创建上下文管理器：
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def open_resource():
+    print("enter")
+    try:
+        yield "resource"
+    finally:
+        print("exit")
+
+with open_resource() as resource:
+    print(resource)
+```
+
+`yield` 之前相当于 `__enter__`，`finally` 中的逻辑相当于 `__exit__`。
+
+### suppress
+
+`suppress` 用于忽略指定异常：
+
+```python
+from contextlib import suppress
+
+with suppress(FileNotFoundError):
+    import os
+    os.remove("not-exists.txt")
+```
+
+适合明确允许失败且不需要处理的场景。
+
+### closing
+
+`closing` 可以把只有 `close()` 方法的对象包装成上下文管理器：
+
+```python
+from contextlib import closing
+
+with closing(resource) as r:
+    r.do_something()
+```
+
+退出 `with` 时会自动调用 `close()`。
+
+### ExitStack
+
+`ExitStack` 适合动态管理多个上下文管理器：
+
+```python
+from contextlib import ExitStack
+
+with ExitStack() as stack:
+    files = [
+        stack.enter_context(open(path))
+        for path in ["a.txt", "b.txt"]
+    ]
+```
+
+当资源数量运行时才确定时，`ExitStack` 比嵌套多个 `with` 更灵活。
+
+### 注意事项
+
+- `suppress` 不要滥用，否则会隐藏真实错误。
+- `@contextmanager` 中要用 `try/finally` 保证资源释放。
+- 上下文管理器适合管理生命周期明确的资源，例如文件、锁、连接和临时配置。
+:::
