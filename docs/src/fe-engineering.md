@@ -2169,3 +2169,64 @@ pnpm --filter @demo/ui test
 - TypeScript paths 和包 exports 要配合设计。
 - 大型 Monorepo 通常还会配合 Turborepo、Nx 或 Changesets。
 :::
+
+## 38、Vitest 在前端项目中有什么作用
+Vitest 是面向 Vite 生态的测试框架，常用于编写单元测试和部分组件测试。它启动快、配置成本低，并且可以复用 Vite 的模块解析和插件能力。
+
+::: details 详情
+### 适合测试什么
+
+- 工具函数。
+- Composable / Hook。
+- 状态管理逻辑。
+- 表单校验逻辑。
+- 纯组件渲染和交互。
+- API 封装中的参数处理。
+
+### 基本示例
+
+```ts
+import { describe, expect, it } from "vitest";
+
+function add(a: number, b: number) {
+  return a + b;
+}
+
+describe("add", () => {
+  it("returns sum", () => {
+    expect(add(1, 2)).toBe(3);
+  });
+});
+```
+
+### 常见配置
+
+```ts
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "jsdom",
+    globals: true,
+    coverage: {
+      provider: "v8",
+    },
+  },
+});
+```
+
+组件测试通常需要 `jsdom` 或 `happy-dom` 环境。
+
+### 和 Jest 的区别
+
+- Vitest 更贴近 Vite 生态，启动和转换通常更快。
+- Jest 生态成熟，历史项目使用较多。
+- Vite 项目优先考虑 Vitest，非 Vite 项目要看现有工具链。
+
+### 注意事项
+
+- 单元测试不适合覆盖所有浏览器真实交互。
+- DOM 相关测试要注意 jsdom 和真实浏览器行为差异。
+- 网络请求、时间、随机数要做 mock。
+- 关键用户流程仍需要配合 Playwright 等 E2E 测试。
+:::
