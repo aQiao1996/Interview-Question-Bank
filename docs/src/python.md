@@ -2626,3 +2626,76 @@ with ExitStack() as stack:
 - `@contextmanager` 中要用 `try/finally` 保证资源释放。
 - 上下文管理器适合管理生命周期明确的资源，例如文件、锁、连接和临时配置。
 :::
+
+## 43、Python asyncio 中如何取消任务
+在 `asyncio` 中，可以通过 `task.cancel()` 请求取消任务。取消不是强制杀死线程，而是在协程的下一个挂起点抛出 `CancelledError`，由协程自己完成清理。
+
+::: details 详情
+### 基本用法
+
+```python
+import asyncio
+
+async def worker():
+    try:
+        while True:
+            print("working")
+            await asyncio.sleep(1)
+    except asyncio.CancelledError:
+        print("cancelled")
+        raise
+
+async def main():
+    task = asyncio.create_task(worker())
+    await asyncio.sleep(3)
+    task.cancel()
+
+    try:
+        await task
+    except asyncio.CancelledError:
+        print("task cancelled")
+
+asyncio.run(main())
+```
+
+`task.cancel()` 发出取消请求，`await task` 时可以捕获取消结果。
+
+### 为什么要重新抛出
+
+```python
+except asyncio.CancelledError:
+    cleanup()
+    raise
+```
+
+捕获 `CancelledError` 后通常要重新抛出，否则调用方会认为任务正常结束。
+
+### gather 中的取消
+
+```python
+tasks = [
+    asyncio.create_task(fetch(1)),
+    asyncio.create_task(fetch(2)),
+]
+
+for task in tasks:
+    task.cancel()
+```
+
+批量任务取消时，要明确其他任务是继续执行还是一起取消。
+
+### 超时控制
+
+```python
+await asyncio.wait_for(fetch_data(), timeout=3)
+```
+
+`wait_for` 超时时会取消内部任务，并抛出 `TimeoutError`。
+
+### 注意事项
+
+- 取消只会在 `await` 等挂起点生效。
+- CPU 密集型同步代码无法及时响应取消。
+- 任务中要用 `try/finally` 释放资源。
+- 不要吞掉 `CancelledError`，除非明确知道后果。
+:::
