@@ -1948,3 +1948,76 @@ type Item = (typeof list)[number];
 - 索引访问类型不会读取运行时对象，只是类型计算。
 - 复杂工具类型中要注意可读性，必要时拆成中间类型。
 :::
+
+## 38、TypeScript 中声明合并是什么
+声明合并是指 TypeScript 会把同名的某些声明自动合并成一个声明，常见于 interface 扩展、全局类型扩展和模块类型增强。
+
+::: details 详情
+### interface 合并
+
+```ts
+interface User {
+  name: string;
+}
+
+interface User {
+  age: number;
+}
+
+const user: User = {
+  name: "Tom",
+  age: 18,
+};
+```
+
+两个同名 `interface` 会被合并，最终 `User` 同时包含 `name` 和 `age`。
+
+### 扩展 Window
+
+```ts
+declare global {
+  interface Window {
+    __APP_VERSION__: string;
+  }
+}
+
+window.__APP_VERSION__ = "1.0.0";
+```
+
+这是前端项目中扩展全局对象类型的常见方式。
+
+### 模块增强
+
+```ts
+declare module "some-lib" {
+  interface Config {
+    customField?: string;
+  }
+}
+```
+
+可以为第三方库补充或扩展类型。
+
+### 和 type 的区别
+
+```ts
+type User = {
+  name: string;
+};
+```
+
+同名 `type` 不能重复声明，不能像 interface 一样自动合并。
+
+### 常见场景
+
+- 扩展全局 `Window`。
+- 给第三方库补充类型。
+- 框架插件扩展实例属性。
+- 多处声明同一个可扩展配置接口。
+
+### 注意事项
+
+- 声明合并会影响全局类型，滥用后来源不清晰。
+- 扩展第三方类型时要确认模块名写对。
+- 如果只是业务内部组合类型，优先使用显式 `extends` 或交叉类型。
+:::
