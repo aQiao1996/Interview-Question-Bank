@@ -2336,3 +2336,54 @@ localStorage.setItem("theme", "dark");
 - 图片、阴影、边框、图表颜色也要适配。
 - 多标签页可以监听 `storage` 事件同步主题变化。
 :::
+
+## 38、前端如何防御 XSS 攻击
+XSS 是攻击者把恶意脚本注入页面并在用户浏览器中执行的攻击。防御重点是不要信任用户输入和接口返回，输出时做正确转义，并限制脚本执行能力。
+
+::: details 详情
+### 常见类型
+
+- 存储型 XSS：恶意内容被保存到服务端，其他用户访问时触发。
+- 反射型 XSS：恶意内容通过 URL、表单等立即反射到页面。
+- DOM 型 XSS：前端 JS 把不可信数据写入 DOM 导致执行。
+
+### 输出转义
+
+普通文本应该作为文本渲染，而不是 HTML：
+
+```js
+element.textContent = userInput;
+```
+
+不要直接使用：
+
+```js
+element.innerHTML = userInput;
+```
+
+如果必须渲染 HTML，要使用白名单清洗库，只允许安全标签和属性。
+
+### 框架中的注意点
+
+React、Vue 默认会对插值内容做转义，但以下场景仍然危险：
+
+- React 的 `dangerouslySetInnerHTML`。
+- Vue 的 `v-html`。
+- Markdown 转 HTML 后直接插入页面。
+- 富文本编辑器内容回显。
+- URL、style、iframe、script 等特殊上下文。
+
+### 配合安全策略
+
+- 使用 CSP 限制脚本来源和内联脚本。
+- Cookie 设置 `HttpOnly`，减少脚本读取 token 的风险。
+- 对 URL 参数、富文本、文件名等做输入校验。
+- 链接跳转校验协议，避免 `javascript:`。
+
+### 注意事项
+
+- 输入校验不能替代输出转义。
+- 转义要根据上下文处理，HTML、属性、URL、CSS、JS 字符串规则不同。
+- 不要把 token 放到容易被脚本读取的位置。
+- 安全逻辑前后端都要做，前端不能作为唯一防线。
+:::
