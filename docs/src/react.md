@@ -2347,3 +2347,57 @@ items.map(item => (
 - 需要样式或事件绑定时，仍然要使用真实 DOM 元素。
 - Fragment 只是减少 DOM 包装，不改变组件拆分和状态管理方式。
 :::
+
+## 38、React 中 hydration 是什么
+Hydration（水合）是指 React 在浏览器端接管服务端已经生成好的 HTML，并为其绑定事件、恢复组件状态和建立 React 内部树的过程。
+
+::: details 详情
+### 为什么需要 hydration
+
+SSR 会先在服务端生成 HTML：
+
+```html
+<div id="root">
+  <button>提交</button>
+</div>
+```
+
+浏览器拿到 HTML 后可以更快看到页面内容，但这些 HTML 还没有 React 事件和交互能力。
+
+客户端执行 React 后，会通过 hydration 接管这段已有 DOM，而不是重新创建整棵 DOM。
+
+### 基本用法
+
+```jsx
+import { hydrateRoot } from "react-dom/client";
+
+hydrateRoot(document.getElementById("root"), <App />);
+```
+
+`hydrateRoot` 用于对服务端渲染出来的 HTML 做客户端接管。
+
+### hydration mismatch
+
+如果服务端生成的 HTML 和客户端首次渲染结果不一致，就可能出现 hydration mismatch。
+
+常见原因：
+
+- 直接在渲染中使用 `Date.now()` 或 `Math.random()`。
+- 服务端和客户端读取到的用户状态不同。
+- 根据 `window`、屏幕宽度等客户端能力直接决定首屏结构。
+- 接口数据在服务端和客户端不一致。
+
+### 如何避免
+
+- 保证服务端和客户端首屏数据一致。
+- 客户端特有逻辑放到 `useEffect` 中。
+- 对时间、随机数、用户环境差异做显式兜底。
+- 使用框架提供的数据注水和缓存机制。
+
+### 注意事项
+
+- hydration 不是重新渲染静态 HTML，而是复用已有 DOM。
+- hydration 期间 JS 仍然会影响可交互时间。
+- SSR 提升首屏可见速度，不一定自动提升交互性能。
+- 复杂页面要关注局部 hydration、流式 SSR、代码分割等优化方向。
+:::
