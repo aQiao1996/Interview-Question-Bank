@@ -2230,3 +2230,54 @@ export default defineConfig({
 - 网络请求、时间、随机数要做 mock。
 - 关键用户流程仍需要配合 Playwright 等 E2E 测试。
 :::
+
+## 39、Playwright 在前端项目中有什么作用
+Playwright 是端到端测试工具，可以在真实浏览器中模拟用户操作，用来验证关键业务流程、跨浏览器兼容性和页面交互稳定性。
+
+::: details 详情
+### 适合测试什么
+
+- 登录、注册、下单等核心流程。
+- 路由跳转。
+- 表单填写和提交。
+- 权限控制。
+- 文件上传下载。
+- 多浏览器兼容性。
+- 截图和视觉回归。
+
+### 基本示例
+
+```ts
+import { expect, test } from "@playwright/test";
+
+test("login", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("用户名").fill("tom");
+  await page.getByLabel("密码").fill("123456");
+  await page.getByRole("button", { name: "登录" }).click();
+
+  await expect(page).toHaveURL("/home");
+});
+```
+
+### 和单元测试的区别
+
+- 单元测试关注函数、组件或模块逻辑。
+- E2E 测试关注真实用户流程。
+- 单元测试更快、更细。
+- E2E 测试更接近真实环境，但运行更慢、维护成本更高。
+
+### 工程实践
+
+- 只覆盖关键路径，不要把所有细节都写成 E2E。
+- 测试数据要可控，可以使用测试账号或 mock 后端。
+- CI 中保留 trace、video、screenshot，方便失败后定位。
+- 页面选择器优先使用 role、label、test id，减少样式变更带来的误伤。
+
+### 注意事项
+
+- E2E 测试要避免依赖不稳定的外部服务。
+- 等待条件要基于页面状态，不要滥用固定 sleep。
+- 测试之间要隔离状态，避免互相影响。
+- 对高价值流程做 E2E，比追求覆盖率数字更重要。
+:::
