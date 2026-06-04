@@ -2387,3 +2387,61 @@ React、Vue 默认会对插值内容做转义，但以下场景仍然危险：
 - 不要把 token 放到容易被脚本读取的位置。
 - 安全逻辑前后端都要做，前端不能作为唯一防线。
 :::
+
+## 39、前端和后端如何一起防御 CSRF
+CSRF 是攻击者诱导已登录用户在不知情的情况下向目标站点发起请求，利用浏览器自动携带 Cookie 的特性完成越权操作。
+
+::: details 详情
+### 攻击前提
+
+CSRF 通常依赖：
+
+- 用户已经登录目标站点。
+- 登录态存放在 Cookie 中。
+- 敏感接口只依赖 Cookie 判断身份。
+- 攻击站点可以让浏览器发起跨站请求。
+
+### 服务端防护
+
+核心防护应在服务端完成：
+
+- 校验 CSRF Token。
+- 校验 `Origin` 或 `Referer`。
+- Cookie 设置 `SameSite=Lax` 或 `SameSite=Strict`。
+- 关键操作要求二次确认或验证码。
+- 敏感写接口只接受合理的 `Content-Type`。
+
+### CSRF Token 方案
+
+服务端生成 token，页面或接口返回给前端，前端在写请求中携带：
+
+```http
+X-CSRF-Token: abc123
+```
+
+服务端校验请求中的 token 是否和用户会话匹配。
+
+### 前端需要做什么
+
+- 对写操作请求统一带上 CSRF Token。
+- 不要把 token 暴露给不可信第三方脚本。
+- 区分 GET 查询和 POST/PUT/DELETE 写操作。
+- 对关键操作加确认交互，减少误触和诱导点击风险。
+
+### SameSite 的作用
+
+`SameSite` 可以减少跨站请求自动携带 Cookie：
+
+```http
+Set-Cookie: session=xxx; HttpOnly; Secure; SameSite=Lax
+```
+
+但它不能完全替代 CSRF Token，因为兼容性、业务跳转和复杂跨站场景仍可能存在风险。
+
+### 注意事项
+
+- CORS 不是 CSRF 的完整防护方案。
+- 只校验自定义请求头也不够，服务端仍要做 token 或来源校验。
+- GET 接口不要设计成会修改服务端状态。
+- XSS 会削弱 CSRF Token 的安全性，因此两类防护要同时做。
+:::
