@@ -2266,3 +2266,94 @@ const loadConfig = once(() => fetch("/config").then(res => res.json()));
 - 包装后的函数会通过闭包持有第一次结果，结果很大时要注意内存占用。
 - once 和节流不同，once 是整个生命周期只执行一次。
 :::
+
+## 37、手写固定高度虚拟列表核心逻辑
+虚拟列表的核心思想是只渲染可视区域附近的数据，通过占位高度和偏移量模拟完整列表，从而减少 DOM 数量。
+
+::: details 详情
+### 核心参数
+
+固定高度虚拟列表通常需要：
+
+- `list`：完整数据。
+- `itemHeight`：每一项固定高度。
+- `containerHeight`：容器高度。
+- `scrollTop`：当前滚动距离。
+- `buffer`：上下额外渲染数量。
+
+### 计算可视范围
+
+```js
+function getVirtualList({
+  list,
+  itemHeight,
+  containerHeight,
+  scrollTop,
+  buffer = 5,
+}) {
+  const visibleCount = Math.ceil(containerHeight / itemHeight);
+  const start = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+  const end = Math.min(list.length, start + visibleCount + buffer * 2);
+  const offsetTop = start * itemHeight;
+  const totalHeight = list.length * itemHeight;
+
+  return {
+    start,
+    end,
+    offsetTop,
+    totalHeight,
+    visibleList: list.slice(start, end),
+  };
+}
+```
+
+### 渲染结构
+
+```html
+<div class="container">
+  <div class="placeholder">
+    <div class="content">
+      <!-- visible items -->
+    </div>
+  </div>
+</div>
+```
+
+关键样式：
+
+```css
+.container {
+  height: 400px;
+  overflow: auto;
+}
+
+.placeholder {
+  height: var(--total-height);
+  position: relative;
+}
+
+.content {
+  transform: translateY(var(--offset-top));
+}
+```
+
+### 使用示例
+
+```js
+const state = getVirtualList({
+  list,
+  itemHeight: 40,
+  containerHeight: 400,
+  scrollTop: 1200,
+});
+```
+
+根据 `state.visibleList` 渲染真实 DOM，根据 `totalHeight` 撑开滚动条，根据 `offsetTop` 移动可视内容。
+
+### 注意事项
+
+- 这个实现适合固定高度列表。
+- 动态高度列表需要额外记录每项高度和位置，复杂度更高。
+- 滚动事件要避免频繁触发重渲染，可以结合 `requestAnimationFrame`。
+- buffer 太小可能白屏，太大会增加渲染数量。
+:::
