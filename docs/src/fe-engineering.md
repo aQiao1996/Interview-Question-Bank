@@ -2106,3 +2106,66 @@ function Button() {
 - 类名动态拼接时要通过 `styles[name]` 或 classnames 工具处理。
 - 组件库要考虑生成的类名稳定性、覆盖能力和主题扩展方式。
 :::
+
+## 37、pnpm workspace 在 Monorepo 中有什么作用
+`pnpm workspace` 用于在一个仓库中管理多个 package，让应用、组件库、工具包之间可以共享依赖、互相引用并统一执行脚本。
+
+::: details 详情
+### 基本结构
+
+```txt
+repo
+├─ package.json
+├─ pnpm-workspace.yaml
+└─ packages
+   ├─ app
+   ├─ ui
+   └─ utils
+```
+
+`pnpm-workspace.yaml` 示例：
+
+```yaml
+packages:
+  - "packages/*"
+```
+
+### workspace 协议
+
+包之间可以用 `workspace:*` 引用：
+
+```json
+{
+  "dependencies": {
+    "@demo/utils": "workspace:*"
+  }
+}
+```
+
+这样可以确保使用仓库内的本地包，而不是误装 npm 远端版本。
+
+### 常见能力
+
+- 统一安装依赖。
+- 多包之间本地联调。
+- 统一运行脚本。
+- 共享 TypeScript、ESLint、构建配置。
+- 配合 Changesets 做多包版本发布。
+
+### 常用命令
+
+```bash
+pnpm -r build
+pnpm --filter @demo/app dev
+pnpm --filter @demo/ui test
+```
+
+`--filter` 可以选择只对某个包或相关依赖包执行命令。
+
+### 注意事项
+
+- 每个 package 的依赖要声明清楚，不要依赖根目录“碰巧安装”的包。
+- 构建顺序要考虑包之间的依赖关系。
+- TypeScript paths 和包 exports 要配合设计。
+- 大型 Monorepo 通常还会配合 Turborepo、Nx 或 Changesets。
+:::
