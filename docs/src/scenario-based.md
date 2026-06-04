@@ -2510,3 +2510,56 @@ CLS（Cumulative Layout Shift）衡量页面生命周期内意外布局偏移的
 - 单次 Lighthouse 分数不能代表所有用户体验。
 - 性能指标要结合业务页面、设备、网络和地区分布分析。
 :::
+
+## 41、前端性能监控 SDK 如何设计
+前端性能监控 SDK 用于采集真实用户环境下的页面加载、交互、资源、接口和错误数据，帮助定位性能瓶颈和评估优化效果。
+
+::: details 详情
+### 采集哪些数据
+
+常见数据包括：
+
+- 页面基础信息：URL、路由、设备、浏览器、网络类型。
+- 加载指标：FCP、LCP、TTFB。
+- 交互指标：INP、长任务。
+- 稳定性指标：CLS。
+- 资源性能：JS、CSS、图片、字体加载耗时。
+- 接口耗时：请求 URL、状态码、耗时、traceId。
+- 错误信息：JS 异常、资源加载失败、Promise 未捕获错误。
+
+### 采集方式
+
+```js
+const observer = new PerformanceObserver(list => {
+  for (const entry of list.getEntries()) {
+    console.log(entry);
+  }
+});
+
+observer.observe({ type: "largest-contentful-paint", buffered: true });
+```
+
+可以通过 `PerformanceObserver`、`performance.getEntriesByType()`、全局错误监听和请求拦截采集数据。
+
+### 上报策略
+
+- 使用 `navigator.sendBeacon()` 上报。
+- 批量上报，减少请求数量。
+- 页面隐藏或卸载前补充上报。
+- 设置采样率，避免数据量过大。
+- 失败时可以短暂缓存并下次重试。
+
+### 数据治理
+
+- URL 参数脱敏。
+- 用户标识匿名化。
+- 接口路径归一化，避免高基数字段。
+- 日志中不要带 token、手机号、身份证等敏感信息。
+
+### 注意事项
+
+- SDK 本身不能明显影响页面性能。
+- 指标要关联版本、环境、页面和用户分布。
+- 监控数据要能和发布、错误日志、后端 trace 串起来。
+- 平均值容易掩盖问题，应关注 P75、P90、P95 等分位数。
+:::
