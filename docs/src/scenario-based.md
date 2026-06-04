@@ -2563,3 +2563,65 @@ observer.observe({ type: "largest-contentful-paint", buffered: true });
 - 监控数据要能和发布、错误日志、后端 trace 串起来。
 - 平均值容易掩盖问题，应关注 P75、P90、P95 等分位数。
 :::
+
+## 42、前端如何防止开放重定向漏洞
+开放重定向是指应用把用户跳转到攻击者可控的外部地址，常见于登录后回跳、OAuth 回调、分享链接和中转页面。如果校验不严，攻击者可以借可信域名诱导用户访问钓鱼站点。
+
+::: details 详情
+### 常见危险写法
+
+```js
+const url = new URLSearchParams(location.search).get("redirect");
+
+location.href = url;
+```
+
+如果 `redirect` 可以被任意控制，攻击者就能构造：
+
+```txt
+https://example.com/login?redirect=https://evil.com
+```
+
+用户看到的是可信域名，但最终会被跳到恶意站点。
+
+### 白名单校验
+
+优先使用路径白名单，而不是直接允许完整 URL：
+
+```js
+const allowPaths = ["/home", "/profile", "/orders"];
+
+function safeRedirect(target) {
+  if (allowPaths.includes(target)) {
+    location.href = target;
+    return;
+  }
+
+  location.href = "/home";
+}
+```
+
+### 同源校验
+
+如果确实要支持完整 URL，要校验 origin：
+
+```js
+function isSafeUrl(target) {
+  const url = new URL(target, location.origin);
+  return url.origin === location.origin;
+}
+```
+
+### OAuth 场景
+
+OAuth 中的 `redirect_uri` 必须在服务端配置白名单，不能只由前端判断。
+
+前端可以辅助校验，但最终应由后端或认证服务校验。
+
+### 注意事项
+
+- 不要只用字符串前缀判断 URL，容易被绕过。
+- 要处理 `//evil.com`、编码、大小写、反斜杠等边界情况。
+- 跳转前可以只允许相对路径。
+- 对外部链接跳转页要明确提示目标域名，让用户确认。
+:::
