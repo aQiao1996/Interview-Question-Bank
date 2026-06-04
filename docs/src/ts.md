@@ -2021,3 +2021,89 @@ type User = {
 - 扩展第三方类型时要确认模块名写对。
 - 如果只是业务内部组合类型，优先使用显式 `extends` 或交叉类型。
 :::
+
+## 39、tsconfig.json 中常见 compilerOptions 有哪些
+`tsconfig.json` 用于配置 TypeScript 项目的编译行为，其中 `compilerOptions` 决定类型检查严格度、模块输出、路径解析和 JSX 等关键能力。
+
+::: details 详情
+### strict
+
+```json
+{
+  "compilerOptions": {
+    "strict": true
+  }
+}
+```
+
+`strict` 会开启一组严格类型检查选项，是 TypeScript 项目中最重要的配置之一。
+
+常见相关选项：
+
+- `noImplicitAny`
+- `strictNullChecks`
+- `strictFunctionTypes`
+- `strictBindCallApply`
+
+### target 和 module
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext"
+  }
+}
+```
+
+- `target` 控制输出 JavaScript 语法版本。
+- `module` 控制模块格式。
+
+在 Vite 等现代工具中，通常由构建工具继续处理最终产物。
+
+### moduleResolution
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "Bundler"
+  }
+}
+```
+
+它控制 TypeScript 如何解析模块路径。现代前端项目常使用 `Bundler` 或 `NodeNext`。
+
+### paths 和 baseUrl
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
+
+用于配置路径别名。注意构建工具也要配置对应 alias，否则类型能过但运行时可能找不到模块。
+
+### jsx
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  }
+}
+```
+
+React 项目通常需要配置 JSX 转换方式。
+
+### 注意事项
+
+- 新项目建议开启 `strict`。
+- 不要只改 tsconfig，还要确认 Vite、Webpack、Node、测试工具的解析规则一致。
+- `skipLibCheck` 可以加快检查，但可能隐藏第三方类型问题。
+- `include` 和 `exclude` 要控制好范围，避免漏检或把构建产物纳入检查。
+:::
