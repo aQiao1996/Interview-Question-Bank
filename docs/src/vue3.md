@@ -1872,3 +1872,58 @@ state.value = {
 - 不要滥用手动触发，否则响应式数据流会变得不直观。
 - 如果深层字段经常变化，优先考虑 `ref`、`reactive` 或不可变更新。
 :::
+
+## 38、vue3 中 defineAsyncComponent 有什么作用
+`defineAsyncComponent` 用于定义异步组件，让组件代码在需要时再加载，常用于减少首屏包体积和实现组件级按需加载。
+
+::: details 详情
+### 基本用法
+
+```js
+import { defineAsyncComponent } from "vue";
+
+const UserPanel = defineAsyncComponent(() => import("./UserPanel.vue"));
+```
+
+组件只有在真正渲染时才会触发加载。
+
+### 配置加载状态
+
+```js
+const UserPanel = defineAsyncComponent({
+  loader: () => import("./UserPanel.vue"),
+  loadingComponent: Loading,
+  errorComponent: ErrorView,
+  delay: 200,
+  timeout: 3000,
+});
+```
+
+常见配置：
+
+- `loader`：加载组件的函数。
+- `loadingComponent`：加载中组件。
+- `errorComponent`：加载失败组件。
+- `delay`：延迟多久展示 loading。
+- `timeout`：超时时间。
+
+### 适合场景
+
+- 大型弹窗。
+- 低频使用的业务组件。
+- 路由级页面组件。
+- 富文本编辑器、图表等重组件。
+
+### 和 Suspense 的关系
+
+`defineAsyncComponent` 负责定义异步组件，`Suspense` 可以统一协调异步组件或异步 setup 的加载状态。
+
+两者可以配合使用，但不是同一个概念。
+
+### 注意事项
+
+- 不要把所有组件都拆成异步组件，过度拆分会增加请求和调度成本。
+- 加载失败要有兜底 UI。
+- 路由懒加载通常直接使用动态 import。
+- 异步组件适合低频、体积大、非首屏关键组件。
+:::
