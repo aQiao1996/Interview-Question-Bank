@@ -1628,3 +1628,78 @@ QUIC 把多路复用能力放到传输层自身处理，可以让不同流之间
 - 性能优化仍要关注缓存、资源体积、关键路径和渲染成本。
 - 上线后应通过真实用户数据对比 HTTP/2 和 HTTP/3 效果。
 :::
+
+## 39、WebSocket 如何设计心跳和重连机制
+WebSocket 是长连接，实际运行中可能因为网络切换、代理超时、服务重启等原因断开，因此需要心跳检测和重连机制保证连接可用。
+
+::: details 详情
+### 为什么需要心跳
+
+WebSocket 连接可能出现“看起来没断，但实际不可用”的半开状态。
+
+心跳可以定期确认连接是否仍然可用：
+
+```txt
+client -> ping
+server -> pong
+```
+
+如果一段时间内收不到响应，就认为连接异常并主动关闭重连。
+
+### 前端心跳示例
+
+```js
+let socket;
+let heartbeatTimer;
+
+function startHeartbeat() {
+  heartbeatTimer = setInterval(() => {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: "ping" }));
+    }
+  }, 30000);
+}
+
+function stopHeartbeat() {
+  clearInterval(heartbeatTimer);
+}
+```
+
+业务层可以约定 `ping/pong` 消息格式。
+
+### 重连策略
+
+重连不能无限立即重试，应使用退避策略：
+
+```txt
+1s -> 2s -> 4s -> 8s -> 最大 30s
+```
+
+同时可以加随机抖动，避免大量客户端同时重连。
+
+### 需要处理的状态
+
+- connecting：连接中。
+- open：已连接。
+- reconnecting：重连中。
+- closed：已关闭。
+- failed：重连失败。
+
+UI 可以根据状态展示“连接中”“重连中”“离线”等提示。
+
+### 鉴权和恢复
+
+重连时要考虑：
+
+- token 是否过期。
+- 是否需要重新鉴权。
+- 是否要恢复订阅频道。
+- 是否要拉取断线期间遗漏的消息。
+
+### 注意事项
+
+- 页面隐藏或网络离线时可以暂停部分重连逻辑。
+- 用户主动退出时不要自动重连。
+- 服务端也要清理长期无心跳的连接。
+- 消息要设计幂等或带序号，避免重连后重复处理。
+:::
