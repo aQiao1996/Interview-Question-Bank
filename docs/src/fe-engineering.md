@@ -2353,3 +2353,69 @@ Monorepo 多包发布可以使用 Changesets 管理版本和 changelog。
 - 私有包要配置 registry 和访问权限。
 - 不要依赖本地路径或未构建文件，确保使用方安装后能直接使用。
 :::
+
+## 41、ESLint Flat Config 是什么
+ESLint Flat Config 是 ESLint 新的配置方式，通常使用 `eslint.config.js`，用数组形式组织配置，替代传统的 `.eslintrc` 级联配置模型。
+
+::: details 详情
+### 基本示例
+
+```js
+// eslint.config.js
+export default [
+  {
+    files: ["**/*.js"],
+    rules: {
+      "no-console": "warn",
+    },
+  },
+];
+```
+
+Flat Config 通过数组从上到下匹配文件并合并配置。
+
+### 和 .eslintrc 的区别
+
+- 配置文件更接近普通 JavaScript 模块。
+- 不再默认向上级目录层层查找多个配置。
+- `files`、`ignores` 更显式。
+- 插件、parser、规则都通过 JS 对象组织。
+- 更适合 Monorepo 中统一管理配置。
+
+### TypeScript 配置
+
+```js
+import tseslint from "typescript-eslint";
+
+export default [
+  ...tseslint.configs.recommended,
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
+  },
+];
+```
+
+现代 TypeScript 项目通常会配合 `typescript-eslint` 提供的 flat config 使用。
+
+### ignores
+
+```js
+export default [
+  {
+    ignores: ["dist/**", "coverage/**"],
+  },
+];
+```
+
+忽略规则直接写在配置数组中。
+
+### 注意事项
+
+- 从 `.eslintrc` 迁移时，插件写法和 extends 写法会有变化。
+- Monorepo 中要明确每类文件的匹配范围。
+- ESLint、插件和共享配置的版本要兼容。
+- 迁移后要在 CI 中跑完整 lint，避免部分文件未被覆盖。
+:::
