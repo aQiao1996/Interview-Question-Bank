@@ -2464,3 +2464,63 @@ const [state, dispatch] = useReducer(reducer, initialState);
 - URL 查询条件适合放 URL，方便分享和刷新恢复。
 - 状态管理方案要考虑团队熟悉度、调试工具、SSR 支持和长期维护成本。
 :::
+
+## 40、React Server Components 是什么
+React Server Components（RSC）是 React 中可以在服务端执行并渲染的组件模型。它允许组件直接在服务端读取数据，并把渲染结果以特殊格式发送给客户端。
+
+::: details 详情
+### 核心特点
+
+Server Component：
+
+- 在服务端执行。
+- 不会把组件代码打进客户端包。
+- 可以直接访问服务端资源，例如数据库、文件、后端 API。
+- 不能使用浏览器 API。
+- 不能使用 `useState`、`useEffect` 这类客户端 Hook。
+
+### 和 Client Component 的区别
+
+Client Component 需要在浏览器中运行，适合交互逻辑：
+
+```jsx
+"use client";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+```
+
+Server Component 更适合数据读取和静态展示：
+
+```jsx
+async function ProductList() {
+  const products = await getProducts();
+  return products.map(item => <div key={item.id}>{item.name}</div>);
+}
+```
+
+### 解决什么问题
+
+- 减少客户端 JavaScript 体积。
+- 数据获取更靠近服务端。
+- 避免把敏感逻辑暴露到客户端。
+- 改善首屏数据渲染链路。
+
+### 使用边界
+
+通常做法是：
+
+- 页面数据读取放在 Server Component。
+- 按钮、表单、弹窗等交互放在 Client Component。
+- Server Component 可以引用 Client Component。
+- Client Component 不能直接导入 Server Component。
+
+### 注意事项
+
+- RSC 通常依赖框架支持，例如 Next.js App Router。
+- 它不是传统 SSR 的简单替代，而是一套组件执行边界模型。
+- 要清楚哪些代码会进客户端包，哪些只在服务端执行。
+- 过度把组件标记为 `"use client"` 会削弱 RSC 的收益。
+:::
