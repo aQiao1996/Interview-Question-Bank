@@ -2281,3 +2281,75 @@ test("login", async ({ page }) => {
 - 测试之间要隔离状态，避免互相影响。
 - 对高价值流程做 E2E，比追求覆盖率数字更重要。
 :::
+
+## 40、前端库如何发布 npm 包
+发布 npm 包需要准备包元信息、构建产物、类型声明、入口字段、版本号和发布权限，重点是让使用方能稳定安装和正确引用。
+
+::: details 详情
+### package.json 关键字段
+
+```json
+{
+  "name": "@demo/ui",
+  "version": "1.0.0",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "sideEffects": false
+}
+```
+
+常见字段：
+
+- `name`：包名。
+- `version`：版本号。
+- `main`：CommonJS 入口。
+- `module`：ESM 入口。
+- `types`：类型声明入口。
+- `files`：发布到 npm 的文件范围。
+- `exports`：现代包入口声明。
+
+### 构建产物
+
+库通常需要输出：
+
+- ESM。
+- CommonJS。
+- TypeScript 类型声明。
+- 样式文件。
+
+组件库还要考虑 CSS 是否单独输出、是否支持按需引入。
+
+### 发布流程
+
+```bash
+pnpm build
+pnpm test
+npm publish
+```
+
+发布前应确认：
+
+- 版本号已更新。
+- README 和 changelog 已更新。
+- dist 产物完整。
+- 没有把源码中的敏感文件发布出去。
+
+### 版本管理
+
+遵循语义化版本：
+
+- `patch`：修复 bug。
+- `minor`：向后兼容的新功能。
+- `major`：破坏性变更。
+
+Monorepo 多包发布可以使用 Changesets 管理版本和 changelog。
+
+### 注意事项
+
+- React、Vue 等宿主依赖通常放到 `peerDependencies`。
+- 发布前可以用 `npm pack` 检查包内容。
+- 私有包要配置 registry 和访问权限。
+- 不要依赖本地路径或未构建文件，确保使用方安装后能直接使用。
+:::
