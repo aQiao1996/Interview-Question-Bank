@@ -1525,3 +1525,49 @@ function closeDialog() {
 - 如果要加动画，需要额外处理高度过渡。
 - `summary` 应该提供清晰的可点击标题，不要放过多复杂交互元素。
 :::
+
+## 39、HTML 中 contenteditable 属性有什么作用
+`contenteditable` 用于让普通 HTML 元素变成可编辑区域，用户可以直接在页面中输入或修改内容。
+
+::: details 详情
+### 基本用法
+
+```html
+<div contenteditable="true">
+  这里可以编辑
+</div>
+```
+
+设置后，用户可以像编辑输入框一样编辑元素内容。
+
+### 常见取值
+
+- `true`：允许编辑。
+- `false`：不允许编辑。
+- `plaintext-only`：只允许纯文本编辑，部分浏览器支持。
+
+### 常见场景
+
+- 富文本编辑器。
+- 内联编辑标题。
+- 表格单元格编辑。
+- 备注输入。
+- 简单文本编辑区域。
+
+### 和 input/textarea 的区别
+
+- `input` 和 `textarea` 是表单控件。
+- `contenteditable` 可以让任意元素编辑，结构更灵活。
+- `contenteditable` 不会天然提供表单值，需要自己读取内容。
+
+```js
+const value = editor.innerText;
+```
+
+### 注意事项
+
+- 用户输入可能包含 HTML，渲染和保存前要做安全处理。
+- 富文本内容回显要防止 XSS。
+- 光标、选区、撤销、粘贴、输入法处理都比普通输入框复杂。
+- 如果只需要纯文本输入，优先使用 `input` 或 `textarea`。
+:::
