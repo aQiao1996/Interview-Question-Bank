@@ -2107,3 +2107,75 @@ React 项目通常需要配置 JSX 转换方式。
 - `skipLibCheck` 可以加快检查，但可能隐藏第三方类型问题。
 - `include` 和 `exclude` 要控制好范围，避免漏检或把构建产物纳入检查。
 :::
+
+## 40、TypeScript 项目引用 references 有什么作用
+TypeScript 项目引用用于把大型项目拆成多个可独立构建的子项目，让类型检查和增量构建更高效，常见于 Monorepo 或大型前端工程。
+
+::: details 详情
+### 基本结构
+
+```txt
+repo
+├─ tsconfig.json
+└─ packages
+   ├─ ui
+   │  └─ tsconfig.json
+   └─ app
+      └─ tsconfig.json
+```
+
+根目录 `tsconfig.json`：
+
+```json
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/ui" },
+    { "path": "./packages/app" }
+  ]
+}
+```
+
+### 子项目配置
+
+被引用的子项目通常需要开启：
+
+```json
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true
+  }
+}
+```
+
+`composite` 会让 TypeScript 生成构建信息，支持项目间依赖分析和增量构建。
+
+### 构建命令
+
+```bash
+tsc -b
+```
+
+`tsc -b` 会按 references 的依赖关系构建项目。
+
+### 解决什么问题
+
+- 大项目类型检查过慢。
+- 多包之间依赖关系不清晰。
+- 只想重新构建变更影响到的包。
+- 希望组件库、工具库、业务应用独立产出类型声明。
+
+### 和 paths 的区别
+
+- `paths` 主要解决模块路径别名。
+- `references` 主要解决项目之间的构建和类型依赖关系。
+
+两者可以配合使用，但不能互相替代。
+
+### 注意事项
+
+- 子项目的边界要清晰，不要随意跨包引用源码内部文件。
+- references 配置复杂后，需要和包管理、构建工具、CI 缓存一起设计。
+- declaration 输出路径要规划好，避免污染源码目录。
+:::
