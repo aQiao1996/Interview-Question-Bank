@@ -2357,3 +2357,77 @@ const state = getVirtualList({
 - 滚动事件要避免频繁触发重渲染，可以结合 `requestAnimationFrame`。
 - buffer 太小可能白屏，太大会增加渲染数量。
 :::
+
+## 38、手写 JSONP 请求函数
+JSONP 利用 `<script>` 标签不受同源策略限制的特点发起跨域请求，服务端返回一段函数调用代码，把数据作为参数传给前端回调函数。
+
+::: details 详情
+### 实现思路
+
+- 生成全局唯一回调函数名。
+- 把回调函数名拼到 URL 参数中。
+- 创建 `script` 标签并插入页面。
+- 服务端返回 `callback(data)`。
+- 成功或失败后清理 script 和全局函数。
+
+### 基础实现
+
+```js
+function jsonp(url, params = {}, callbackKey = "callback") {
+  return new Promise((resolve, reject) => {
+    const callbackName = `jsonp_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const script = document.createElement("script");
+    const query = new URLSearchParams({
+      ...params,
+      [callbackKey]: callbackName,
+    });
+
+    window[callbackName] = data => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("JSONP request failed"));
+    };
+
+    function cleanup() {
+      delete window[callbackName];
+      script.remove();
+    }
+
+    script.src = `${url}${url.includes("?") ? "&" : "?"}${query.toString()}`;
+    document.body.appendChild(script);
+  });
+}
+```
+
+### 使用示例
+
+```js
+jsonp("https://example.com/api", { id: 1 }).then(data => {
+  console.log(data);
+});
+```
+
+服务端返回内容类似：
+
+```js
+jsonp_123({ "name": "Tom" });
+```
+
+### 局限性
+
+- 只支持 GET 请求。
+- 需要服务端配合返回函数调用。
+- 错误处理能力弱。
+- 有安全风险，等于执行了远程脚本。
+
+### 注意事项
+
+- 现代项目优先使用 CORS。
+- JSONP URL 必须可信，不要加载不受信任的脚本。
+- 回调函数名要避免冲突，并在完成后清理。
+- 需要设置超时逻辑时，可以额外加 `setTimeout`。
+:::
