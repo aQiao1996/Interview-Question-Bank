@@ -1607,3 +1607,63 @@ max(最小值, min(理想值, 最大值))
 - `clamp()` 中可以混合 `px`、`rem`、`vw` 等单位。
 - 复杂布局结构变化仍应使用媒体查询或容器查询。
 :::
+
+## 38、CSS 中 aspect-ratio 有什么作用
+`aspect-ratio` 用于设置元素的宽高比，让浏览器在只确定一个方向尺寸时自动计算另一个方向尺寸。
+
+::: details 详情
+### 基本用法
+
+```css
+.cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+```
+
+当 `.cover` 宽度变化时，高度会按 `16:9` 自动计算。
+
+### 常见场景
+
+- 视频容器。
+- 图片占位。
+- 商品卡片封面。
+- 响应式 Banner。
+- 瀑布流或网格卡片。
+
+### 图片占位
+
+```css
+.image-box {
+  aspect-ratio: 4 / 3;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+```
+
+提前确定图片区域高度，可以减少图片加载后造成的布局偏移。
+
+### 和 padding-top 方案的区别
+
+过去常用百分比 padding 模拟宽高比：
+
+```css
+.box {
+  padding-top: 56.25%;
+}
+```
+
+`aspect-ratio` 更直观，语义更清晰，代码也更少。
+
+### 注意事项
+
+- 如果同时设置了明确的 `width` 和 `height`，宽高比可能不会生效。
+- 内容超过容器时仍可能撑开布局，需要配合 `overflow`。
+- 图片本身也有自然宽高比，容器和图片的适配要结合 `object-fit`。
+:::
