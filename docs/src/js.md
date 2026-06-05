@@ -1080,3 +1080,67 @@ console.log("toString" in obj); // true
 - 判断某个能力是否存在时可以使用 `in`。
 - 不要用属性值是否为 truthy 来判断属性是否存在，因为值可能是 `0`、`false` 或空字符串。
 :::
+
+## 44、Proxy 和 Reflect 有什么作用
+`Proxy` 用于代理对象的基本操作，例如读取、赋值、删除、函数调用等；`Reflect` 提供了一组和这些基本操作对应的标准方法，常和 `Proxy` 配合使用。
+
+::: details 详情
+### Proxy 基本用法
+
+```js
+const user = {
+  name: "Tom",
+};
+
+const proxy = new Proxy(user, {
+  get(target, key, receiver) {
+    console.log("get", key);
+    return Reflect.get(target, key, receiver);
+  },
+  set(target, key, value, receiver) {
+    console.log("set", key, value);
+    return Reflect.set(target, key, value, receiver);
+  },
+});
+
+proxy.name;
+proxy.age = 18;
+```
+
+`Proxy` 可以拦截对象操作，在操作前后加入自定义逻辑。
+
+### 常见拦截器
+
+- `get`：读取属性。
+- `set`：设置属性。
+- `has`：`in` 操作。
+- `deleteProperty`：删除属性。
+- `ownKeys`：获取自身 key。
+- `apply`：函数调用。
+- `construct`：`new` 调用。
+
+### Reflect 的作用
+
+```js
+Reflect.get(target, key, receiver);
+Reflect.set(target, key, value, receiver);
+Reflect.has(target, key);
+```
+
+`Reflect` 的方法和对象底层操作对应，返回值更规范，也更适合在代理中转发默认行为。
+
+### 常见场景
+
+- 响应式系统。
+- 数据校验。
+- 日志记录。
+- 权限控制。
+- Mock 和调试工具。
+
+### 注意事项
+
+- `Proxy` 代理的是对象整体，不是单个属性。
+- 被代理对象和原对象不是同一个引用。
+- 过度代理会增加调试复杂度。
+- 某些内置对象或私有字段场景下代理行为需要特别注意。
+:::
