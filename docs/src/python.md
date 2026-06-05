@@ -2699,3 +2699,70 @@ await asyncio.wait_for(fetch_data(), timeout=3)
 - 任务中要用 `try/finally` 释放资源。
 - 不要吞掉 `CancelledError`，除非明确知道后果。
 :::
+
+## 44、Python typing.Protocol 有什么作用
+`Protocol` 用于定义结构化子类型，也就是只要一个对象拥有协议要求的属性和方法，就可以被认为满足这个类型，而不要求显式继承某个基类。
+
+::: details 详情
+### 基本用法
+
+```python
+from typing import Protocol
+
+class SupportsClose(Protocol):
+    def close(self) -> None:
+        ...
+
+def shutdown(resource: SupportsClose) -> None:
+    resource.close()
+```
+
+任何实现了 `close()` 方法的对象，都可以传给 `shutdown`。
+
+### 不需要显式继承
+
+```python
+class FileResource:
+    def close(self) -> None:
+        print("closed")
+
+shutdown(FileResource())
+```
+
+`FileResource` 没有继承 `SupportsClose`，但结构满足协议，因此类型检查可以通过。
+
+### 适合场景
+
+- 定义接口能力。
+- 降低继承耦合。
+- 给第三方对象补充抽象约束。
+- 编写更灵活的函数参数类型。
+- 测试中替换 mock 对象。
+
+### 和 ABC 的区别
+
+- ABC 更强调显式继承和运行时抽象基类。
+- Protocol 更强调静态类型检查中的结构兼容。
+- Protocol 更接近“鸭子类型”的类型化表达。
+
+### runtime_checkable
+
+如果需要运行时使用 `isinstance` 检查，可以加：
+
+```python
+from typing import Protocol, runtime_checkable
+
+@runtime_checkable
+class SupportsClose(Protocol):
+    def close(self) -> None:
+        ...
+```
+
+但运行时检查能力有限，通常只检查属性是否存在。
+
+### 注意事项
+
+- Protocol 主要服务于静态类型检查。
+- 不要把复杂业务逻辑放进协议定义。
+- 对公共接口、插件系统、适配器模式很有帮助。
+:::
