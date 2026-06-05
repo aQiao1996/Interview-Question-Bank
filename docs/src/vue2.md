@@ -1826,3 +1826,64 @@ export default {
 - 输入组件要处理组合输入、失焦校验和格式化等细节。
 - 如果组件有多个可变值，Vue2 中通常使用 `.sync` 或拆分事件。
 :::
+
+## 38、vue2 中 .sync 修饰符有什么作用
+`.sync` 是 Vue2 中用于简化父子组件 prop 同步的语法糖。它允许子组件通过约定事件通知父组件更新某个 prop。
+
+::: details 详情
+### 基本用法
+
+父组件：
+
+```vue
+<UserDialog :visible.sync="dialogVisible" />
+```
+
+等价于：
+
+```vue
+<UserDialog
+  :visible="dialogVisible"
+  @update:visible="dialogVisible = $event"
+/>
+```
+
+子组件：
+
+```js
+this.$emit("update:visible", false);
+```
+
+### 适合场景
+
+- 弹窗显示隐藏。
+- 抽屉展开收起。
+- 分页组件同步页码。
+- 筛选组件同步多个条件。
+
+### 和 v-model 的区别
+
+- `v-model` 更适合组件的主值。
+- `.sync` 更适合同步多个 prop。
+- Vue2 中一个组件默认只有一个 `v-model`。
+
+### 为什么仍然不能直接改 prop
+
+子组件不能直接修改父组件传入的 prop：
+
+```js
+this.visible = false; // 不推荐
+```
+
+应该通过事件让父组件更新数据：
+
+```js
+this.$emit("update:visible", false);
+```
+
+### 注意事项
+
+- `.sync` 会让数据流看起来更隐式，复杂组件要控制使用范围。
+- 子组件事件名必须符合 `update:propName` 约定。
+- 如果同步逻辑复杂，显式事件名可能比 `.sync` 更清晰。
+:::
