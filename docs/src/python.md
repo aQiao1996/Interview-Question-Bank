@@ -2895,3 +2895,64 @@ def get_current_user(db = Depends(get_db)):
 - 鉴权逻辑可以放在依赖中，但最终权限仍要和业务规则结合。
 - 测试时可以使用 dependency override 替换依赖。
 :::
+
+## 47、SQLAlchemy Session 应该如何管理
+SQLAlchemy 的 `Session` 表示一次数据库工作单元，负责对象状态跟踪、事务提交、回滚和连接使用。它不应该作为全局共享对象长期复用。
+
+::: details 详情
+### Session 的作用
+
+`Session` 主要负责：
+
+- 管理 ORM 对象状态。
+- 组织数据库查询。
+- 控制事务提交和回滚。
+- 从连接池获取和释放连接。
+
+它不是简单的数据库连接对象，而是 ORM 的工作上下文。
+
+### 请求级 Session
+
+Web 服务中常见做法是每个请求创建一个 session，请求结束后关闭：
+
+```python
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+```
+
+这样可以保证异常时回滚，并释放连接资源。
+
+### 为什么不能全局共享
+
+全局共享 session 可能导致：
+
+- 多请求之间状态污染。
+- 事务边界混乱。
+- 连接长期不释放。
+- 并发访问产生不可预期行为。
+
+全局可以保存 `engine` 和 `SessionLocal` 工厂，但不要共享同一个 session 实例。
+
+### commit 和 flush
+
+- `flush`：把变更发送到数据库，但不提交事务。
+- `commit`：提交事务，并持久化变更。
+- `rollback`：回滚当前事务。
+
+有时需要先 `flush` 拿到数据库生成的主键，再继续后续逻辑。
+
+### 注意事项
+
+- 查询后长时间不关闭 session 会占用连接池资源。
+- 异常路径必须 rollback，否则事务状态可能异常。
+- 后台任务和异步任务要创建自己的 session。
+- SQLAlchemy 2.x 推荐使用更明确的 session 生命周期管理方式。
+:::
