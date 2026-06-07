@@ -2431,3 +2431,90 @@ jsonp_123({ "name": "Tom" });
 - 回调函数名要避免冲突，并在完成后清理。
 - 需要设置超时逻辑时，可以额外加 `setTimeout`。
 :::
+
+## 39、手写并发请求调度器
+并发请求调度器用于限制同一时间正在执行的异步任务数量，常见于批量上传、批量请求、爬取数据等场景。
+
+::: details 详情
+### 实现思路
+
+- 维护一个任务队列。
+- 记录当前正在执行的任务数量。
+- 当运行数量小于最大并发数时，从队列取任务执行。
+- 任务完成后减少运行数量，并继续调度下一个任务。
+
+### 基础实现
+
+```js
+class Scheduler {
+  constructor(limit) {
+    this.limit = limit;
+    this.running = 0;
+    this.queue = [];
+  }
+
+  add(task) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({
+        task,
+        resolve,
+        reject,
+      });
+      this.run();
+    });
+  }
+
+  run() {
+    while (this.running < this.limit && this.queue.length > 0) {
+      const { task, resolve, reject } = this.queue.shift();
+      this.running++;
+
+      Promise.resolve()
+        .then(task)
+        .then(resolve, reject)
+        .finally(() => {
+          this.running--;
+          this.run();
+        });
+    }
+  }
+}
+```
+
+### 使用示例
+
+```js
+const scheduler = new Scheduler(2);
+
+const request = time => () =>
+  new Promise(resolve => {
+    setTimeout(() => {
+      console.log(time);
+      resolve(time);
+    }, time);
+  });
+
+scheduler.add(request(1000));
+scheduler.add(request(500));
+scheduler.add(request(300));
+scheduler.add(request(400));
+```
+
+最多同时执行 2 个任务，某个任务完成后才会继续执行下一个。
+
+### 函数式写法
+
+```js
+function limitRun(tasks, limit) {
+  const scheduler = new Scheduler(limit);
+  return Promise.all(tasks.map(task => scheduler.add(task)));
+}
+```
+
+### 注意事项
+
+- 任务函数应该返回 Promise 或普通值。
+- 要把失败结果正确 reject 出去。
+- 如果需要“失败不中断全部任务”，可以在任务内部 catch 后返回错误对象。
+- 大量任务场景下可以增加取消、优先级、重试等能力。
+:::
