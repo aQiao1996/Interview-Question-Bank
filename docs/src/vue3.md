@@ -1927,3 +1927,60 @@ const UserPanel = defineAsyncComponent({
 - 路由懒加载通常直接使用动态 import。
 - 异步组件适合低频、体积大、非首屏关键组件。
 :::
+
+## 39、Pinia 有什么特点，和 Vuex 有什么区别
+Pinia 是 Vue 官方推荐的状态管理库，适合管理跨组件共享状态。它相比 Vuex 写法更简洁，对 TypeScript 更友好，也更符合 Vue3 Composition API 的使用方式。
+
+::: details 详情
+### 基本用法
+
+```ts
+import { defineStore } from "pinia";
+
+export const useUserStore = defineStore("user", {
+  state: () => ({
+    name: "",
+    token: "",
+  }),
+  actions: {
+    setToken(token: string) {
+      this.token = token;
+    },
+  },
+});
+```
+
+组件中使用：
+
+```vue
+<script setup lang="ts">
+import { useUserStore } from "@/stores/user";
+
+const userStore = useUserStore();
+userStore.setToken("abc");
+</script>
+```
+
+### 主要特点
+
+- 没有 mutations，直接通过 actions 或实例修改状态。
+- 支持 Option Store 和 Setup Store 两种写法。
+- TypeScript 类型推导更自然。
+- 支持插件扩展。
+- 支持 devtools 调试。
+- 适合 Vue3，也兼容 Vue2。
+
+### 和 Vuex 的区别
+
+- Vuex 使用 `state`、`getters`、`mutations`、`actions` 分层更明显。
+- Pinia 去掉了 mutations，样板代码更少。
+- Pinia 模块天然按 store 拆分，不需要 Vuex modules 的嵌套写法。
+- Pinia 对 Composition API 和 TypeScript 更友好。
+
+### 注意事项
+
+- 不要把所有组件局部状态都放进 Pinia。
+- 登录态、用户信息、权限、跨页面缓存适合放入 Pinia。
+- 异步 action 中要处理错误和 loading 状态。
+- 持久化 token 时要注意 XSS 风险。
+:::
