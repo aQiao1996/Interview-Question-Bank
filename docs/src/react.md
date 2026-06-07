@@ -2642,3 +2642,55 @@ App Router 中可以直接在 Server Component 中 `fetch` 数据，并结合缓
 - 浏览器 API、事件处理、状态 Hook 只能放在 Client Component。
 - App Router 的数据缓存策略要和业务实时性要求匹配。
 :::
+
+## 43、SWR 适合解决什么问题
+SWR 是一个用于请求和缓存服务端数据的 React Hooks 库，核心思想是先返回缓存数据，再在后台重新请求并更新页面。
+
+::: details 详情
+### SWR 的含义
+
+SWR 来自 `stale-while-revalidate`：
+
+- `stale`：先使用旧缓存，让页面尽快展示。
+- `revalidate`：后台重新请求最新数据。
+- 更新完成后再触发组件刷新。
+
+### 基本用法
+
+```jsx
+import useSWR from "swr";
+
+const fetcher = url => fetch(url).then(res => res.json());
+
+function UserInfo() {
+  const { data, error, isLoading } = useSWR("/api/user", fetcher);
+
+  if (isLoading) return <div>加载中</div>;
+  if (error) return <div>加载失败</div>;
+
+  return <div>{data.name}</div>;
+}
+```
+
+### 常见能力
+
+- 请求缓存。
+- 请求去重。
+- 窗口聚焦时重新验证。
+- 网络恢复时重新验证。
+- 轮询刷新。
+- 本地乐观更新。
+
+### 和 React Query 的区别
+
+- SWR 更轻量，API 简洁，适合读多写少的数据请求。
+- React Query 功能更完整，mutation、分页、无限滚动、缓存失效管理更强。
+- 中大型后台系统通常 React Query 的可控性更好。
+
+### 注意事项
+
+- key 要稳定，参数变化要体现在 key 中。
+- 不要把强一致性业务完全交给前端缓存。
+- mutation 后要主动更新或重新验证缓存。
+- 错误重试策略要结合接口成本和用户体验设计。
+:::
