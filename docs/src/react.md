@@ -2524,3 +2524,61 @@ async function ProductList() {
 - 要清楚哪些代码会进客户端包，哪些只在服务端执行。
 - 过度把组件标记为 `"use client"` 会削弱 RSC 的收益。
 :::
+
+## 41、React Query 适合解决什么问题
+React Query 主要用于管理服务端状态，例如接口数据、缓存、重新请求、分页、乐观更新和错误重试。它解决的不是组件本地状态，而是“远程数据在前端如何可靠使用”的问题。
+
+::: details 详情
+### 什么是服务端状态
+
+服务端状态通常有这些特点：
+
+- 来源在服务端。
+- 可能被其他用户或系统修改。
+- 需要异步请求。
+- 有 loading、error、success 状态。
+- 需要缓存和重新验证。
+
+例如用户列表、订单详情、搜索结果、分页数据都属于服务端状态。
+
+### 基本用法
+
+```jsx
+import { useQuery } from "@tanstack/react-query";
+
+function UserList() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => fetch("/api/users").then(res => res.json()),
+  });
+
+  if (isLoading) return <div>加载中</div>;
+  if (error) return <div>加载失败</div>;
+
+  return data.map(user => <div key={user.id}>{user.name}</div>);
+}
+```
+
+### 常见能力
+
+- 请求缓存。
+- 自动去重。
+- 窗口重新聚焦时刷新。
+- 失败重试。
+- 分页和无限滚动。
+- 乐观更新。
+- 数据失效和重新获取。
+
+### 和全局状态库的区别
+
+- Redux、Zustand 更适合客户端状态。
+- React Query 更适合服务端状态。
+- 不建议把接口返回数据手动塞进全局 store 后自己维护 loading、缓存和重试。
+
+### 注意事项
+
+- `queryKey` 要设计稳定，包含影响请求结果的参数。
+- 不同页面共享数据时，要利用缓存而不是重复请求。
+- mutation 后要正确 invalidate 或更新缓存。
+- 不能因为用了 React Query 就忽略接口权限、错误码和后端缓存设计。
+:::
