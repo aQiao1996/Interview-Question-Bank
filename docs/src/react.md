@@ -2582,3 +2582,63 @@ function UserList() {
 - mutation 后要正确 invalidate 或更新缓存。
 - 不能因为用了 React Query 就忽略接口权限、错误码和后端缓存设计。
 :::
+
+## 42、Next.js App Router 有哪些核心概念
+Next.js App Router 是基于 `app` 目录的新路由体系，核心特点是嵌套路由、布局复用、React Server Components、流式渲染和更细粒度的数据加载。
+
+::: details 详情
+### 文件约定
+
+常见文件包括：
+
+```txt
+app
+├─ layout.tsx
+├─ page.tsx
+├─ loading.tsx
+├─ error.tsx
+└─ users
+   └─ page.tsx
+```
+
+- `page.tsx`：页面入口。
+- `layout.tsx`：布局，可以在子路由间复用。
+- `loading.tsx`：加载态。
+- `error.tsx`：错误边界。
+- `not-found.tsx`：404 页面。
+
+### Server Component 优先
+
+App Router 默认组件是 Server Component，可以在服务端读取数据：
+
+```tsx
+export default async function Page() {
+  const data = await fetchUsers();
+  return <UserList data={data} />;
+}
+```
+
+如果需要浏览器交互，需要加 `"use client"`。
+
+### 嵌套路由和布局
+
+`layout.tsx` 可以包裹子路由，并在路由切换时保留状态。
+
+这适合后台系统、侧边栏布局、详情页嵌套等场景。
+
+### 数据获取
+
+App Router 中可以直接在 Server Component 中 `fetch` 数据，并结合缓存策略控制：
+
+- 静态缓存。
+- 动态渲染。
+- 重新验证。
+- 按请求读取 cookies、headers。
+
+### 注意事项
+
+- 不要把所有组件都标记成 Client Component。
+- 需要清楚服务端和客户端代码边界。
+- 浏览器 API、事件处理、状态 Hook 只能放在 Client Component。
+- App Router 的数据缓存策略要和业务实时性要求匹配。
+:::
