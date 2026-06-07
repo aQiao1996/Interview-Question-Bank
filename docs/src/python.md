@@ -2766,3 +2766,66 @@ class SupportsClose(Protocol):
 - 不要把复杂业务逻辑放进协议定义。
 - 对公共接口、插件系统、适配器模式很有帮助。
 :::
+
+## 45、Pydantic v2 常用于解决什么问题
+Pydantic 常用于 Python 项目的数据校验、类型转换和序列化，FastAPI 中的请求体、响应模型和配置模型也大量依赖它。
+
+::: details 详情
+### 基本用法
+
+```python
+from pydantic import BaseModel, Field
+
+class User(BaseModel):
+    id: int
+    name: str = Field(min_length=1)
+    age: int | None = None
+
+user = User(id="1", name="Tom")
+print(user.id)  # 1
+```
+
+Pydantic 会根据类型标注进行校验和转换。
+
+### 常见能力
+
+- 校验输入数据。
+- 自动类型转换。
+- 设置默认值。
+- 定义字段约束。
+- 导出 dict 或 JSON。
+- 生成 JSON Schema。
+
+### v2 常见方法
+
+```python
+user = User.model_validate({"id": 1, "name": "Tom"})
+data = user.model_dump()
+json_text = user.model_dump_json()
+```
+
+相比 v1，v2 中很多方法名改为 `model_` 前缀。
+
+### 自定义校验
+
+```python
+from pydantic import field_validator
+
+class User(BaseModel):
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def check_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("name cannot be empty")
+        return value
+```
+
+### 注意事项
+
+- Pydantic 适合校验边界数据，不要把复杂业务逻辑都塞进模型。
+- 类型转换虽然方便，但关键字段要避免过度宽松。
+- v1 迁移到 v2 时要注意方法名和 validator 写法变化。
+- 大量数据校验时要关注性能和模型嵌套复杂度。
+:::
