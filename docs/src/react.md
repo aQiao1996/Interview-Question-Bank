@@ -2694,3 +2694,69 @@ function UserInfo() {
 - mutation 后要主动更新或重新验证缓存。
 - 错误重试策略要结合接口成本和用户体验设计。
 :::
+
+## 44、React Router Data APIs 有什么作用
+React Router 的 Data APIs 把数据加载、表单提交和路由关联起来，让页面可以在路由层声明 `loader`、`action`、错误边界和重定向逻辑。
+
+::: details 详情
+### loader
+
+`loader` 用于在进入路由前加载数据：
+
+```jsx
+const router = createBrowserRouter([
+  {
+    path: "/users/:id",
+    element: <UserPage />,
+    loader: async ({ params }) => {
+      return fetch(`/api/users/${params.id}`);
+    },
+  },
+]);
+```
+
+组件中通过 `useLoaderData` 读取：
+
+```jsx
+function UserPage() {
+  const user = useLoaderData();
+  return <div>{user.name}</div>;
+}
+```
+
+### action
+
+`action` 用于处理表单提交或数据变更：
+
+```jsx
+{
+  path: "/users/new",
+  element: <UserForm />,
+  action: async ({ request }) => {
+    const formData = await request.formData();
+    await createUser(formData);
+    return redirect("/users");
+  },
+}
+```
+
+### 优点
+
+- 数据请求和路由匹配关系更清晰。
+- 路由切换时可以提前加载数据。
+- 支持重定向和错误边界。
+- 表单提交可以和路由 action 结合。
+- 嵌套路由可以各自加载自己的数据。
+
+### 和组件内 useEffect 请求的区别
+
+- `useEffect` 是组件渲染后再请求，容易出现 loading 闪烁。
+- `loader` 是路由层数据加载，更适合页面级数据。
+- 组件内请求仍适合局部交互、搜索联想、非路由关键数据。
+
+### 注意事项
+
+- Data APIs 更适合使用新版 data router。
+- 接口鉴权和错误处理要在 loader/action 中统一考虑。
+- 复杂缓存、乐观更新仍可以结合 React Query 等库。
+:::
