@@ -1984,3 +1984,65 @@ userStore.setToken("abc");
 - 异步 action 中要处理错误和 loading 状态。
 - 持久化 token 时要注意 XSS 风险。
 :::
+
+## 40、Vue Router 导航守卫有哪些，适合做什么
+Vue Router 导航守卫用于在路由跳转前后执行逻辑，常用于登录校验、权限控制、页面标题设置、埋点和离开确认。
+
+::: details 详情
+### 全局前置守卫
+
+```ts
+router.beforeEach((to, from) => {
+  const token = localStorage.getItem("token");
+
+  if (to.meta.requiresAuth && !token) {
+    return {
+      path: "/login",
+      query: { redirect: to.fullPath },
+    };
+  }
+});
+```
+
+`beforeEach` 会在每次路由跳转前执行，适合做登录态和权限入口判断。
+
+### 全局后置守卫
+
+```ts
+router.afterEach((to) => {
+  document.title = to.meta.title || "App";
+});
+```
+
+`afterEach` 不能阻止跳转，适合做标题、埋点、滚动处理等副作用。
+
+### 路由独享守卫
+
+```ts
+{
+  path: "/admin",
+  component: Admin,
+  beforeEnter: () => {
+    return checkAdminPermission();
+  },
+}
+```
+
+适合只针对某个路由配置的进入逻辑。
+
+### 组件内守卫
+
+常见组件内守卫包括：
+
+- `onBeforeRouteLeave`。
+- `onBeforeRouteUpdate`。
+
+例如表单未保存时阻止离开页面。
+
+### 注意事项
+
+- 不要在守卫中写过重的业务逻辑。
+- 异步权限接口要处理 loading、失败和死循环跳转。
+- 登录页本身要避免再次重定向到登录页。
+- 前端路由权限只是体验控制，接口权限仍必须由后端校验。
+:::
