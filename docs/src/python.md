@@ -2829,3 +2829,69 @@ class User(BaseModel):
 - v1 迁移到 v2 时要注意方法名和 validator 写法变化。
 - 大量数据校验时要关注性能和模型嵌套复杂度。
 :::
+
+## 46、FastAPI 中 Depends 有什么作用
+`Depends` 是 FastAPI 的依赖注入机制，用于把公共逻辑抽出来复用，例如获取数据库连接、校验登录态、读取分页参数、注入配置等。
+
+::: details 详情
+### 基本用法
+
+```python
+from fastapi import Depends, FastAPI
+
+app = FastAPI()
+
+def get_current_user(token: str):
+    return {"name": "Tom", "token": token}
+
+@app.get("/profile")
+def profile(user = Depends(get_current_user)):
+    return user
+```
+
+访问接口时，FastAPI 会先执行依赖函数，再把结果传给路由函数。
+
+### 常见场景
+
+- 认证和鉴权。
+- 获取数据库 session。
+- 解析分页参数。
+- 读取请求上下文。
+- 注入业务 service。
+- 复用参数校验逻辑。
+
+### 数据库 session 示例
+
+```python
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/users")
+def list_users(db = Depends(get_db)):
+    return db.query(User).all()
+```
+
+使用 `yield` 可以在请求结束后释放资源。
+
+### 依赖可以嵌套
+
+一个依赖函数内部也可以继续声明其他依赖：
+
+```python
+def get_current_user(db = Depends(get_db)):
+    ...
+```
+
+这样可以组合出认证、权限、数据库访问等链路。
+
+### 注意事项
+
+- 依赖函数不要做过重的初始化，避免每次请求重复开销。
+- 数据库连接、文件句柄等资源要正确释放。
+- 鉴权逻辑可以放在依赖中，但最终权限仍要和业务规则结合。
+- 测试时可以使用 dependency override 替换依赖。
+:::
