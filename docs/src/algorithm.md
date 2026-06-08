@@ -109,3 +109,62 @@ function lengthOfLongestSubstring(s) {
 - 明确什么时候扩展，什么时候收缩。
 - 注意更新答案的时机。
 :::
+
+## 3、二分查找适合解决什么问题
+二分查找适合在有序数据或具有单调性的答案空间中快速定位目标。它的核心是每次排除一半搜索范围。
+
+::: details 详情
+### 基础二分
+
+在有序数组中查找目标值：
+
+```js
+function binarySearch(nums, target) {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left <= right) {
+    const mid = left + Math.floor((right - left) / 2);
+
+    if (nums[mid] === target) {
+      return mid;
+    }
+
+    if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return -1;
+}
+```
+
+### 适合场景
+
+- 有序数组查找。
+- 查找第一个或最后一个满足条件的位置。
+- 查找插入位置。
+- 在答案空间中找最小可行值或最大可行值。
+
+### 答案二分
+
+有些题不是直接在数组里二分，而是在答案范围里二分。
+
+例如“最小满足条件的速度”“最大可分配数量”等，只要答案具有单调性，就可以二分。
+
+### 常见边界问题
+
+- `left <= right` 还是 `left < right`。
+- `right = mid` 还是 `right = mid - 1`。
+- 查找的是目标值、左边界还是右边界。
+- `mid` 计算要避免溢出，推荐 `left + Math.floor((right - left) / 2)`。
+
+### 面试要点
+
+- 二分的前提是有序或单调。
+- 每轮必须缩小搜索区间，否则会死循环。
+- 先定义清楚区间含义，再写边界更新。
+- 边界类二分要用几个简单样例手动验证。
+:::
