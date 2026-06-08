@@ -57,3 +57,61 @@ COPY . .
 - 多阶段构建可以减少最终镜像体积。
 - 镜像越小，部署和拉取通常越快。
 :::
+
+## 2、Nginx 反向代理有什么作用
+Nginx 反向代理是指客户端请求先到 Nginx，再由 Nginx 转发到后端服务。它常用于统一入口、负载均衡、静态资源服务、HTTPS 终止和跨域处理。
+
+::: details 详情
+### 正向代理和反向代理
+
+- 正向代理代理客户端，服务端不知道真实客户端是谁。
+- 反向代理代理服务端，客户端通常不知道后面具体是哪台服务。
+
+常见 Web 部署中，Nginx 多数作为反向代理。
+
+### 基本配置
+
+```nginx
+server {
+  listen 80;
+  server_name example.com;
+
+  location /api/ {
+    proxy_pass http://127.0.0.1:3000/;
+  }
+}
+```
+
+访问 `example.com/api/users` 时，请求会被转发到后端服务。
+
+### 常见作用
+
+- 统一对外域名和端口。
+- 转发请求到后端服务。
+- 做负载均衡。
+- 托管静态资源。
+- 配置 HTTPS 证书。
+- 开启 gzip 或 brotli 压缩。
+- 配置缓存。
+- 处理跨域响应头。
+
+### 反向代理注意请求头
+
+常见需要传递的头：
+
+```nginx
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+
+后端可以通过这些信息识别真实来源和协议。
+
+### 注意事项
+
+- `proxy_pass` 路径末尾是否带 `/` 会影响转发路径。
+- 上传大文件要配置请求体大小限制。
+- WebSocket 需要额外配置连接升级头。
+- 日志、超时、缓存和错误页要结合业务场景配置。
+:::
