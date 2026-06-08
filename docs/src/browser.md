@@ -277,3 +277,73 @@ HTML 通常不建议长期强缓存，否则用户可能拿不到最新入口文
 - `ETag` 通常比 `Last-Modified` 更精确。
 - 前端构建产物常用文件 hash 配合长缓存。
 :::
+
+## 5、Web Worker 有什么作用
+Web Worker 允许浏览器在主线程之外运行 JavaScript，适合处理耗时计算，避免阻塞页面渲染和用户交互。
+
+::: details 详情
+### 为什么需要 Worker
+
+浏览器主线程负责：
+
+- 执行 JavaScript。
+- 处理用户交互。
+- 样式计算。
+- 布局和绘制。
+
+如果主线程执行大量计算，页面会卡顿甚至无响应。
+
+### 基本用法
+
+主线程：
+
+```js
+const worker = new Worker("/worker.js");
+
+worker.postMessage({ count: 100000 });
+
+worker.onmessage = event => {
+  console.log(event.data);
+};
+```
+
+Worker 线程：
+
+```js
+self.onmessage = event => {
+  const { count } = event.data;
+  let total = 0;
+
+  for (let i = 0; i < count; i++) {
+    total += i;
+  }
+
+  self.postMessage(total);
+};
+```
+
+### 适合场景
+
+- 大量计算。
+- 数据解析。
+- 图片处理。
+- 加密解密。
+- 复杂排序或搜索。
+
+### 限制
+
+Worker 中不能直接访问：
+
+- DOM。
+- `window`。
+- 部分浏览器主线程 API。
+
+它和主线程通过 `postMessage` 通信。
+
+### 注意事项
+
+- 数据传输有成本，大对象可以考虑 Transferable。
+- Worker 不是越多越好，过多线程也会增加调度成本。
+- UI 更新仍然要回到主线程。
+- 构建工具中使用 Worker 要注意文件路径和打包方式。
+:::
