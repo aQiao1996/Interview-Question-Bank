@@ -250,3 +250,73 @@ function levelOrder(root) {
 - 二叉搜索树中序遍历有序。
 - 递归题要明确终止条件和返回值。
 :::
+
+## 5、动态规划如何解决爬楼梯问题
+爬楼梯是动态规划入门题。假设每次可以爬 1 阶或 2 阶，问爬到第 `n` 阶有多少种方法。
+
+::: details 详情
+### 状态定义
+
+定义：
+
+```txt
+dp[i] 表示爬到第 i 阶的方法数
+```
+
+到达第 `i` 阶，最后一步可能来自：
+
+- 第 `i - 1` 阶，再爬 1 阶。
+- 第 `i - 2` 阶，再爬 2 阶。
+
+所以状态转移方程是：
+
+```txt
+dp[i] = dp[i - 1] + dp[i - 2]
+```
+
+### 基础实现
+
+```js
+function climbStairs(n) {
+  if (n <= 2) return n;
+
+  const dp = Array(n + 1).fill(0);
+  dp[1] = 1;
+  dp[2] = 2;
+
+  for (let i = 3; i <= n; i++) {
+    dp[i] = dp[i - 1] + dp[i - 2];
+  }
+
+  return dp[n];
+}
+```
+
+### 空间优化
+
+因为每次只依赖前两个状态，可以用两个变量优化空间：
+
+```js
+function climbStairs(n) {
+  if (n <= 2) return n;
+
+  let prev2 = 1;
+  let prev1 = 2;
+
+  for (let i = 3; i <= n; i++) {
+    const current = prev1 + prev2;
+    prev2 = prev1;
+    prev1 = current;
+  }
+
+  return prev1;
+}
+```
+
+### 面试要点
+
+- 动态规划要先定义状态。
+- 再找状态转移方程。
+- 明确初始值。
+- 如果只依赖有限历史状态，可以做空间优化。
+:::
