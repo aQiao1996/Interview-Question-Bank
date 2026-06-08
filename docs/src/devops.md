@@ -171,3 +171,62 @@ proxy_set_header X-Forwarded-Proto $scheme;
 - 要提前准备监控、告警和回滚方案。
 - 灰度规则可以按用户、地区、设备、租户或流量比例划分。
 :::
+
+## 4、Kubernetes 中 Pod、Deployment 和 Service 分别是什么
+Kubernetes 是容器编排平台，Pod、Deployment 和 Service 是最基础的几个概念，分别对应运行单元、部署管理和服务访问。
+
+::: details 详情
+### Pod
+
+Pod 是 Kubernetes 中最小的调度单元。
+
+一个 Pod 中可以包含一个或多个容器，它们共享：
+
+- 网络命名空间。
+- 存储卷。
+- 部分运行上下文。
+
+大多数业务场景中，一个 Pod 通常运行一个主容器。
+
+### Deployment
+
+Deployment 用于管理 Pod 的副本和发布过程。
+
+它可以控制：
+
+- 副本数量。
+- 滚动更新。
+- 回滚。
+- Pod 模板。
+- 扩缩容。
+
+例如期望某个应用始终运行 3 个副本，Deployment 会负责维持这个状态。
+
+### Service
+
+Pod 的 IP 可能会变化，Service 用于为一组 Pod 提供稳定访问入口。
+
+Service 会根据标签选择器找到对应 Pod，并把流量转发过去。
+
+常见类型：
+
+- `ClusterIP`：集群内部访问。
+- `NodePort`：通过节点端口访问。
+- `LoadBalancer`：通过云厂商负载均衡访问。
+
+### 三者关系
+
+```txt
+Deployment 管理 Pod
+Service 访问 Pod
+```
+
+更完整地说，Deployment 创建 ReplicaSet，ReplicaSet 维护 Pod 副本，Service 通过标签选择器把流量导向 Pod。
+
+### 面试要点
+
+- Pod 是运行单元，不适合单独长期手动管理。
+- Deployment 负责声明式部署和副本管理。
+- Service 解决 Pod IP 不稳定和负载均衡问题。
+- 标签和选择器是 Kubernetes 资源关联的关键。
+:::
