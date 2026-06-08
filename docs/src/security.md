@@ -56,3 +56,63 @@ container.textContent = userInput;
 - `HttpOnly` 不能阻止 XSS 发生，但能降低 cookie 被读取的风险。
 - CSP 是纵深防御，不应作为唯一防线。
 :::
+
+## 2、什么是 CSRF，如何防御
+CSRF 是跨站请求伪造攻击。攻击者诱导已登录用户访问恶意页面，恶意页面利用用户浏览器自动携带 Cookie 的特性，向目标站点发起非用户本意的请求。
+
+::: details 详情
+### 攻击条件
+
+CSRF 通常需要满足：
+
+- 用户已经登录目标网站。
+- 登录态依赖 Cookie 自动携带。
+- 目标接口缺少额外校验。
+- 攻击者能诱导用户打开恶意页面。
+
+### 示例
+
+恶意页面中可能放置：
+
+```html
+<img src="https://bank.example.com/transfer?to=attacker&amount=1000" />
+```
+
+如果目标站点只依赖 Cookie 判断用户身份，就可能执行非用户本意的操作。
+
+### 防御方式
+
+常见防御包括：
+
+- CSRF Token。
+- SameSite Cookie。
+- 校验 Origin 或 Referer。
+- 关键操作二次确认。
+- 避免 GET 接口执行状态变更。
+
+### CSRF Token
+
+服务端生成随机 token，页面请求时带上 token：
+
+```txt
+Cookie: session=xxx
+Header: X-CSRF-Token: random-token
+```
+
+攻击站点通常无法读取目标站点页面中的 token，因此伪造请求无法通过校验。
+
+### SameSite
+
+```http
+Set-Cookie: session=xxx; SameSite=Lax
+```
+
+`SameSite` 可以限制跨站请求是否携带 Cookie。
+
+### 注意事项
+
+- CSRF 防御重点在服务端，不能只靠前端隐藏按钮。
+- XSS 可以绕过很多 CSRF 防御，因此 XSS 和 CSRF 要一起防。
+- Token 要和用户会话绑定，并有合理生命周期。
+- 敏感操作应避免使用 GET 请求。
+:::
