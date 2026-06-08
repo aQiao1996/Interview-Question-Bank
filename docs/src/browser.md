@@ -144,3 +144,70 @@ DOM + CSSOM
 - DOM/CSSOM/Layout/Paint/Composite 属于渲染层。
 - 性能优化要围绕关键渲染路径展开。
 :::
+
+## 3、重排和重绘有什么区别
+重排也叫回流，指浏览器重新计算元素的几何位置和尺寸；重绘是指元素几何信息不变，只重新绘制颜色、背景、阴影等视觉样式。
+
+::: details 详情
+### 什么会触发重排
+
+会影响布局的操作可能触发重排，例如：
+
+- 修改元素宽高。
+- 修改 margin、padding。
+- 修改 display。
+- 添加或删除 DOM。
+- 改变字体大小。
+- 读取某些布局属性前有未完成的样式变更。
+
+常见布局属性包括：
+
+```txt
+offsetWidth
+offsetHeight
+clientWidth
+getBoundingClientRect()
+```
+
+### 什么会触发重绘
+
+只影响视觉但不影响布局的操作通常触发重绘，例如：
+
+- 修改 color。
+- 修改 background。
+- 修改 visibility。
+- 修改 box-shadow。
+
+### 二者关系
+
+重排通常会带来重绘，因为布局变了，页面需要重新绘制。
+
+但重绘不一定会触发重排。
+
+### 如何减少重排重绘
+
+- 批量修改 DOM 和样式。
+- 避免频繁读取和写入布局属性交替进行。
+- 使用 class 统一切换样式。
+- 动画优先使用 `transform` 和 `opacity`。
+- 对复杂动画使用合成层优化。
+
+### 示例
+
+不推荐：
+
+```js
+for (const item of list) {
+  item.style.width = `${item.offsetWidth + 10}px`;
+}
+```
+
+读取和写入交替，容易触发多次布局计算。
+
+### 面试要点
+
+- 重排影响布局，成本通常比重绘更高。
+- 读写布局属性交替是常见性能坑。
+- `transform` 和 `opacity` 通常可以走合成层。
+- 优化时要结合 Performance 面板观察。
+:::
