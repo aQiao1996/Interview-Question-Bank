@@ -116,3 +116,56 @@ Set-Cookie: session=xxx; SameSite=Lax
 - Token 要和用户会话绑定，并有合理生命周期。
 - 敏感操作应避免使用 GET 请求。
 :::
+
+## 3、CSP 是什么，能解决什么安全问题
+CSP 是内容安全策略，用于限制页面可以加载和执行哪些资源，常用于降低 XSS、数据注入和资源劫持带来的风险。
+
+::: details 详情
+### 基本作用
+
+CSP 通过 HTTP 响应头声明安全策略：
+
+```http
+Content-Security-Policy: default-src 'self'; script-src 'self'
+```
+
+这表示默认只允许加载同源资源，脚本也只允许同源脚本。
+
+### 常见指令
+
+- `default-src`：默认资源加载策略。
+- `script-src`：脚本来源。
+- `style-src`：样式来源。
+- `img-src`：图片来源。
+- `connect-src`：接口、WebSocket 等连接来源。
+- `frame-ancestors`：限制页面被哪些来源 iframe 嵌入。
+
+### 防御 XSS
+
+如果页面配置了严格的 `script-src`，即使攻击者注入了内联脚本，也可能因为 CSP 限制而无法执行。
+
+例如：
+
+```http
+Content-Security-Policy: script-src 'self'
+```
+
+这会阻止很多外部恶意脚本和内联脚本执行。
+
+### Report-Only 模式
+
+上线前可以使用：
+
+```http
+Content-Security-Policy-Report-Only: default-src 'self'
+```
+
+它只上报违规，不真正拦截，适合灰度观察。
+
+### 注意事项
+
+- CSP 是纵深防御，不能替代输入校验和输出编码。
+- 策略太宽松效果有限，例如大量使用 `unsafe-inline`。
+- 策略太严格可能导致正常资源加载失败。
+- 需要结合真实资源域名、监控和上报逐步收紧。
+:::
