@@ -230,3 +230,53 @@ Service 访问 Pod
 - Service 解决 Pod IP 不稳定和负载均衡问题。
 - 标签和选择器是 Kubernetes 资源关联的关键。
 :::
+
+## 5、Docker 多阶段构建有什么作用
+Docker 多阶段构建用于把构建环境和运行环境分离，减少最终镜像体积，避免把源码、构建工具和中间产物带到生产镜像中。
+
+::: details 详情
+### 基本示例
+
+```dockerfile
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
+COPY . .
+RUN pnpm build
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+```
+
+第一阶段负责安装依赖和构建，第二阶段只保留最终静态产物。
+
+### 好处
+
+- 减少最终镜像体积。
+- 降低攻击面。
+- 避免暴露源码和构建依赖。
+- 构建流程更清晰。
+- 运行镜像只包含运行所需内容。
+
+### 后端服务示例
+
+对于 Go、Java、Node 等服务，也可以用构建阶段生成产物，再复制到更小的运行镜像。
+
+```dockerfile
+COPY --from=builder /app/server ./server
+```
+
+### 和普通构建的区别
+
+普通 Dockerfile 可能把安装依赖、构建工具、源码、缓存都留在最终镜像里。
+
+多阶段构建可以只复制需要的产物。
+
+### 注意事项
+
+- 不要把 `.env`、密钥、私有配置复制进镜像。
+- 要合理使用 `.dockerignore`。
+- 构建阶段和运行阶段的系统依赖要匹配。
+- 最终镜像要保留必要的运行时文件和健康检查能力。
+:::
