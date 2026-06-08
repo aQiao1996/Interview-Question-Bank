@@ -347,3 +347,58 @@ Worker 中不能直接访问：
 - UI 更新仍然要回到主线程。
 - 构建工具中使用 Worker 要注意文件路径和打包方式。
 :::
+
+## 6、Service Worker 有什么作用
+Service Worker 是运行在浏览器后台的脚本，可以拦截网络请求、管理缓存、实现离线访问和消息推送，是 PWA 的核心能力之一。
+
+::: details 详情
+### 基本特点
+
+Service Worker 和普通 Web Worker 不同，它可以：
+
+- 拦截 fetch 请求。
+- 控制缓存策略。
+- 支持离线访问。
+- 接收推送消息。
+- 在页面关闭后仍由浏览器调度运行。
+
+但它不能直接访问 DOM。
+
+### 注册示例
+
+```js
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
+```
+
+Service Worker 通常要求 HTTPS 环境，本地 `localhost` 例外。
+
+### 生命周期
+
+主要阶段：
+
+- register：注册。
+- install：安装。
+- activate：激活。
+- fetch：拦截请求。
+
+安装阶段常用于预缓存静态资源，激活阶段常用于清理旧缓存。
+
+### 缓存策略
+
+常见策略：
+
+- Cache First：优先读缓存。
+- Network First：优先请求网络。
+- Stale While Revalidate：先返回缓存，再后台更新。
+- Network Only：只走网络。
+- Cache Only：只走缓存。
+
+### 注意事项
+
+- Service Worker 更新有生命周期延迟，不是刷新页面就一定立即生效。
+- 缓存策略错误可能导致用户长期拿到旧资源。
+- 要设计版本号和缓存清理策略。
+- 离线能力要明确哪些页面和接口可用。
+:::
