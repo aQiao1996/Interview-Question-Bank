@@ -382,3 +382,67 @@ function reverseList(head) {
 - 迭代写法空间复杂度是 `O(1)`。
 - 递归写法更简洁，但有调用栈开销。
 :::
+
+## 7、图的 BFS 和 DFS 有什么区别
+BFS 和 DFS 都是图遍历算法。BFS 按层扩展，常用队列；DFS 沿着一条路径深入，常用递归或栈。
+
+::: details 详情
+### BFS
+
+BFS 适合按距离逐层搜索，常用于无权图最短路径。
+
+```js
+function bfs(graph, start) {
+  const visited = new Set([start]);
+  const queue = [start];
+  const result = [];
+
+  while (queue.length) {
+    const node = queue.shift();
+    result.push(node);
+
+    for (const next of graph[node]) {
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push(next);
+      }
+    }
+  }
+
+  return result;
+}
+```
+
+### DFS
+
+DFS 适合搜索路径、连通性、拓扑相关问题。
+
+```js
+function dfs(graph, node, visited = new Set(), result = []) {
+  if (visited.has(node)) return result;
+
+  visited.add(node);
+  result.push(node);
+
+  for (const next of graph[node]) {
+    dfs(graph, next, visited, result);
+  }
+
+  return result;
+}
+```
+
+### 区别
+
+- BFS 使用队列，按层遍历。
+- DFS 使用递归或栈，沿路径深入。
+- BFS 更适合最短路径。
+- DFS 更适合回溯、连通性和路径搜索。
+
+### 注意事项
+
+- 图可能有环，必须记录 visited。
+- 邻接表适合稀疏图。
+- 邻接矩阵适合节点数较少或稠密图。
+- BFS 中 `queue.shift()` 在 JS 中可能有性能问题，大数据量可用指针优化。
+:::
