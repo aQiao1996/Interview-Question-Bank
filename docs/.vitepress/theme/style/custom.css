@@ -27,3 +27,29 @@
     border-radius: 50%;
   }
 }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+[data-theme-transition="shrink"]::view-transition-old(root) {
+  z-index: 2;
+}
+
+[data-theme-transition="shrink"]::view-transition-new(root) {
+  z-index: 1;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0s;
+}
