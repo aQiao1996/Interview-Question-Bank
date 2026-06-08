@@ -168,3 +168,85 @@ function binarySearch(nums, target) {
 - 先定义清楚区间含义，再写边界更新。
 - 边界类二分要用几个简单样例手动验证。
 :::
+
+## 4、二叉树遍历有哪些方式
+二叉树遍历是树结构面试的基础，常见方式包括前序遍历、中序遍历、后序遍历和层序遍历。
+
+::: details 详情
+### 前序遍历
+
+访问顺序：
+
+```txt
+根 -> 左 -> 右
+```
+
+```js
+function preorder(root, result = []) {
+  if (!root) return result;
+  result.push(root.val);
+  preorder(root.left, result);
+  preorder(root.right, result);
+  return result;
+}
+```
+
+### 中序遍历
+
+访问顺序：
+
+```txt
+左 -> 根 -> 右
+```
+
+二叉搜索树的中序遍历结果是有序的。
+
+```js
+function inorder(root, result = []) {
+  if (!root) return result;
+  inorder(root.left, result);
+  result.push(root.val);
+  inorder(root.right, result);
+  return result;
+}
+```
+
+### 后序遍历
+
+访问顺序：
+
+```txt
+左 -> 右 -> 根
+```
+
+后序遍历适合需要先处理子树再处理根节点的场景，例如计算树高度、释放资源。
+
+### 层序遍历
+
+层序遍历通常使用队列：
+
+```js
+function levelOrder(root) {
+  if (!root) return [];
+
+  const queue = [root];
+  const result = [];
+
+  while (queue.length) {
+    const node = queue.shift();
+    result.push(node.val);
+    if (node.left) queue.push(node.left);
+    if (node.right) queue.push(node.right);
+  }
+
+  return result;
+}
+```
+
+### 面试要点
+
+- DFS 常用递归或栈。
+- BFS 常用队列。
+- 二叉搜索树中序遍历有序。
+- 递归题要明确终止条件和返回值。
+:::
