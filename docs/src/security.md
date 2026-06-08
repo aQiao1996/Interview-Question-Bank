@@ -169,3 +169,62 @@ Content-Security-Policy-Report-Only: default-src 'self'
 - 策略太严格可能导致正常资源加载失败。
 - 需要结合真实资源域名、监控和上报逐步收紧。
 :::
+
+## 4、JWT 由哪几部分组成，使用时要注意什么
+JWT 是一种常见的令牌格式，通常用于身份认证和授权信息传递。它由 Header、Payload 和 Signature 三部分组成。
+
+::: details 详情
+### 组成结构
+
+JWT 结构如下：
+
+```txt
+header.payload.signature
+```
+
+### Header
+
+Header 描述令牌类型和签名算法，例如：
+
+```json
+{
+  "typ": "JWT",
+  "alg": "HS256"
+}
+```
+
+### Payload
+
+Payload 存放声明信息，例如：
+
+```json
+{
+  "sub": "user-1",
+  "role": "admin",
+  "exp": 1710000000
+}
+```
+
+注意 Payload 只是 Base64URL 编码，不是加密，不能存放密码、手机号等敏感信息。
+
+### Signature
+
+Signature 用于校验令牌是否被篡改。
+
+服务端会用密钥或私钥对 Header 和 Payload 签名，验证时重新计算签名并比对。
+
+### 优点
+
+- 服务端可以不存储 session。
+- 适合分布式系统。
+- 可以携带少量用户声明。
+- 跨服务验证方便。
+
+### 注意事项
+
+- JWT 不能随便存敏感数据。
+- 要设置合理过期时间。
+- 密钥泄露会导致严重风险。
+- 服务端必须校验签名和过期时间。
+- 退出登录和强制失效需要额外设计黑名单或版本号机制。
+:::
