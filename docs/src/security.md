@@ -228,3 +228,62 @@ Signature 用于校验令牌是否被篡改。
 - 服务端必须校验签名和过期时间。
 - 退出登录和强制失效需要额外设计黑名单或版本号机制。
 :::
+
+## 5、OAuth2 授权码模式是什么
+OAuth2 授权码模式是一种常见授权流程，适合 Web 应用和第三方登录场景。它通过授权码中转，避免前端直接暴露长期敏感凭证。
+
+::: details 详情
+### 参与角色
+
+OAuth2 中常见角色：
+
+- Resource Owner：资源拥有者，通常是用户。
+- Client：第三方应用。
+- Authorization Server：授权服务器。
+- Resource Server：资源服务器。
+
+### 基本流程
+
+```txt
+用户点击登录
+-> 跳转授权服务器
+-> 用户登录并授权
+-> 授权服务器回跳并带上 code
+-> Client 后端用 code 换 access_token
+-> 使用 access_token 访问资源
+```
+
+### 为什么使用授权码
+
+授权码是短期凭证，真正的 token 由后端通过安全通道换取。
+
+这样可以降低 token 直接暴露在浏览器 URL 或前端代码中的风险。
+
+### state 的作用
+
+请求授权时通常会带上 `state`：
+
+```txt
+state=random-value
+```
+
+回调时服务端校验 `state`，用于防止 CSRF 和登录流程被篡改。
+
+### PKCE
+
+移动端、SPA 等公共客户端通常会配合 PKCE，降低授权码被截获后的风险。
+
+PKCE 会使用：
+
+- `code_verifier`。
+- `code_challenge`。
+
+换 token 时必须证明自己持有正确的 `code_verifier`。
+
+### 注意事项
+
+- OAuth2 主要解决授权，不等同于认证。
+- 如果需要确认用户身份，通常使用 OIDC。
+- 回调地址必须严格白名单校验。
+- access token 要设置合理过期时间，并保护好 refresh token。
+:::
