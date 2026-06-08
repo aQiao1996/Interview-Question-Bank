@@ -320,3 +320,65 @@ function climbStairs(n) {
 - 明确初始值。
 - 如果只依赖有限历史状态，可以做空间优化。
 :::
+
+## 6、如何反转单链表
+反转单链表是链表题中的基础题，核心是逐个改变节点的 `next` 指向，让链表方向反过来。
+
+::: details 详情
+### 迭代思路
+
+使用三个指针：
+
+- `prev`：当前节点反转后应该指向的前一个节点。
+- `current`：当前正在处理的节点。
+- `next`：提前保存后续节点，避免链表断开后找不到后面。
+
+### 代码示例
+
+```js
+function reverseList(head) {
+  let prev = null;
+  let current = head;
+
+  while (current) {
+    const next = current.next;
+    current.next = prev;
+    prev = current;
+    current = next;
+  }
+
+  return prev;
+}
+```
+
+### 过程示意
+
+```txt
+1 -> 2 -> 3 -> null
+
+null <- 1 <- 2 <- 3
+```
+
+最后 `prev` 指向新的头节点。
+
+### 递归写法
+
+```js
+function reverseList(head) {
+  if (!head || !head.next) return head;
+
+  const newHead = reverseList(head.next);
+  head.next.next = head;
+  head.next = null;
+
+  return newHead;
+}
+```
+
+### 面试要点
+
+- 链表题要特别注意保存 `next`。
+- 反转后旧头节点要指向 `null`。
+- 迭代写法空间复杂度是 `O(1)`。
+- 递归写法更简洁，但有调用栈开销。
+:::
