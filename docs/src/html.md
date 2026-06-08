@@ -42,7 +42,7 @@ HTML 中的 `<meta>` 标签用于提供页面的元信息，这些信息不会�
   name="keywords"
   content="前端, 面试, 前端面试, 面试题, 刷题, js, ts, React, Vue, webpack, vite, HTTP"
 />
-<meta name="description" content="前端面试宝典，胖虎的前端面试题" />
+<meta name="description" content="技术面试宝典，胖虎的技术面试题" />
 <meta name="robots" content="index, follow" />
 ```
 - 作者信息：

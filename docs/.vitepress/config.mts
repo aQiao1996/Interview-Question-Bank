@@ -5,8 +5,8 @@ const base = process.env.VITEPRESS_BASE ?? "/";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "前端面试宝典",
-  description: "前端面试宝典",
+  title: "技术面试宝典",
+  description: "技术面试宝典",
   srcDir: "./src", // 相对于项目根目录的 markdown 文件所在的文件夹 默认 .
   lang: "zh-CN",
   base,
@@ -26,10 +26,8 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: `${base}logo.png`,
-    // 导航菜单项的配置
-    nav: menu,
     // 侧边栏菜单项的配置
-    sidebar: [{ text: "前端", items: menu }],
+    sidebar: [{ text: "题库", items: menu }],
     // 可以定义此选项以在导航栏中展示带有图标的社交帐户链接
     socialLinks: [
       { icon: "github", link: "https://github.com/aQiao1996" },

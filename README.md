@@ -1,7 +1,7 @@
-# 前端面试宝典「[访问地址](http://yangyunqiao.top/)」
+# 技术面试宝典「[访问地址](http://yangyunqiao.top/)」
 
 ## 介绍
-本项目使用 VitePress 构建前端面试题题库，覆盖 HTML、CSS、JavaScript、Vue、React、TypeScript、Node、HTTP、工程化等核心知识点，并持续更新。
+本项目使用 VitePress 构建技术面试题题库，覆盖前端、后端、AI、数据库、系统设计、工程化等核心知识点，并持续更新。
 
 ## 本地开发
 推荐使用 `pnpm` 和 Node.js 20。

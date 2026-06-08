@@ -3,9 +3,9 @@
 layout: home
 
 hero:
-  name: 前端面试宝典
-  text: 你的前端面试指南
-  tagline: 前端面试大全，助你轻松拿Offer
+  name: 技术面试宝典
+  text: 你的技术面试指南
+  tagline: 覆盖前端、后端、AI、数据库与系统设计，助你高效准备面试
   image:
     src: logo.png
     alt: logo
@@ -19,7 +19,7 @@ hero:
 
 features:
   - title: 全面覆盖
-    details: 涵盖 HTML、CSS、JavaScript、Vue、React、TypeScript 、Node 等前端核心知识点。
+    details: 涵盖前端、后端、AI、数据库、系统设计、工程化等核心面试知识点。
     icon:
       src: logo.png
   - title: 深入解析
@@ -27,7 +27,7 @@ features:
     icon:
       src: logo.png
   - title: 持续更新
-    details: 内容持续更新，紧跟前端技术发展趋势，保持最新的知识储备。
+    details: 内容持续更新，紧跟技术发展趋势，保持最新的知识储备。
     icon:
       src: logo.png
 ---
