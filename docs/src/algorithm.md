@@ -514,3 +514,72 @@ function topoSort(numCourses, prerequisites) {
 - 可以用来判断依赖关系是否存在循环。
 - 构建系统、课程表、任务调度都常用这个模型。
 :::
+
+## 9、并查集适合解决什么问题
+并查集用于维护元素之间的连通关系，支持快速合并集合和查询两个元素是否属于同一个集合。
+
+::: details 详情
+### 适合场景
+
+并查集常用于：
+
+- 判断图中连通分量。
+- 朋友圈问题。
+- 岛屿合并。
+- 最小生成树 Kruskal 算法。
+- 判断无向图是否有环。
+
+### 核心操作
+
+并查集有两个核心操作：
+
+- `find(x)`：查找元素所在集合的代表节点。
+- `union(a, b)`：合并两个元素所在集合。
+
+### 基础实现
+
+```js
+class UnionFind {
+  constructor(n) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+  }
+
+  find(x) {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]);
+    }
+    return this.parent[x];
+  }
+
+  union(a, b) {
+    const rootA = this.find(a);
+    const rootB = this.find(b);
+
+    if (rootA !== rootB) {
+      this.parent[rootB] = rootA;
+    }
+  }
+
+  connected(a, b) {
+    return this.find(a) === this.find(b);
+  }
+}
+```
+
+### 路径压缩
+
+`find` 中这行代码是路径压缩：
+
+```js
+this.parent[x] = this.find(this.parent[x]);
+```
+
+它会让节点直接指向根节点，从而降低后续查询成本。
+
+### 面试要点
+
+- 并查集适合动态连通性问题。
+- `find` 用于找代表节点。
+- `union` 用于合并集合。
+- 路径压缩和按秩合并可以提升性能。
+:::
