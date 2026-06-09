@@ -182,3 +182,68 @@ Page({
 - 页面参数通常在 `onLoad` 中读取。
 - 页面栈返回不会重新触发 `onLoad`，但可能触发 `onShow`。
 :::
+
+## 4、移动端安全区域 safe-area 如何适配
+安全区域适配主要用于处理刘海屏、圆角屏和底部手势条，避免内容被系统区域遮挡。
+
+::: details 详情
+### viewport-fit
+
+在 iOS Safari 中，需要设置：
+
+```html
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+/>
+```
+
+`viewport-fit=cover` 允许页面内容延伸到整个屏幕区域。
+
+### env 变量
+
+CSS 可以使用安全区域变量：
+
+```css
+.page {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+```
+
+常见变量：
+
+- `safe-area-inset-top`。
+- `safe-area-inset-right`。
+- `safe-area-inset-bottom`。
+- `safe-area-inset-left`。
+
+### 底部按钮适配
+
+底部固定按钮常见写法：
+
+```css
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+```
+
+这样可以避免按钮贴到手势条区域。
+
+### 小程序场景
+
+小程序中也要关注状态栏、导航栏和胶囊按钮区域。
+
+通常需要结合系统信息计算顶部安全距离。
+
+### 注意事项
+
+- 不要只在 iPhone 机型上硬编码高度。
+- 横屏时左右安全区域也可能变化。
+- 固定底部栏、弹窗、吸底按钮都要考虑安全区域。
+- Android 不同机型也可能有异形屏适配问题。
+:::
