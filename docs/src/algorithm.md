@@ -446,3 +446,71 @@ function dfs(graph, node, visited = new Set(), result = []) {
 - 邻接矩阵适合节点数较少或稠密图。
 - BFS 中 `queue.shift()` 在 JS 中可能有性能问题，大数据量可用指针优化。
 :::
+
+## 8、拓扑排序适合解决什么问题
+拓扑排序用于处理有向无环图中的依赖顺序问题，例如课程先修关系、任务编排、构建依赖等。
+
+::: details 详情
+### 适合场景
+
+如果任务之间存在依赖：
+
+```txt
+A 必须在 B 之前完成
+B 必须在 C 之前完成
+```
+
+就可以把任务抽象成有向图，再使用拓扑排序得到合法执行顺序。
+
+### 入度法
+
+常见做法是统计每个节点的入度：
+
+- 入度为 0 的节点表示没有前置依赖。
+- 把入度为 0 的节点放入队列。
+- 每取出一个节点，就删除它指向的边。
+- 如果新节点入度变为 0，就加入队列。
+
+### 示例代码
+
+```js
+function topoSort(numCourses, prerequisites) {
+  const graph = Array.from({ length: numCourses }, () => []);
+  const indegree = Array(numCourses).fill(0);
+
+  for (const [course, pre] of prerequisites) {
+    graph[pre].push(course);
+    indegree[course]++;
+  }
+
+  const queue = [];
+  for (let i = 0; i < numCourses; i++) {
+    if (indegree[i] === 0) queue.push(i);
+  }
+
+  const result = [];
+  for (let i = 0; i < queue.length; i++) {
+    const current = queue[i];
+    result.push(current);
+
+    for (const next of graph[current]) {
+      indegree[next]--;
+      if (indegree[next] === 0) queue.push(next);
+    }
+  }
+
+  return result.length === numCourses ? result : [];
+}
+```
+
+### 如何判断有环
+
+如果最终结果数量小于节点总数，说明存在环，无法完成拓扑排序。
+
+### 面试要点
+
+- 拓扑排序只适用于有向无环图。
+- 入度为 0 的节点可以作为起点。
+- 可以用来判断依赖关系是否存在循环。
+- 构建系统、课程表、任务调度都常用这个模型。
+:::
