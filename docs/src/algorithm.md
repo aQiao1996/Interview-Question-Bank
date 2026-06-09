@@ -709,3 +709,66 @@ class LRUCache {
 - 关键是访问后要更新最近使用顺序。
 - 容量满时淘汰最久未使用数据。
 :::
+
+## 12、快速排序的思路是什么
+快速排序是一种分治排序算法，通过选择基准值，把数组划分为小于基准和大于基准的两部分，再递归排序。
+
+::: details 详情
+### 基本思路
+
+快速排序流程：
+
+```txt
+选择 pivot
+-> 分区
+-> 递归排序左区间
+-> 递归排序右区间
+```
+
+### 简化实现
+
+```js
+function quickSort(nums) {
+  if (nums.length <= 1) return nums;
+
+  const pivot = nums[0];
+  const left = [];
+  const right = [];
+
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] < pivot) {
+      left.push(nums[i]);
+    } else {
+      right.push(nums[i]);
+    }
+  }
+
+  return [...quickSort(left), pivot, ...quickSort(right)];
+}
+```
+
+这个版本好理解，但会创建额外数组。
+
+### 原地分区
+
+面试中也常要求原地分区，核心是用左右指针交换元素，减少额外空间。
+
+### 复杂度
+
+- 平均时间复杂度：`O(n log n)`。
+- 最坏时间复杂度：`O(n^2)`。
+- 平均空间复杂度：取决于递归深度，通常是 `O(log n)`。
+
+### 最坏情况
+
+如果每次 pivot 都选到最大或最小值，分区会极不均衡，退化为 `O(n^2)`。
+
+可以通过随机选择 pivot 或三数取中降低风险。
+
+### 面试要点
+
+- 快排核心是分治和分区。
+- pivot 选择会影响性能。
+- 原地快排更节省空间。
+- 快排通常不是稳定排序。
+:::
