@@ -645,3 +645,67 @@ function findContentChildren(g, s) {
 - 排序经常是贪心题的第一步。
 - 如果无法证明贪心正确性，可以考虑动态规划。
 :::
+
+## 11、LRU 缓存如何实现
+LRU 是最近最少使用缓存策略，当缓存容量满时，淘汰最近最久未使用的数据。常见实现是哈希表加双向链表。
+
+::: details 详情
+### 为什么需要哈希表和链表
+
+LRU 需要同时满足：
+
+- `get` 快速读取。
+- `put` 快速写入。
+- 快速把节点移动到最近使用位置。
+- 快速删除最久未使用节点。
+
+哈希表负责 `O(1)` 查找，双向链表负责 `O(1)` 移动和删除。
+
+### 简化实现
+
+在 JavaScript 中，`Map` 会保持插入顺序，可以用它写简化版：
+
+```js
+class LRUCache {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.cache = new Map();
+  }
+
+  get(key) {
+    if (!this.cache.has(key)) return -1;
+
+    const value = this.cache.get(key);
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+
+  put(key, value) {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
+    this.cache.set(key, value);
+
+    if (this.cache.size > this.capacity) {
+      const oldestKey = this.cache.keys().next().value;
+      this.cache.delete(oldestKey);
+    }
+  }
+}
+```
+
+### 执行过程
+
+- 访问某个 key 后，把它移动到最新位置。
+- 插入新 key 后，如果超过容量，删除最旧 key。
+- `Map` 的第一个 key 就是最久未使用的 key。
+
+### 面试要点
+
+- 标准 LRU 通常用哈希表加双向链表。
+- JS 中可以用 `Map` 简化实现。
+- 关键是访问后要更新最近使用顺序。
+- 容量满时淘汰最久未使用数据。
+:::
