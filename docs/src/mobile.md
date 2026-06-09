@@ -415,3 +415,61 @@ wx.login({
 - 分包之间不能随意互相引用资源。
 - 分包策略要结合页面访问频率和业务路径设计。
 :::
+
+## 8、移动端常见触摸事件有哪些
+移动端触摸事件用于处理手指点击、滑动、拖拽等交互。常见事件包括 `touchstart`、`touchmove`、`touchend` 和 `touchcancel`。
+
+::: details 详情
+### 常见事件
+
+- `touchstart`：手指触摸屏幕时触发。
+- `touchmove`：手指在屏幕上移动时触发。
+- `touchend`：手指离开屏幕时触发。
+- `touchcancel`：触摸被系统打断时触发。
+
+### 触摸点信息
+
+事件对象中常见集合：
+
+- `touches`：当前屏幕上的所有触摸点。
+- `targetTouches`：当前元素上的触摸点。
+- `changedTouches`：本次事件变化的触摸点。
+
+### 滑动距离示例
+
+```js
+let startX = 0;
+let startY = 0;
+
+element.addEventListener("touchstart", event => {
+  const touch = event.touches[0];
+  startX = touch.clientX;
+  startY = touch.clientY;
+});
+
+element.addEventListener("touchend", event => {
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - startX;
+  const deltaY = touch.clientY - startY;
+
+  console.log(deltaX, deltaY);
+});
+```
+
+### passive
+
+浏览器为了优化滚动性能，部分触摸事件默认可能倾向 passive。
+
+如果需要在 `touchmove` 中阻止滚动，要确认监听配置：
+
+```js
+element.addEventListener("touchmove", handler, { passive: false });
+```
+
+### 注意事项
+
+- 手势识别要设置阈值，避免轻微抖动误判。
+- 横向滑动和纵向滚动容易冲突。
+- 复杂手势可以考虑成熟手势库。
+- 移动端还要考虑点击延迟、滚动穿透和可点击区域大小。
+:::
