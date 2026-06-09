@@ -307,3 +307,60 @@ window.visualViewport?.addEventListener("resize", () => {
 - 聊天输入框要特别处理键盘弹起后的滚动到底部。
 - 表单提交按钮要避免被键盘遮挡。
 :::
+
+## 6、微信小程序登录流程是怎样的
+微信小程序登录通常通过 `wx.login` 获取临时 code，再由后端使用 code 换取用户标识，并建立业务登录态。
+
+::: details 详情
+### 基本流程
+
+```txt
+小程序调用 wx.login
+-> 获取临时 code
+-> 前端把 code 发送给后端
+-> 后端请求微信服务端换取 openid/session_key
+-> 后端创建或查询用户
+-> 后端返回业务 token
+-> 小程序保存业务登录态
+```
+
+### 前端代码示例
+
+```js
+wx.login({
+  success(res) {
+    if (res.code) {
+      wx.request({
+        url: "/api/login",
+        method: "POST",
+        data: { code: res.code },
+      });
+    }
+  },
+});
+```
+
+### code 的特点
+
+`code` 是临时凭证：
+
+- 有有效期。
+- 只能使用一次。
+- 不能直接当作用户身份。
+
+真正的身份校验应该由后端完成。
+
+### openid 和 unionid
+
+- `openid`：用户在某个小程序下的唯一标识。
+- `unionid`：用户在同一开放平台主体下的统一标识。
+
+是否能获取 unionid 取决于开放平台绑定等条件。
+
+### 注意事项
+
+- `session_key` 不能返回给前端。
+- 前端保存的是业务 token，不是微信 session_key。
+- 用户信息授权和登录不是一回事。
+- 业务 token 要有过期和刷新策略。
+:::
