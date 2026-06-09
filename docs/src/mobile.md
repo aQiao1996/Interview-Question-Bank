@@ -595,3 +595,67 @@ mask.addEventListener(
 - 定时器、监听器要及时清理。
 - 优化前后要用小程序开发者工具性能面板验证。
 :::
+
+## 11、移动端图片懒加载如何实现
+图片懒加载是指图片进入可视区域附近时再加载，避免首屏一次性加载大量图片，提升页面首屏速度并节省流量。
+
+::: details 详情
+### 原生 loading
+
+现代浏览器支持：
+
+```html
+<img src="image.jpg" loading="lazy" alt="图片" />
+```
+
+这是最简单的懒加载方式，但兼容性和触发策略由浏览器决定。
+
+### IntersectionObserver
+
+更可控的方式是使用 `IntersectionObserver`：
+
+```js
+const observer = new IntersectionObserver(entries => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      img.src = img.dataset.src;
+      observer.unobserve(img);
+    }
+  }
+});
+
+document.querySelectorAll("img[data-src]").forEach(img => {
+  observer.observe(img);
+});
+```
+
+HTML：
+
+```html
+<img data-src="image.jpg" alt="图片" />
+```
+
+### 提前加载
+
+可以通过 `rootMargin` 提前加载：
+
+```js
+new IntersectionObserver(callback, {
+  rootMargin: "200px",
+});
+```
+
+这样图片快进入视口时就开始请求，减少用户看到空白的概率。
+
+### 占位和尺寸
+
+图片懒加载要设置宽高或占位，避免图片加载后页面布局突然抖动。
+
+### 注意事项
+
+- 首屏关键图片不要懒加载。
+- 长列表图片要结合虚拟列表或分页。
+- 图片要使用合适尺寸和格式。
+- 懒加载失败要有兜底图。
+:::
