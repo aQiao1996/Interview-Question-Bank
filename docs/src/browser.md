@@ -518,3 +518,68 @@ Access-Control-Allow-Origin: https://example.com
 - CORS 需要服务器配合配置响应头。
 - JSONP 可以跨域是因为 script 标签不受同样限制，但只支持 GET 且有安全风险。
 :::
+
+## 9、浏览器常见存储方式有哪些
+浏览器常见存储方式包括 Cookie、localStorage、sessionStorage 和 IndexedDB。它们适合不同的数据规模、生命周期和访问场景。
+
+::: details 详情
+### Cookie
+
+Cookie 通常用于存储会话标识。
+
+特点：
+
+- 会随同源请求自动发送到服务器。
+- 容量较小。
+- 可以设置过期时间。
+- 支持 `HttpOnly`、`Secure`、`SameSite` 等属性。
+
+不适合存储大量业务数据。
+
+### localStorage
+
+localStorage 是持久化本地存储：
+
+```js
+localStorage.setItem("theme", "dark");
+localStorage.getItem("theme");
+```
+
+特点：
+
+- 生命周期较长。
+- 不会自动随请求发送。
+- 只能存字符串。
+- 同源页面共享。
+
+### sessionStorage
+
+sessionStorage 只在当前标签页会话中有效。
+
+关闭标签页后数据会被清除，不同标签页之间通常不共享。
+
+### IndexedDB
+
+IndexedDB 是浏览器中的结构化存储，适合大量数据和离线应用。
+
+特点：
+
+- 容量更大。
+- 支持索引。
+- 异步 API。
+- 可以存储对象、文件等复杂数据。
+
+### 选择建议
+
+- 登录会话：Cookie。
+- 简单偏好配置：localStorage。
+- 临时表单状态：sessionStorage。
+- 大量离线数据：IndexedDB。
+
+### 注意事项
+
+- localStorage 可被 JS 读取，存在 XSS 风险。
+- Cookie 要合理设置 `HttpOnly`、`Secure`、`SameSite`。
+- 不要把敏感信息明文存储在前端。
+- 存储容量和行为在不同浏览器中可能有差异。
+:::
