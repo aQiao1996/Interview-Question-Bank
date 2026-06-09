@@ -399,3 +399,63 @@ CI 中常缓存：
 - 告警太多会让人麻木。
 - 监控、日志、链路追踪要配合使用。
 :::
+
+## 8、Kubernetes 如何实现滚动更新和回滚
+Kubernetes Deployment 支持滚动更新和回滚，可以在不中断服务的情况下逐步替换旧版本 Pod，并在新版本异常时回退到历史版本。
+
+::: details 详情
+### 滚动更新
+
+滚动更新会逐步创建新版本 Pod，同时逐步下线旧版本 Pod。
+
+这样可以避免一次性替换所有实例导致服务不可用。
+
+### 关键参数
+
+Deployment 中常见参数：
+
+```yaml
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+```
+
+- `maxSurge`：更新过程中允许额外创建的 Pod 数量。
+- `maxUnavailable`：更新过程中允许不可用的 Pod 数量。
+
+### 就绪检查
+
+滚动更新依赖就绪检查：
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+```
+
+只有新 Pod 就绪后，流量才应该转发过去。
+
+### 回滚
+
+如果新版本有问题，可以回滚到上一个版本：
+
+```bash
+kubectl rollout undo deployment app
+```
+
+也可以查看发布历史：
+
+```bash
+kubectl rollout history deployment app
+```
+
+### 注意事项
+
+- 应用要支持优雅关闭。
+- 健康检查要能真实反映服务状态。
+- 数据库变更要兼容新旧版本。
+- 回滚代码不等于回滚数据。
+:::
