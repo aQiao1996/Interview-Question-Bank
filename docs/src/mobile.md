@@ -473,3 +473,68 @@ element.addEventListener("touchmove", handler, { passive: false });
 - 复杂手势可以考虑成熟手势库。
 - 移动端还要考虑点击延迟、滚动穿透和可点击区域大小。
 :::
+
+## 9、移动端滚动穿透是什么，如何解决
+滚动穿透是指弹窗或遮罩层出现后，用户滑动弹窗内容或遮罩时，底层页面也跟着滚动。
+
+::: details 详情
+### 出现场景
+
+常见场景：
+
+- 弹窗。
+- 抽屉。
+- 半屏面板。
+- 图片预览。
+- 选择器浮层。
+
+用户期望只滚动当前浮层，但底层页面也发生滚动，就属于滚动穿透。
+
+### body 锁定
+
+打开弹窗时可以锁定 body：
+
+```js
+const scrollTop = window.scrollY;
+
+document.body.style.position = "fixed";
+document.body.style.top = `-${scrollTop}px`;
+document.body.style.width = "100%";
+
+function unlock() {
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.width = "";
+  window.scrollTo(0, scrollTop);
+}
+```
+
+这样可以避免关闭弹窗后页面位置丢失。
+
+### 阻止 touchmove
+
+也可以在遮罩层阻止默认滚动：
+
+```js
+mask.addEventListener(
+  "touchmove",
+  event => {
+    event.preventDefault();
+  },
+  { passive: false },
+);
+```
+
+但要注意不要阻止弹窗内部需要滚动的区域。
+
+### 内部滚动区域
+
+如果弹窗内部可以滚动，要处理滚动边界，避免内部滚到顶部或底部后继续带动外层滚动。
+
+### 注意事项
+
+- iOS Safari 上滚动穿透问题更常见。
+- 锁 body 时要恢复原滚动位置。
+- 不要全局粗暴阻止所有 touchmove。
+- 复杂弹窗建议封装统一滚动锁工具。
+:::
