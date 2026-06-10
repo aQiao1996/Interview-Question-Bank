@@ -957,64 +957,59 @@ function useDebouncedRef(value, delay = 300) {
 - 不建议在普通状态下滥用，只有需要自定义更新时机时才使用。
 :::
 
-## 21、vue3 中 defineExpose 有什么作用
-`defineExpose` 用于在 `<script setup>` 组件中显式暴露属性或方法，让父组件通过模板 ref 访问。
+## 21、vue3 中 Fragment 有什么作用
+Fragment 允许组件返回多个根节点，不再强制要求模板只有一个根元素，能减少无意义的包裹层，让组件结构更贴近真实 DOM。
 
 ::: details 详情
-### 为什么需要 defineExpose
+### Vue2 和 Vue3 的区别
 
-在 `<script setup>` 中，组件内部变量默认不会暴露给父组件实例。
-
-如果父组件需要通过 ref 调用子组件方法，需要子组件主动暴露：
+Vue2 组件模板通常要求单根节点：
 
 ```vue
-<!-- Child.vue -->
-<script setup>
-import { ref } from "vue";
-
-const count = ref(0);
-
-function reset() {
-  count.value = 0;
-}
-
-defineExpose({
-  reset,
-});
-</script>
-```
-
-父组件中使用：
-
-```vue
-<script setup>
-import { ref } from "vue";
-import Child from "./Child.vue";
-
-const childRef = ref(null);
-
-function handleReset() {
-  childRef.value?.reset();
-}
-</script>
-
 <template>
-  <Child ref="childRef" />
-  <button @click="handleReset">重置</button>
+  <div>
+    <header />
+    <main />
+  </div>
 </template>
 ```
 
-### 应用场景
+Vue3 支持多个根节点：
 
-- 表单组件暴露 `validate`、`reset` 方法。
-- 弹窗组件暴露 `open`、`close` 方法。
-- 复杂组件向父组件提供少量命令式能力。
+```vue
+<template>
+  <header />
+  <main />
+  <footer />
+</template>
+```
+
+### 有什么好处
+
+- 减少额外 DOM 层级。
+- 避免为了满足单根限制而添加无语义容器。
+- 更适合布局组件、列表项组件和页面片段组件。
+- 有利于保持 DOM 结构和 CSS 选择器简洁。
+
+### attrs 透传问题
+
+多根节点组件中，Vue 不知道非 props 属性应该透传到哪个根节点。
+
+因此需要显式绑定：
+
+```vue
+<template>
+  <header />
+  <main v-bind="$attrs" />
+  <footer />
+</template>
+```
 
 ### 注意事项
 
-- 优先使用 props 和 emits 通信，避免父组件过度依赖子组件内部实现。
-- 只暴露必要的稳定接口，不要把所有内部状态都暴露出去。
-- `defineExpose` 只能在 `<script setup>` 顶层使用。
+- 多根节点会影响 `$attrs` 自动继承，需要明确透传位置。
+- 不要为了少一层 DOM 让组件结构变得难以理解。
+- 组件库中要注意 class、style 和事件监听的透传行为。
 :::
 
 ## 22、vue3 中 watch 如何清理副作用
@@ -1069,142 +1064,138 @@ watch(keyword, async (newKeyword, oldKeyword, onCleanup) => {
 - 如果副作用和组件生命周期绑定，也要考虑组件卸载时的清理。
 :::
 
-## 23、vue3 中 effectScope 有什么作用
-`effectScope` 用于收集一组响应式副作用，并在需要时统一停止，常用于组合式函数、插件或独立状态模块中管理 watcher 和 computed。
+## 23、vue3 中响应式丢失的常见原因有哪些
+Vue3 响应式丢失通常是因为把响应式代理对象中的值提前解构、脱离代理访问，或者把 ref 当作普通值传递，导致依赖无法被正确追踪。
 
 ::: details 详情
-### 为什么需要 effectScope
-
-组件内部创建的 `watch`、`watchEffect` 会随着组件卸载自动停止。
-
-但如果在组件外部或独立模块中创建副作用，就需要自己管理清理时机，否则可能造成内存泄漏或重复监听。
-
-### 基本用法
-
-```js
-import { effectScope, ref, watch } from "vue";
-
-const scope = effectScope();
-
-scope.run(() => {
-  const count = ref(0);
-
-  watch(count, value => {
-    console.log("count changed:", value);
-  });
-});
-
-// 停止 scope 内收集到的所有副作用
-scope.stop();
-```
-
-### 在组合式函数中的使用
-
-```js
-import { effectScope, ref, watchEffect } from "vue";
-
-export function createCounterStore() {
-  const scope = effectScope();
-  const count = ref(0);
-
-  scope.run(() => {
-    watchEffect(() => {
-      console.log(count.value);
-    });
-  });
-
-  return {
-    count,
-    dispose: () => scope.stop(),
-  };
-}
-```
-
-### 应用场景
-
-- 组件外部的响应式状态模块。
-- 插件内部创建的 watcher。
-- 需要手动销毁的组合式逻辑。
-- 批量管理多个副作用。
-
-### 注意事项
-
-- `effectScope` 只管理在 `scope.run()` 中创建的响应式副作用。
-- 调用 `stop()` 后，scope 内的 watcher、computed 等会停止更新。
-- 普通组件内大多数场景不需要手动使用，Vue 会自动处理组件作用域。
-:::
-
-## 24、vue3 中 toRef 和 toRefs 有什么作用
-`toRef` 和 `toRefs` 用于把响应式对象中的属性转换成 ref，常用于解构 reactive 对象时保留响应式。
-
-::: details 详情
-### 为什么需要
+### 解构 reactive
 
 直接解构 `reactive` 对象会丢失响应式连接：
 
 ```js
-import { reactive } from "vue";
-
-const state = reactive({
-  count: 0,
-});
-
+const state = reactive({ count: 0 });
 const { count } = state;
-
-state.count++;
-console.log(count); // 仍然是旧值
 ```
 
-因为 `count` 只是普通值，不再和 `state.count` 建立响应式关联。
+此时 `count` 是普通值，不会随着 `state.count` 更新。
 
-### toRef
+可以使用 `toRef` 或 `toRefs` 保留连接：
 
-`toRef` 用于把响应式对象的某个属性转成 ref：
-
-```vue
-<script setup>
-import { reactive, toRef } from "vue";
-
-const state = reactive({
-  count: 0,
-});
-
+```js
 const count = toRef(state, "count");
-
-count.value++;
-</script>
 ```
 
-修改 `count.value` 会同步影响 `state.count`。
+### props 解构
 
-### toRefs
+直接解构 props 也容易丢失响应式：
 
-`toRefs` 用于把响应式对象的所有属性都转成 ref：
-
-```vue
-<script setup>
-import { reactive, toRefs } from "vue";
-
-const state = reactive({
-  count: 0,
-  name: "Tom",
+```js
+const props = defineProps({
+  title: String,
 });
 
-const { count, name } = toRefs(state);
-</script>
+const { title } = props;
 ```
 
-### 应用场景
+更稳妥的方式是直接使用 `props.title`，或根据项目 Vue 版本使用响应式 props 解构能力。
 
-- 解构 `reactive` 对象并保留响应式。
-- 在组合式函数中返回响应式对象的多个字段。
-- 单独传递响应式对象的某个属性。
+### ref 传值
+
+把 `ref.value` 传给普通函数时，传递的是当前值：
+
+```js
+function useCount(count) {
+  watchEffect(() => {
+    console.log(count.value);
+  });
+}
+
+useCount(countRef);
+```
+
+如果传的是 `countRef.value`，函数内部就无法继续追踪后续变化。
+
+### 常见场景
+
+- 解构 `reactive`。
+- 解构 props。
+- 把 `ref.value` 提前取出。
+- 对响应式对象做 JSON 序列化后再使用。
+- 使用第三方库时没有在回调中重新同步状态。
 
 ### 注意事项
 
-- `toRefs` 只会转换对象当前已有属性。
-- 如果属性不存在，可以用 `toRef(obj, "key")` 创建连接。
-- 对 props 解构时也要注意响应式丢失问题。
+- 组合式函数参数可以支持 ref、getter 或普通值，再用 `toValue` 统一读取。
+- 返回多个响应式字段时，可以返回 ref 对象或使用 `toRefs`。
+- 不要为了写法简短过早解构响应式对象。
+:::
+
+## 24、vue3 中插件如何编写和安装
+Vue3 插件用于给应用统一注册全局能力，例如组件、指令、全局属性、provide 数据或第三方库初始化逻辑。
+
+::: details 详情
+### 插件基本结构
+
+插件通常暴露一个 `install` 方法：
+
+```js
+export default {
+  install(app, options) {
+    app.config.globalProperties.$formatDate = value => {
+      return new Date(value).toLocaleDateString(options?.locale);
+    };
+  },
+};
+```
+
+安装插件：
+
+```js
+import { createApp } from "vue";
+import App from "./App.vue";
+import datePlugin from "./plugins/date";
+
+createApp(App)
+  .use(datePlugin, { locale: "zh-CN" })
+  .mount("#app");
+```
+
+### 可以做什么
+
+- 注册全局组件。
+- 注册全局指令。
+- 挂载全局属性。
+- 通过 `app.provide` 注入全局服务。
+- 初始化埋点、权限、国际化等基础能力。
+
+### provide 注入
+
+插件可以提供全局服务：
+
+```js
+export default {
+  install(app) {
+    app.provide("apiClient", {
+      get(url) {
+        return fetch(url).then(res => res.json());
+      },
+    });
+  },
+};
+```
+
+组件中使用：
+
+```js
+const apiClient = inject("apiClient");
+```
+
+### 注意事项
+
+- 插件要避免隐藏过多业务逻辑，否则会增加排查成本。
+- 全局属性要控制数量，避免命名冲突。
+- 可复用插件应提供清晰的 options 类型和默认值。
+- SSR 场景要避免在插件模块顶层保存跨请求共享状态。
 :::
 
 ## 25、vue3 中 defineOptions 有什么作用
