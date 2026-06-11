@@ -467,3 +467,50 @@ pnpm install --ignore-scripts
 - 发布 npm 包要开启双因素认证。
 - 供应链安全不是一次扫描，而是持续流程。
 :::
+
+## 9、常见 Web 安全响应头有哪些
+安全响应头用于让浏览器启用额外安全策略，降低 XSS、点击劫持、信息泄露和跨域滥用风险。它们不能替代业务安全校验，但能作为重要防线。
+
+::: details 详情
+### 常见响应头
+
+- `Content-Security-Policy`：限制脚本、样式、图片等资源来源。
+- `X-Frame-Options`：限制页面是否允许被 iframe 嵌入。
+- `Strict-Transport-Security`：强制浏览器使用 HTTPS。
+- `Referrer-Policy`：控制请求携带的来源信息。
+- `Permissions-Policy`：限制摄像头、定位、麦克风等浏览器能力。
+- `X-Content-Type-Options: nosniff`：禁止浏览器 MIME 嗅探。
+
+### CSP
+
+CSP 是防御 XSS 的重要手段之一。
+
+例如：
+
+```http
+Content-Security-Policy: default-src 'self'; script-src 'self'
+```
+
+它可以限制脚本只能从当前站点加载。
+
+### 点击劫持防护
+
+可以使用：
+
+```http
+X-Frame-Options: DENY
+```
+
+或在 CSP 中使用：
+
+```http
+Content-Security-Policy: frame-ancestors 'none'
+```
+
+### 注意事项
+
+- 安全响应头要结合业务逐步灰度，避免误伤第三方资源。
+- CSP 可以先使用 Report-Only 模式观察违规情况。
+- HTTPS 站点建议配置 HSTS，但要确认全站 HTTPS 已经稳定。
+- 响应头是浏览器侧防护，接口权限和数据校验仍必须后端完成。
+:::
