@@ -877,3 +877,57 @@ observer.observe({ entryTypes: ["longtask"] });
 - 指标要结合设备、网络和页面类型分组分析。
 - 单个用户数据可能有波动，要看分位数趋势。
 :::
+
+## 15、浏览器多标签页之间如何通信
+浏览器多标签页通信常用于同步登录状态、主题设置、购物车变化和任务进度。常见方案包括 `storage` 事件、`BroadcastChannel`、SharedWorker 和 Service Worker。
+
+::: details 详情
+### storage 事件
+
+同源页面修改 `localStorage` 时，其他标签页可以收到 `storage` 事件：
+
+```js
+window.addEventListener("storage", event => {
+  if (event.key === "logout") {
+    location.reload();
+  }
+});
+```
+
+注意触发修改的当前标签页通常不会收到自己的 `storage` 事件。
+
+### BroadcastChannel
+
+`BroadcastChannel` 更适合同源页面之间发送消息：
+
+```js
+const channel = new BroadcastChannel("app");
+
+channel.postMessage({
+  type: "theme-change",
+  value: "dark",
+});
+
+channel.onmessage = event => {
+  console.log(event.data);
+};
+```
+
+它的语义比 `localStorage` 更直接。
+
+### 其他方式
+
+还可以使用：
+
+- SharedWorker：多个页面共享同一个 Worker。
+- Service Worker：作为页面和网络之间的中间层。
+- IndexedDB 轮询：兼容性兜底，但实时性较差。
+- WebSocket：服务端参与广播。
+
+### 注意事项
+
+- 多标签页通信通常要求同源。
+- 消息内容不要包含敏感信息。
+- 标签页关闭时要清理监听和连接。
+- 登录态同步要考虑接口鉴权结果，而不是只依赖本地消息。
+:::
