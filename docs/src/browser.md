@@ -811,3 +811,69 @@ requestAnimationFrame(animate);
 - 需要停止动画时，要保存 ID 并调用 `cancelAnimationFrame`。
 - 如果动画依赖真实时间，要使用回调参数中的时间戳计算进度。
 :::
+
+## 14、Performance API 可以用来做什么
+Performance API 提供浏览器性能数据采集能力，可以用来分析页面加载、资源耗时、长任务和自定义业务耗时，是前端性能监控的重要基础。
+
+::: details 详情
+### 常见能力
+
+Performance API 可以获取：
+
+- 页面导航耗时。
+- 静态资源加载耗时。
+- 用户自定义打点。
+- 长任务信息。
+- LCP、CLS、INP 等指标相关数据。
+
+### 自定义打点
+
+可以使用 `mark` 和 `measure` 统计业务耗时：
+
+```js
+performance.mark("search-start");
+
+await fetchSearchResult();
+
+performance.mark("search-end");
+performance.measure("search", "search-start", "search-end");
+```
+
+读取结果：
+
+```js
+const measures = performance.getEntriesByName("search");
+console.log(measures[0].duration);
+```
+
+### 资源耗时
+
+可以读取资源加载信息：
+
+```js
+const resources = performance.getEntriesByType("resource");
+```
+
+常用于分析图片、脚本、样式、接口等资源耗时。
+
+### PerformanceObserver
+
+`PerformanceObserver` 可以监听性能条目：
+
+```js
+const observer = new PerformanceObserver(list => {
+  for (const entry of list.getEntries()) {
+    console.log(entry);
+  }
+});
+
+observer.observe({ entryTypes: ["longtask"] });
+```
+
+### 注意事项
+
+- 跨域资源需要配置 `Timing-Allow-Origin` 才能获取完整耗时。
+- 性能数据要采样上报，避免监控本身影响性能。
+- 指标要结合设备、网络和页面类型分组分析。
+- 单个用户数据可能有波动，要看分位数趋势。
+:::
