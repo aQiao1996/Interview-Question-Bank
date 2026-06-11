@@ -712,3 +712,60 @@ CSS 中可以使用安全区域变量：
 - 小程序和 App WebView 可能还有平台自己的安全区域 API。
 - 横屏和折叠屏下也要验证左右安全区域。
 :::
+
+## 13、移动端手势冲突如何处理
+移动端手势冲突常见于横向轮播、纵向滚动、下拉刷新、侧滑返回和缩放拖拽同时存在的页面。处理核心是明确手势优先级，并尽量减少互相抢事件。
+
+::: details 详情
+### 常见冲突
+
+- 横向轮播和页面纵向滚动冲突。
+- 弹窗内部滚动和页面滚动冲突。
+- 自定义侧滑和系统返回手势冲突。
+- 地图、图片缩放和页面滚动冲突。
+- 下拉刷新和列表滚动冲突。
+
+### 判断方向
+
+可以在触摸开始时记录坐标，在移动时判断方向：
+
+```js
+let startX = 0;
+let startY = 0;
+
+el.addEventListener("touchstart", event => {
+  const touch = event.touches[0];
+  startX = touch.clientX;
+  startY = touch.clientY;
+});
+
+el.addEventListener("touchmove", event => {
+  const touch = event.touches[0];
+  const dx = touch.clientX - startX;
+  const dy = touch.clientY - startY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // 横向手势
+  }
+});
+```
+
+### CSS 辅助
+
+可以使用 `touch-action` 告诉浏览器允许哪些默认手势：
+
+```css
+.carousel {
+  touch-action: pan-y;
+}
+```
+
+表示保留纵向滚动，横向手势交给组件处理。
+
+### 注意事项
+
+- 不要滥用 `preventDefault`，可能破坏页面滚动和浏览器默认行为。
+- 手势判断要设置阈值，避免轻微抖动就触发。
+- iOS 系统侧滑返回区域要尽量避让。
+- 复杂手势建议使用成熟手势库，减少兼容性问题。
+:::
