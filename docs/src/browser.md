@@ -762,3 +762,52 @@ Web Font 可能导致文字不可见或字体切换。
 - `async` 脚本下载不阻塞解析，但执行时仍会打断解析。
 - 优化要结合 Performance 面板和真实网络环境判断。
 :::
+
+## 13、requestAnimationFrame 有什么作用
+`requestAnimationFrame` 用于在浏览器下一次重绘前执行回调，适合做动画、滚动同步和需要跟随刷新率更新的 UI 操作。
+
+::: details 详情
+### 和 setTimeout 的区别
+
+`setTimeout` 只按时间调度，不关心浏览器什么时候绘制。
+
+`requestAnimationFrame` 会和浏览器刷新节奏对齐，通常在每一帧绘制前执行。
+
+这意味着动画更新更平滑，也能减少不必要的绘制。
+
+### 基本用法
+
+```js
+let x = 0;
+
+function animate() {
+  x += 2;
+  box.style.transform = `translateX(${x}px)`;
+
+  if (x < 300) {
+    requestAnimationFrame(animate);
+  }
+}
+
+requestAnimationFrame(animate);
+```
+
+### 适合场景
+
+- JavaScript 动画。
+- 滚动位置同步。
+- Canvas 绘制。
+- 拖拽过程中的 UI 更新。
+- 分帧执行部分视觉任务。
+
+### 页面隐藏时
+
+页面在后台标签页时，浏览器通常会降低或暂停 `requestAnimationFrame` 的执行频率，从而节省资源。
+
+### 注意事项
+
+- 回调中不要执行耗时任务，否则仍然会掉帧。
+- 动画优先使用 `transform` 和 `opacity`。
+- 需要停止动画时，要保存 ID 并调用 `cancelAnimationFrame`。
+- 如果动画依赖真实时间，要使用回调参数中的时间戳计算进度。
+:::
