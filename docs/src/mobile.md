@@ -659,3 +659,56 @@ new IntersectionObserver(callback, {
 - 图片要使用合适尺寸和格式。
 - 懒加载失败要有兜底图。
 :::
+
+## 12、移动端如何适配刘海屏和安全区域
+刘海屏、圆角屏和全面屏设备会带来顶部、底部或左右安全区域问题。适配目标是让内容不被系统状态栏、Home Indicator 或屏幕裁切区域遮挡。
+
+::: details 详情
+### viewport-fit
+
+H5 页面需要在 viewport 中开启安全区域适配：
+
+```html
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, viewport-fit=cover"
+/>
+```
+
+`viewport-fit=cover` 表示页面可以延伸到整个屏幕区域。
+
+### env 安全区域变量
+
+CSS 中可以使用安全区域变量：
+
+```css
+.page {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+```
+
+常见变量包括：
+
+- `safe-area-inset-top`
+- `safe-area-inset-right`
+- `safe-area-inset-bottom`
+- `safe-area-inset-left`
+
+### 底部固定按钮
+
+底部按钮要避开 Home Indicator：
+
+```css
+.footer {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+```
+
+### 注意事项
+
+- 不要把关键按钮贴到屏幕最底部。
+- 全屏弹窗、底部导航和吸底按钮都要考虑安全区域。
+- 小程序和 App WebView 可能还有平台自己的安全区域 API。
+- 横屏和折叠屏下也要验证左右安全区域。
+:::
