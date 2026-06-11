@@ -560,3 +560,50 @@ Content-Security-Policy: frame-ancestors 'none'
 - 管理后台预览富文本也要防 XSS。
 - 不同业务允许的标签不同，不要直接开放完整 HTML 能力。
 :::
+
+## 11、前端登录态存储要注意什么安全问题
+前端登录态通常涉及 Cookie、Token、localStorage 和 sessionStorage。核心问题是如何在用户体验、跨端能力、XSS 风险和 CSRF 风险之间做权衡。
+
+::: details 详情
+### 常见存储方式
+
+常见方案包括：
+
+- Cookie：可由浏览器自动携带，适合传统会话。
+- HttpOnly Cookie：前端 JS 无法读取，能降低 XSS 窃取风险。
+- localStorage：使用方便，但可被 XSS 读取。
+- sessionStorage：页面会话级存储，关闭标签页后清理。
+- 内存变量：刷新丢失，但暴露面更小。
+
+### Cookie 安全属性
+
+使用 Cookie 存登录态时，建议配置：
+
+```http
+Set-Cookie: sid=xxx; HttpOnly; Secure; SameSite=Lax
+```
+
+含义：
+
+- `HttpOnly`：禁止 JS 读取。
+- `Secure`：只在 HTTPS 下发送。
+- `SameSite`：降低 CSRF 风险。
+
+### Token 存储风险
+
+Token 放在 localStorage 中，一旦页面存在 XSS，攻击者就可能读取 Token。
+
+如果业务必须使用 Token，可以配合：
+
+- 缩短有效期。
+- 使用 Refresh Token 轮换。
+- 绑定设备或环境风险。
+- 重要操作二次验证。
+
+### 注意事项
+
+- 不要把敏感登录态写入 URL，URL 容易进入日志和 Referer。
+- 退出登录要清理本地状态和服务端会话。
+- XSS 和 CSRF 要一起考虑，不能只防其中一个。
+- 前端存储只影响暴露风险，最终鉴权必须由后端完成。
+:::
