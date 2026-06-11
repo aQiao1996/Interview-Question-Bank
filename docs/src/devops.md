@@ -595,3 +595,55 @@ readinessProbe:
 - 配置变更要能追踪是谁、什么时候、改了什么。
 - 生产配置要有备份和回滚方案。
 :::
+
+## 12、Kubernetes 中 requests 和 limits 有什么区别
+`requests` 表示容器期望获得的最小资源，用于调度决策；`limits` 表示容器最多能使用的资源，用于限制容器资源上限。
+
+::: details 详情
+### requests
+
+`requests` 会影响 Pod 被调度到哪台节点。
+
+例如：
+
+```yaml
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+```
+
+表示该容器希望至少有 0.5 核 CPU 和 512Mi 内存资源。
+
+调度器会根据节点剩余可分配资源决定是否能放下这个 Pod。
+
+### limits
+
+`limits` 用于限制资源上限：
+
+```yaml
+resources:
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+```
+
+CPU 超过限制通常会被限速，内存超过限制可能触发 OOMKilled。
+
+### 如何设置
+
+设置资源时要参考：
+
+- 历史 CPU 和内存使用量。
+- 峰值流量。
+- GC 或批处理任务的资源波动。
+- 服务重要性。
+- 节点资源利用率。
+
+### 注意事项
+
+- requests 设置过高会降低集群利用率。
+- requests 设置过低可能导致节点过度超卖。
+- memory limit 太低会导致容器频繁 OOM。
+- 资源配置要结合监控持续调整，而不是一次性写死。
+:::
