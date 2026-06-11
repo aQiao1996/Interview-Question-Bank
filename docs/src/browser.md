@@ -703,3 +703,62 @@ window.removeEventListener("resize", onResize);
 - 缓存要设置容量上限。
 - 内存问题要通过快照和复现路径定位，不要凭感觉猜。
 :::
+
+## 12、哪些资源会阻塞页面渲染
+页面渲染可能被 HTML 解析、CSS 加载、同步脚本执行和字体加载等因素影响。理解阻塞点有助于优化首屏速度。
+
+::: details 详情
+### CSS 阻塞渲染
+
+浏览器需要 CSSOM 和 DOM 一起构建渲染树。
+
+如果关键 CSS 没有加载完成，浏览器通常不会立即绘制页面，避免出现无样式内容闪烁。
+
+因此首屏关键 CSS 应尽量小，非关键 CSS 可以延迟加载。
+
+### JavaScript 阻塞解析
+
+普通脚本会阻塞 HTML 解析：
+
+```html
+<script src="/app.js"></script>
+```
+
+浏览器遇到脚本时，需要先下载并执行脚本，因为脚本可能修改 DOM。
+
+可以使用：
+
+```html
+<script src="/app.js" defer></script>
+```
+
+让脚本在 HTML 解析完成后执行。
+
+### 字体阻塞
+
+Web Font 可能导致文字不可见或字体切换。
+
+可以通过 `font-display` 控制策略：
+
+```css
+@font-face {
+  font-family: "Demo";
+  src: url("/demo.woff2");
+  font-display: swap;
+}
+```
+
+### 优化方向
+
+- 内联少量首屏关键 CSS。
+- 脚本使用 `defer` 或按需加载。
+- 图片设置宽高，减少布局偏移。
+- 预加载关键资源。
+- 减少首屏必须执行的 JavaScript。
+
+### 注意事项
+
+- 不是所有资源都会阻塞渲染，图片通常不会阻塞 HTML 解析。
+- `async` 脚本下载不阻塞解析，但执行时仍会打断解析。
+- 优化要结合 Performance 面板和真实网络环境判断。
+:::
