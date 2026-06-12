@@ -1627,3 +1627,60 @@ input.setCustomValidity("");
 - `novalidate` 可以关闭表单原生验证。
 - 无障碍场景要让错误提示能被辅助技术识别。
 :::
+
+## 41、ARIA 属性有什么作用
+ARIA 用于增强 Web 内容的可访问性，让辅助技术更好地理解页面结构、控件角色、状态和关系。它适合补充语义，但不应替代原生 HTML 语义。
+
+::: details 详情
+### 常见属性
+
+常见 ARIA 属性包括：
+
+- `role`：声明元素角色。
+- `aria-label`：提供可访问名称。
+- `aria-labelledby`：引用其他元素作为名称。
+- `aria-describedby`：引用说明内容。
+- `aria-expanded`：表示展开状态。
+- `aria-hidden`：对辅助技术隐藏元素。
+- `aria-live`：声明动态内容更新。
+
+### 示例
+
+图标按钮没有文字时，可以使用：
+
+```html
+<button aria-label="关闭">
+  ×
+</button>
+```
+
+输入错误提示可以使用：
+
+```html
+<input aria-describedby="name-error" />
+<p id="name-error">用户名不能为空</p>
+```
+
+### 原生优先
+
+如果可以使用原生元素，应优先使用原生元素：
+
+```html
+<button>提交</button>
+```
+
+不要用：
+
+```html
+<div role="button">提交</div>
+```
+
+除非你同时处理键盘交互、焦点和状态。
+
+### 注意事项
+
+- 错误的 ARIA 可能比没有 ARIA 更糟。
+- `aria-hidden="true"` 会让辅助技术忽略该元素。
+- 自定义组件要同时考虑键盘操作和焦点管理。
+- 语义正确的 HTML 是可访问性的基础。
+:::
