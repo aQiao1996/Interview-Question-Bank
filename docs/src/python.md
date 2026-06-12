@@ -3132,3 +3132,65 @@ async def fetch():
 - 异步代码并不会自动更快，瓶颈仍可能在数据库或外部服务。
 - Web 框架中要区分同步视图、异步视图和底层服务器模型。
 :::
+
+## 51、Django ORM 中 select_related 和 prefetch_related 有什么区别
+`select_related` 和 `prefetch_related` 都用于优化关联查询，减少 N+1 查询问题，但适用的关联关系和实现方式不同。
+
+::: details 详情
+### N+1 查询
+
+例如查询文章列表时，每篇文章再单独查询作者：
+
+```python
+posts = Post.objects.all()
+for post in posts:
+    print(post.author.name)
+```
+
+如果有 100 篇文章，可能触发 1 次文章查询和 100 次作者查询。
+
+### select_related
+
+`select_related` 使用 SQL join 一次性查询关联对象。
+
+适合：
+
+- ForeignKey。
+- OneToOneField。
+
+示例：
+
+```python
+posts = Post.objects.select_related("author")
+```
+
+它适合一对一或多对一关系。
+
+### prefetch_related
+
+`prefetch_related` 会分别查询主表和关联表，再在 Python 层组装关系。
+
+适合：
+
+- ManyToManyField。
+- 反向 ForeignKey。
+- 一对多关系。
+
+示例：
+
+```python
+authors = Author.objects.prefetch_related("posts")
+```
+
+### 如何选择
+
+- 单值关联：优先 `select_related`。
+- 多值关联：使用 `prefetch_related`。
+- 复杂筛选：可以结合 `Prefetch` 自定义查询集。
+
+### 注意事项
+
+- 不要盲目预加载所有关系，会增加内存和查询成本。
+- 列表页要结合分页使用。
+- 优化前后可以通过 Django Debug Toolbar 或 SQL 日志确认查询次数。
+:::
