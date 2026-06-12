@@ -1837,3 +1837,65 @@ CSS Modules 是构建能力，会把类名局部化。
 - Modifier 表示状态或变体，不应该替代新的 Block。
 - 命名要稳定，避免跟视觉样式强绑定。
 :::
+
+## 42、CSS Modules 是什么
+CSS Modules 是一种让 CSS 类名默认局部作用域化的方案。构建工具会把类名转换成唯一名称，从而减少全局样式冲突。
+
+::: details 详情
+### 基本用法
+
+文件名通常是：
+
+```txt
+Button.module.css
+```
+
+CSS：
+
+```css
+.button {
+  color: white;
+  background: black;
+}
+```
+
+组件中使用：
+
+```jsx
+import styles from "./Button.module.css";
+
+export function Button() {
+  return <button className={styles.button}>提交</button>;
+}
+```
+
+构建后 `.button` 会变成带 hash 的唯一类名。
+
+### 解决什么问题
+
+CSS Modules 主要解决：
+
+- 全局类名冲突。
+- 样式覆盖不可控。
+- 组件样式边界不清晰。
+- 删除组件后难以判断样式是否还被使用。
+
+### 全局样式
+
+如果确实需要写全局样式，可以使用 `:global`：
+
+```css
+:global(.legacy-button) {
+  color: red;
+}
+```
+
+但全局样式要谨慎使用。
+
+### 注意事项
+
+- CSS Modules 只解决类名作用域，不解决设计系统和样式组织问题。
+- 动态拼接类名时要确保 key 存在。
+- 公共变量、主题色仍需要配合 CSS Variables 或预处理器。
+- 和第三方组件库样式覆盖时，可能仍需要全局选择器。
+:::
