@@ -2554,3 +2554,51 @@ end
 - 锁的粒度要尽量小，避免影响并发。
 - 加锁、执行、解锁都要有日志和监控，方便排查死锁和竞争。
 :::
+
+## 43、Node.js 事件循环有哪些阶段
+Node.js 事件循环用于协调定时器、IO 回调、异步任务和微任务执行。理解事件循环有助于分析异步代码顺序和性能问题。
+
+::: details 详情
+### 主要阶段
+
+Node.js 事件循环主要包括：
+
+- timers：执行 `setTimeout`、`setInterval` 到期回调。
+- pending callbacks：执行部分系统操作延迟到下一轮的回调。
+- idle、prepare：Node 内部使用。
+- poll：处理新的 IO 事件。
+- check：执行 `setImmediate` 回调。
+- close callbacks：执行关闭事件回调。
+
+### 微任务
+
+微任务通常包括：
+
+- `process.nextTick`
+- Promise microtask
+- `queueMicrotask`
+
+在 Node.js 中，`process.nextTick` 的优先级通常高于 Promise 微任务。
+
+### setTimeout 和 setImmediate
+
+`setTimeout(fn, 0)` 和 `setImmediate(fn)` 的执行顺序不总是固定，取决于它们被调用的位置。
+
+如果在 IO 回调中调用，`setImmediate` 通常会先执行。
+
+### 面试重点
+
+常被问到：
+
+- 宏任务和微任务的区别。
+- `process.nextTick` 和 Promise 的执行顺序。
+- `setTimeout` 和 `setImmediate` 的区别。
+- CPU 密集任务为什么会阻塞事件循环。
+
+### 注意事项
+
+- 不要在主线程执行长时间 CPU 任务。
+- 大量 `process.nextTick` 可能饿死事件循环。
+- 排查延迟时可以关注 event loop delay。
+- Node 版本差异可能影响部分细节，回答时要说明上下文。
+:::
