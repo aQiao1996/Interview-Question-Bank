@@ -2920,3 +2920,68 @@ React 更推荐通过 props 和 state 描述 UI。
 - 暴露的方法要考虑组件卸载后的空引用。
 - 能用 props 表达的行为优先用 props。
 :::
+
+## 48、React 中 useSyncExternalStore 有什么作用
+`useSyncExternalStore` 用于让 React 组件安全地订阅外部 store，保证并发渲染场景下读取到一致的快照。
+
+::: details 详情
+### 什么是外部 store
+
+外部 store 是不由 React state 直接管理的数据源，例如：
+
+- Redux store。
+- 自定义事件中心。
+- 浏览器 API 状态。
+- WebSocket 推送数据。
+- 本地缓存状态。
+
+这些数据变化后，需要通知 React 重新渲染。
+
+### 基本用法
+
+```jsx
+import { useSyncExternalStore } from "react";
+
+function useOnlineStatus() {
+  return useSyncExternalStore(
+    callback => {
+      window.addEventListener("online", callback);
+      window.addEventListener("offline", callback);
+
+      return () => {
+        window.removeEventListener("online", callback);
+        window.removeEventListener("offline", callback);
+      };
+    },
+    () => navigator.onLine
+  );
+}
+```
+
+组件中使用：
+
+```jsx
+const isOnline = useOnlineStatus();
+```
+
+### 参数含义
+
+`useSyncExternalStore` 主要接收：
+
+- `subscribe`：订阅外部数据变化。
+- `getSnapshot`：读取当前快照。
+- `getServerSnapshot`：服务端渲染时读取快照，可选。
+
+### 为什么需要它
+
+在并发渲染中，如果外部 store 更新时机和 React 渲染过程交错，可能出现撕裂问题。
+
+`useSyncExternalStore` 提供标准订阅方式，让 React 能正确协调外部状态读取。
+
+### 注意事项
+
+- `getSnapshot` 返回值不变时，React 会跳过重新渲染。
+- 不要在 `getSnapshot` 中创建不稳定的新对象。
+- 订阅函数要返回取消订阅方法，避免内存泄漏。
+- 状态管理库通常会在内部封装它，业务代码不一定直接使用。
+:::
