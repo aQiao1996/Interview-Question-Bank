@@ -1898,3 +1898,57 @@ Session 数据可以存在：
 - 使用 Cookie 保存登录态时建议开启 `HttpOnly` 和 `Secure`。
 - Cookie 自动携带也意味着要考虑 CSRF 风险。
 :::
+
+## 44、OAuth2 和 OIDC 有什么区别
+OAuth2 主要解决授权问题，允许第三方应用在用户授权后访问资源；OIDC 建立在 OAuth2 之上，主要解决身份认证问题。
+
+::: details 详情
+### OAuth2 解决什么
+
+OAuth2 的核心是授权。
+
+例如用户允许一个应用访问自己的 GitHub 仓库信息。
+
+OAuth2 中常见角色：
+
+- Resource Owner：资源拥有者。
+- Client：第三方客户端。
+- Authorization Server：授权服务器。
+- Resource Server：资源服务器。
+
+客户端最终拿到 Access Token，用于访问资源接口。
+
+### OIDC 解决什么
+
+OIDC 是 OpenID Connect。
+
+它在 OAuth2 基础上增加了身份层，核心是 ID Token。
+
+ID Token 通常是 JWT，包含用户身份信息，例如：
+
+- 用户 ID。
+- 签发方。
+- 受众。
+- 过期时间。
+- 登录时间。
+
+### 主要区别
+
+- OAuth2 关注授权：能访问什么资源。
+- OIDC 关注认证：当前用户是谁。
+- OAuth2 返回 Access Token。
+- OIDC 通常还会返回 ID Token。
+
+### 常见场景
+
+- 第三方登录更接近 OIDC 场景。
+- 授权第三方访问 API 更接近 OAuth2 场景。
+- 企业 SSO 常使用 OIDC。
+
+### 注意事项
+
+- 不要把 Access Token 当作用户身份凭证随意解析。
+- ID Token 要校验签名、过期时间、issuer 和 audience。
+- 前端回调要校验 `state`，防止 CSRF。
+- 授权码模式配合 PKCE 更适合公开客户端。
+:::
