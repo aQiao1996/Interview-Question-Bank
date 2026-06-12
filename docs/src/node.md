@@ -2602,3 +2602,53 @@ Node.js 事件循环主要包括：
 - 排查延迟时可以关注 event loop delay。
 - Node 版本差异可能影响部分细节，回答时要说明上下文。
 :::
+
+## 44、Node.js 中 cluster 有什么作用
+`cluster` 模块用于创建多个 Node.js 工作进程，让应用更好地利用多核 CPU。它适合提升多进程并发处理能力，但不能解决单个请求的 CPU 阻塞问题。
+
+::: details 详情
+### 为什么需要 cluster
+
+Node.js 单个进程通常只运行在一个主线程上。
+
+在多核机器上，如果只启动一个进程，无法充分利用所有 CPU 核心。
+
+`cluster` 可以让主进程 fork 多个 worker 进程，由多个进程共同处理请求。
+
+### 基本结构
+
+```js
+const cluster = require("cluster");
+const http = require("http");
+const os = require("os");
+
+if (cluster.isPrimary) {
+  for (let i = 0; i < os.cpus().length; i++) {
+    cluster.fork();
+  }
+} else {
+  http.createServer((req, res) => {
+    res.end("ok");
+  }).listen(3000);
+}
+```
+
+### 进程管理
+
+生产环境还需要考虑：
+
+- worker 异常退出后自动拉起。
+- 优雅关闭。
+- 日志聚合。
+- 进程间通信。
+- 滚动重启。
+
+很多项目会使用 PM2、容器编排或 Kubernetes 管理多进程和实例。
+
+### 注意事项
+
+- worker 之间内存不共享，不能直接共享本地变量状态。
+- 会话状态应放到 Redis、数据库或外部存储。
+- CPU 密集任务仍可能阻塞当前 worker。
+- 多进程会放大数据库连接数、缓存连接数和定时任务重复执行问题。
+:::
