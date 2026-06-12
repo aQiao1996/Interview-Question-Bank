@@ -1571,3 +1571,59 @@ const value = editor.innerText;
 - 光标、选区、撤销、粘贴、输入法处理都比普通输入框复杂。
 - 如果只需要纯文本输入，优先使用 `input` 或 `textarea`。
 :::
+
+## 40、HTML 表单约束验证有哪些能力
+HTML 表单约束验证是浏览器内置的表单校验能力，可以通过表单属性完成必填、格式、长度和范围校验，减少基础校验代码。
+
+::: details 详情
+### 常见属性
+
+常见约束属性包括：
+
+- `required`：必填。
+- `minlength`、`maxlength`：长度限制。
+- `min`、`max`：数值或日期范围。
+- `pattern`：正则匹配。
+- `type="email"`：邮箱格式。
+- `type="url"`：URL 格式。
+
+示例：
+
+```html
+<input type="email" required />
+<input type="text" minlength="2" maxlength="20" />
+<input type="number" min="1" max="100" />
+```
+
+### validity
+
+表单元素有 `validity` 属性，可以查看校验状态：
+
+```js
+const input = document.querySelector("input");
+
+console.log(input.validity.valid);
+console.log(input.validationMessage);
+```
+
+### 自定义提示
+
+可以使用 `setCustomValidity` 设置自定义错误：
+
+```js
+input.setCustomValidity("请输入正确的用户名");
+```
+
+当值恢复合法时，需要清空：
+
+```js
+input.setCustomValidity("");
+```
+
+### 注意事项
+
+- 前端校验只能提升体验，后端必须重新校验。
+- 原生提示样式和文案受浏览器影响，复杂业务可能需要自定义 UI。
+- `novalidate` 可以关闭表单原生验证。
+- 无障碍场景要让错误提示能被辅助技术识别。
+:::
