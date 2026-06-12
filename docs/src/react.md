@@ -2813,3 +2813,58 @@ setCount(prev => prev + 1);
 - 事件监听和定时器尤其容易出现旧闭包问题。
 - ESLint Hooks 规则能帮忙发现大部分依赖问题。
 :::
+
+## 46、React 中 useId 有什么作用
+`useId` 用于生成稳定且唯一的 ID，常用于表单控件和可访问性属性关联，例如 `label` 的 `htmlFor` 和输入框的 `id`。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { useId } from "react";
+
+function Field() {
+  const id = useId();
+
+  return (
+    <>
+      <label htmlFor={id}>用户名</label>
+      <input id={id} />
+    </>
+  );
+}
+```
+
+这样可以避免多个组件实例手写相同 `id` 导致冲突。
+
+### 为什么不用随机数
+
+在服务端渲染或 hydration 场景中，如果服务端和客户端生成的 ID 不一致，就可能导致 hydration mismatch。
+
+`useId` 能保证 React 渲染树中 ID 的稳定性，更适合 SSR 和组件复用场景。
+
+### 多个 ID
+
+如果一个组件需要多个相关 ID，可以基于同一个前缀拼接：
+
+```jsx
+const id = useId();
+
+const inputId = `${id}-input`;
+const hintId = `${id}-hint`;
+```
+
+### 适合场景
+
+- 表单 label 和 input 关联。
+- `aria-describedby`。
+- `aria-labelledby`。
+- 组件库内部生成唯一 ID。
+
+### 注意事项
+
+- `useId` 不适合生成列表 key。
+- 不要把它用于业务 ID 或数据库 ID。
+- 条件渲染中要遵守 Hooks 调用顺序。
+- 如果服务端和客户端渲染结构不同，仍可能出现 hydration 问题。
+:::
