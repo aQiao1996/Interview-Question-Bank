@@ -2956,3 +2956,68 @@ def get_db():
 - 后台任务和异步任务要创建自己的 session。
 - SQLAlchemy 2.x 推荐使用更明确的 session 生命周期管理方式。
 :::
+
+## 48、Python 描述符是什么
+描述符是实现了 `__get__`、`__set__` 或 `__delete__` 方法的对象，用于自定义属性访问行为。Python 的 `property`、方法绑定和 ORM 字段都和描述符机制有关。
+
+::: details 详情
+### 基本定义
+
+只要对象实现了以下任意方法，就可以称为描述符：
+
+```python
+class Descriptor:
+    def __get__(self, instance, owner):
+        ...
+
+    def __set__(self, instance, value):
+        ...
+
+    def __delete__(self, instance):
+        ...
+```
+
+描述符通常作为类属性使用。
+
+### 数据描述符和非数据描述符
+
+- 数据描述符：实现了 `__set__` 或 `__delete__`。
+- 非数据描述符：只实现了 `__get__`。
+
+数据描述符优先级高于实例属性。
+
+非数据描述符可能被实例属性覆盖。
+
+### 示例
+
+```python
+class Positive:
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, instance, owner):
+        return instance.__dict__[self.name]
+
+    def __set__(self, instance, value):
+        if value <= 0:
+            raise ValueError("must be positive")
+        instance.__dict__[self.name] = value
+
+class Product:
+    price = Positive()
+```
+
+### 应用场景
+
+- `property`。
+- ORM 字段映射。
+- 参数校验。
+- 懒加载属性。
+- 缓存计算结果。
+
+### 注意事项
+
+- 描述符适合封装通用属性访问逻辑。
+- 使用描述符会增加理解成本，简单场景不必强行使用。
+- 要注意实例属性、类属性和描述符之间的查找优先级。
+:::
