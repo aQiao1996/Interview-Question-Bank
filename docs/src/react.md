@@ -2760,3 +2760,56 @@ function UserPage() {
 - 接口鉴权和错误处理要在 loader/action 中统一考虑。
 - 复杂缓存、乐观更新仍可以结合 React Query 等库。
 :::
+
+## 45、React 中 stale closure 是什么
+stale closure 指函数闭包中读取到的是旧的 state 或 props，而不是当前最新值。它常出现在定时器、事件监听、异步回调和缺少依赖的 Hook 中。
+
+::: details 详情
+### 常见场景
+
+例如：
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      console.log(count);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+}
+```
+
+这里 `useEffect` 只执行一次，定时器闭包中的 `count` 会一直是首次渲染时的值。
+
+### 为什么会发生
+
+函数组件每次渲染都会创建新的函数作用域。
+
+如果某个回调被长期保存，它保存的是创建当时那次渲染中的变量，而不是自动指向最新变量。
+
+### 解决方式
+
+常见方式：
+
+- 补全 Hook 依赖数组。
+- 使用函数式更新。
+- 使用 `useRef` 保存最新值。
+- 把逻辑放入回调触发时重新创建的函数中。
+
+函数式更新示例：
+
+```jsx
+setCount(prev => prev + 1);
+```
+
+### 注意事项
+
+- 不要为了消除依赖警告随意写空依赖数组。
+- `useRef` 可以解决读取最新值，但不会触发重新渲染。
+- 事件监听和定时器尤其容易出现旧闭包问题。
+- ESLint Hooks 规则能帮忙发现大部分依赖问题。
+:::
