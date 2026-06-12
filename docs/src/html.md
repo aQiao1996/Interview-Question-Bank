@@ -1791,3 +1791,57 @@ HTML 表格适合展示二维数据。语义化表格可以让浏览器、搜索
 - 移动端表格要考虑横向滚动或卡片化展示。
 - 表格排序、筛选和分页要保留可访问的状态提示。
 :::
+
+## 44、iframe 的 sandbox 属性有什么作用
+`sandbox` 属性用于限制 iframe 中页面的能力，例如脚本执行、表单提交、弹窗、同源访问和顶层跳转。它可以降低嵌入第三方页面带来的安全风险。
+
+::: details 详情
+### 默认限制
+
+添加空的 `sandbox` 会启用较严格限制：
+
+```html
+<iframe src="https://example.com" sandbox></iframe>
+```
+
+默认会限制：
+
+- 脚本执行。
+- 表单提交。
+- 弹窗。
+- 顶层页面跳转。
+- 同源能力。
+- 自动播放等部分能力。
+
+### 放开部分能力
+
+可以通过 token 放开必要能力：
+
+```html
+<iframe
+  src="https://example.com"
+  sandbox="allow-scripts allow-forms"
+></iframe>
+```
+
+常见 token：
+
+- `allow-scripts`
+- `allow-forms`
+- `allow-popups`
+- `allow-same-origin`
+- `allow-top-navigation-by-user-activation`
+
+### 安全风险
+
+同时使用 `allow-scripts` 和 `allow-same-origin` 要特别谨慎。
+
+如果 iframe 内容和父页面同源，子页面可能通过脚本移除 sandbox 限制，削弱隔离效果。
+
+### 注意事项
+
+- 嵌入不可信第三方页面时应尽量使用最小权限。
+- sandbox 不能替代服务端鉴权和 CSP。
+- 需要通信时优先使用 `postMessage`，并校验 origin。
+- 支付、登录等敏感页面通常不应随意被 iframe 嵌入。
+:::
