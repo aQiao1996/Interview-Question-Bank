@@ -1853,3 +1853,48 @@ QUIC 在传输层支持多个独立 stream，一个 stream 丢包不会阻塞其
 - HTTP/3 需要客户端、服务端和网络链路支持。
 - 实际优化要结合瀑布图、网络质量和资源优先级分析。
 :::
+
+## 43、Cookie 和 Session 有什么区别
+Cookie 是浏览器保存并随请求发送给服务端的数据；Session 通常是服务端保存的会话状态，客户端只保存一个会话标识。
+
+::: details 详情
+### Cookie
+
+Cookie 存在浏览器中，会在匹配域名和路径的请求中自动携带。
+
+常见用途：
+
+- 会话标识。
+- 用户偏好。
+- 埋点标识。
+- CSRF Token 辅助。
+
+Cookie 可以设置 `HttpOnly`、`Secure`、`SameSite` 等属性增强安全性。
+
+### Session
+
+Session 通常存储在服务端。
+
+客户端 Cookie 中保存一个 `session_id`，服务端根据这个 ID 查找对应会话数据。
+
+Session 数据可以存在：
+
+- 内存。
+- Redis。
+- 数据库。
+- 分布式缓存。
+
+### 主要区别
+
+- 存储位置不同：Cookie 在客户端，Session 在服务端。
+- 安全边界不同：Cookie 可被用户看到或修改，Session 数据不直接暴露。
+- 扩展方式不同：Session 分布式部署需要共享存储。
+- 生命周期控制不同：两者都要处理过期和清理。
+
+### 注意事项
+
+- 不要在 Cookie 中存放敏感明文数据。
+- Session 存储要考虑分布式和高可用。
+- 使用 Cookie 保存登录态时建议开启 `HttpOnly` 和 `Secure`。
+- Cookie 自动携带也意味着要考虑 CSRF 风险。
+:::
