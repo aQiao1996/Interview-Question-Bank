@@ -3021,3 +3021,63 @@ class Product:
 - 使用描述符会增加理解成本，简单场景不必强行使用。
 - 要注意实例属性、类属性和描述符之间的查找优先级。
 :::
+
+## 49、Python 元类是什么
+元类是创建类的类。普通对象由类创建，而类本身由元类创建。Python 默认元类是 `type`。
+
+::: details 详情
+### 类也是对象
+
+在 Python 中，类本身也是对象：
+
+```python
+class User:
+    pass
+
+print(type(User))  # <class 'type'>
+```
+
+这说明 `User` 这个类对象是由 `type` 创建的。
+
+### 自定义元类
+
+可以通过继承 `type` 创建元类：
+
+```python
+class UpperAttrMeta(type):
+    def __new__(cls, name, bases, attrs):
+        new_attrs = {}
+        for key, value in attrs.items():
+            if not key.startswith("__"):
+                key = key.upper()
+            new_attrs[key] = value
+        return super().__new__(cls, name, bases, new_attrs)
+
+class Demo(metaclass=UpperAttrMeta):
+    name = "Tom"
+```
+
+### 应用场景
+
+元类通常用于框架底层：
+
+- ORM 模型字段收集。
+- 自动注册类。
+- 约束类定义。
+- 修改类创建过程。
+- 生成类属性或方法。
+
+普通业务代码很少需要直接写元类。
+
+### 和装饰器的区别
+
+类装饰器可以在类创建后修改类。
+
+元类参与类创建过程，更底层、更强大，也更难理解。
+
+### 注意事项
+
+- 元类会增加代码复杂度，能用普通类、继承、装饰器解决就不要用元类。
+- 多个基类使用不同元类时可能出现元类冲突。
+- 面试中重点是理解“类由元类创建”，不一定要手写复杂元类。
+:::
