@@ -1899,3 +1899,70 @@ CSS Modules 主要解决：
 - 公共变量、主题色仍需要配合 CSS Variables 或预处理器。
 - 和第三方组件库样式覆盖时，可能仍需要全局选择器。
 :::
+
+## 43、CSS 媒体查询常见用法有哪些
+媒体查询用于根据设备特征应用不同样式，常见于响应式布局、深色模式、打印样式和用户偏好适配。
+
+::: details 详情
+### 宽度断点
+
+最常见的是根据视口宽度调整布局：
+
+```css
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+```
+
+移动优先写法通常先写小屏样式，再用 `min-width` 增强大屏布局。
+
+### 深色模式
+
+可以根据系统主题适配：
+
+```css
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #111;
+    color: #fff;
+  }
+}
+```
+
+### 减少动画
+
+尊重用户减少动态效果的偏好：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none;
+    transition: none;
+  }
+}
+```
+
+### 打印样式
+
+```css
+@media print {
+  .nav {
+    display: none;
+  }
+}
+```
+
+### 注意事项
+
+- 断点应根据内容和布局选择，不要只按设备型号。
+- 媒体查询适合页面级响应式，组件级响应式可以考虑容器查询。
+- 不要用媒体查询隐藏大量关键内容，可能影响可访问性和 SEO。
+- 响应式布局要在真实设备和不同缩放比例下验证。
+:::
