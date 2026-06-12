@@ -2868,3 +2868,55 @@ const hintId = `${id}-hint`;
 - 条件渲染中要遵守 Hooks 调用顺序。
 - 如果服务端和客户端渲染结构不同，仍可能出现 hydration 问题。
 :::
+
+## 47、React 中 useImperativeHandle 有什么作用
+`useImperativeHandle` 用于自定义父组件通过 ref 能访问到的实例能力，常和 `forwardRef` 配合使用，适合暴露少量命令式方法。
+
+::: details 详情
+### 基本用法
+
+```jsx
+import { forwardRef, useImperativeHandle, useRef } from "react";
+
+const Input = forwardRef(function Input(props, ref) {
+  const inputRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    focus() {
+      inputRef.current?.focus();
+    },
+    clear() {
+      inputRef.current.value = "";
+    },
+  }));
+
+  return <input ref={inputRef} />;
+});
+```
+
+父组件可以调用：
+
+```jsx
+inputRef.current.focus();
+```
+
+### 适合场景
+
+- 表单组件暴露 `focus`、`validate`、`reset`。
+- 弹窗组件暴露 `open`、`close`。
+- 复杂组件暴露滚动、播放、暂停等命令。
+- 封装第三方命令式组件。
+
+### 为什么要谨慎使用
+
+React 更推荐通过 props 和 state 描述 UI。
+
+命令式 ref 会让父组件直接操作子组件能力，如果暴露过多内部细节，会增加耦合。
+
+### 注意事项
+
+- 只暴露稳定、必要的方法。
+- 不要把整个子组件内部状态都暴露出去。
+- 暴露的方法要考虑组件卸载后的空引用。
+- 能用 props 表达的行为优先用 props。
+:::
