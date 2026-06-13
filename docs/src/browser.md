@@ -976,3 +976,54 @@ Paint 是把元素视觉样式绘制出来。
 - 大量 DOM 和复杂 CSS 都会增加渲染成本。
 - 性能优化要结合 DevTools Performance 面板观察证据。
 :::
+
+## 17、DOMContentLoaded 和 load 有什么区别
+`DOMContentLoaded` 在 HTML 被解析完成且 DOM 构建完成后触发；`load` 要等页面中的图片、样式、脚本、iframe 等资源都加载完成后才触发。
+
+::: details 详情
+### DOMContentLoaded
+
+`DOMContentLoaded` 表示 DOM 已经可以安全访问。
+
+示例：
+
+```js
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM ready");
+});
+```
+
+它不需要等待所有图片加载完成。
+
+### load
+
+`load` 表示页面和依赖资源都加载完成：
+
+```js
+window.addEventListener("load", () => {
+  console.log("all resources loaded");
+});
+```
+
+如果页面图片很多，`load` 可能比 `DOMContentLoaded` 晚很多。
+
+### 和脚本的关系
+
+普通同步脚本会阻塞 HTML 解析。
+
+`defer` 脚本会在 DOM 解析完成后、`DOMContentLoaded` 前执行。
+
+`async` 脚本下载不阻塞解析，但执行时机不固定。
+
+### 适合场景
+
+- 只需要操作 DOM：使用 `DOMContentLoaded`。
+- 需要图片尺寸或所有资源完成：使用 `load`。
+- 现代框架通常由框架挂载流程处理，不一定手动监听。
+
+### 注意事项
+
+- 不要把首屏关键逻辑都等到 `load` 后执行。
+- 图片懒加载可能让 `load` 含义和用户体验不完全对应。
+- 性能分析时要区分 DOM 解析完成和资源完全加载完成。
+:::
