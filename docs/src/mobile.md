@@ -861,3 +861,48 @@ el.addEventListener("touchmove", event => {
 - 隐私相关数据要按需存储，并控制访问范围。
 - 授权文案要贴合具体场景，避免空泛描述。
 :::
+
+## 16、H5 如何唤起 App
+H5 唤起 App 通常通过 URL Scheme、Universal Links 或 App Links 实现。目标是在用户已安装 App 时打开 App，未安装时引导下载或继续使用 H5。
+
+::: details 详情
+### URL Scheme
+
+URL Scheme 是 App 自定义协议：
+
+```txt
+myapp://product?id=123
+```
+
+H5 可以尝试跳转这个地址唤起 App。
+
+缺点是没有安装 App 时体验不稳定，不同浏览器行为也不同。
+
+### Universal Links 和 App Links
+
+iOS Universal Links 和 Android App Links 使用 HTTPS 链接唤起 App。
+
+优点：
+
+- 链接本身是普通 HTTPS。
+- 未安装 App 时可以打开网页。
+- 安全性和用户体验更好。
+
+缺点是需要 App、域名和配置文件配合。
+
+### 兜底方案
+
+常见兜底：
+
+- 定时检测页面是否进入后台。
+- 未唤起时跳转下载页。
+- 保留 H5 继续访问入口。
+- 在微信等受限环境提示用浏览器打开。
+
+### 注意事项
+
+- 不同浏览器和系统版本行为差异很大，要真机测试。
+- 唤起动作最好由用户点击触发，自动唤起容易被拦截。
+- 参数要做签名或校验，避免被篡改。
+- 不要频繁弹唤起，容易打扰用户。
+:::
