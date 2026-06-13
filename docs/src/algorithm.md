@@ -1160,3 +1160,66 @@ KMP 包括两部分：
 - 面试讲清“失败后利用最长相等前后缀跳转”通常更重要。
 - 实际工程中通常直接使用语言内置字符串查找。
 :::
+
+## 20、Trie 前缀树适合解决什么问题
+Trie 前缀树适合处理字符串前缀查询、自动补全、敏感词匹配和字典检索等问题。它通过共享公共前缀来组织字符串集合。
+
+::: details 详情
+### 基本结构
+
+Trie 的每个节点通常包含：
+
+- children：子节点映射。
+- isEnd：是否是一个完整单词的结尾。
+
+例如插入 `cat`、`car`，它们会共享前缀 `ca`。
+
+### 简单实现
+
+```js
+class TrieNode {
+  constructor() {
+    this.children = new Map();
+    this.isEnd = false;
+  }
+}
+
+class Trie {
+  constructor() {
+    this.root = new TrieNode();
+  }
+
+  insert(word) {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) {
+        node.children.set(ch, new TrieNode());
+      }
+      node = node.children.get(ch);
+    }
+    node.isEnd = true;
+  }
+}
+```
+
+### 常见操作
+
+- 插入单词。
+- 查找完整单词。
+- 查找是否存在某个前缀。
+- 删除单词。
+- 根据前缀枚举候选词。
+
+### 复杂度
+
+插入和查询的时间复杂度通常是 `O(m)`，其中 `m` 是字符串长度。
+
+空间复杂度和字符数量、公共前缀重合程度有关。
+
+### 注意事项
+
+- 字符集很大时，children 用 Map 更灵活。
+- Trie 可能占用较多内存。
+- 敏感词匹配可以结合 AC 自动机提升多模式匹配效率。
+- 如果只是少量字符串查询，普通 Set 可能更简单。
+:::
