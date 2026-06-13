@@ -1027,3 +1027,54 @@ window.addEventListener("load", () => {
 - 图片懒加载可能让 `load` 含义和用户体验不完全对应。
 - 性能分析时要区分 DOM 解析完成和资源完全加载完成。
 :::
+
+## 18、storage 事件有什么作用
+`storage` 事件用于监听同源页面中 `localStorage` 或 `sessionStorage` 的变化，常用于多个标签页之间同步登录态、主题或简单状态。
+
+::: details 详情
+### 基本用法
+
+```js
+window.addEventListener("storage", event => {
+  console.log(event.key);
+  console.log(event.oldValue);
+  console.log(event.newValue);
+});
+```
+
+当其他同源页面修改存储时，当前页面可以收到事件。
+
+### 常见场景
+
+- 多标签页同步退出登录。
+- 同步主题切换。
+- 通知其他页面刷新用户信息。
+- 简单跨标签页广播。
+
+例如退出登录：
+
+```js
+localStorage.setItem("logout", String(Date.now()));
+```
+
+其他标签页监听到后执行退出逻辑。
+
+### 重要限制
+
+触发修改的当前页面通常不会收到自己的 `storage` 事件。
+
+也就是说，A 页面修改 localStorage，B 页面能收到，A 页面自己不会通过 storage 事件收到。
+
+### 和 BroadcastChannel 对比
+
+`BroadcastChannel` 更适合消息通信，语义清晰。
+
+`storage` 兼容性较好，但本质是借助存储变化传递消息。
+
+### 注意事项
+
+- 不要在 localStorage 中存敏感信息。
+- 事件只在同源页面之间触发。
+- 复杂通信优先考虑 `BroadcastChannel`。
+- 同步登录态时仍要以后端鉴权结果为准。
+:::
