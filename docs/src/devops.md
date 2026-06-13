@@ -813,3 +813,57 @@ CI/CD 中可以加入镜像扫描：
 - 私有镜像仓库要控制推拉权限。
 - 重要镜像可以配合签名和准入控制。
 :::
+
+## 16、Kubernetes 滚动发布失败如何排查
+Kubernetes 滚动发布失败通常和镜像拉取、启动失败、健康检查失败、资源不足、配置错误或依赖不可用有关。排查要先看 Pod 状态和事件。
+
+::: details 详情
+### 先看状态
+
+常用命令：
+
+```bash
+kubectl get pods
+kubectl describe pod <pod-name>
+kubectl logs <pod-name>
+kubectl rollout status deployment <name>
+```
+
+`describe` 中的 Events 往往能直接看到失败原因。
+
+### 常见原因
+
+常见问题包括：
+
+- `ImagePullBackOff`：镜像不存在、tag 错误或拉取权限不足。
+- `CrashLoopBackOff`：应用启动后反复崩溃。
+- `Pending`：资源不足或调度约束不满足。
+- Readiness Probe 失败：应用未准备好接流量。
+- 配置或 Secret 缺失。
+- 数据库、缓存等依赖不可用。
+
+### 健康检查
+
+如果 readinessProbe 配置过严，新 Pod 可能一直无法就绪。
+
+如果 livenessProbe 配置不合理，应用可能还没启动完成就被反复重启。
+
+启动慢的服务可以配置 `startupProbe`。
+
+### 回滚
+
+如果新版本影响线上，可以先回滚：
+
+```bash
+kubectl rollout undo deployment <name>
+```
+
+再保留现场日志和事件继续分析根因。
+
+### 注意事项
+
+- 发布前要确认镜像 tag、配置、Secret 和数据库变更。
+- 滚动发布参数要避免可用副本数降到不可接受范围。
+- 新旧版本要兼容同一套数据结构。
+- 失败排查要保留日志和事件，不要只重启解决。
+:::
