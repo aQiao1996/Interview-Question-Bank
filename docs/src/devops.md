@@ -647,3 +647,59 @@ CPU 超过限制通常会被限速，内存超过限制可能触发 OOMKilled。
 - memory limit 太低会导致容器频繁 OOM。
 - 资源配置要结合监控持续调整，而不是一次性写死。
 :::
+
+## 13、Kubernetes Ingress 有什么作用
+Ingress 用于管理集群外部访问集群内部服务的 HTTP/HTTPS 路由。它可以根据域名、路径等规则把请求转发到不同 Service。
+
+::: details 详情
+### 为什么需要 Ingress
+
+Service 可以暴露集群内部服务，但如果每个服务都使用 LoadBalancer，成本和管理复杂度会很高。
+
+Ingress 提供统一入口，可以集中处理：
+
+- 域名路由。
+- 路径路由。
+- TLS 证书。
+- 转发规则。
+- 基础访问控制。
+
+### 基本结构
+
+Ingress 本身只是规则，需要 Ingress Controller 执行这些规则。
+
+常见 Controller：
+
+- Nginx Ingress Controller。
+- Traefik。
+- HAProxy Ingress。
+- 云厂商 Ingress Controller。
+
+### 示例
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app
+spec:
+  rules:
+    - host: example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-service
+                port:
+                  number: 80
+```
+
+### 注意事项
+
+- Ingress 只定义规则，必须有对应 Controller。
+- TLS 证书要有续期和监控。
+- 路由规则变更要灰度验证，避免误转发。
+- 大流量场景要关注 Ingress Controller 本身的性能和高可用。
+:::
