@@ -1078,3 +1078,48 @@ localStorage.setItem("logout", String(Date.now()));
 - 复杂通信优先考虑 `BroadcastChannel`。
 - 同步登录态时仍要以后端鉴权结果为准。
 :::
+
+## 19、浏览器页面生命周期有哪些常见事件
+浏览器页面生命周期事件用于感知页面加载、可见性变化、进入后台、恢复和卸载等状态。合理使用这些事件可以优化性能、保存状态和暂停无意义任务。
+
+::: details 详情
+### 常见事件
+
+常见事件包括：
+
+- `DOMContentLoaded`：DOM 构建完成。
+- `load`：页面资源加载完成。
+- `visibilitychange`：页面可见性变化。
+- `pagehide`：页面即将进入隐藏或被卸载。
+- `pageshow`：页面展示或从 bfcache 恢复。
+- `beforeunload`：页面即将离开。
+
+### visibilitychange
+
+页面进入后台时，可以暂停非必要任务：
+
+```js
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    pausePolling();
+  } else {
+    resumePolling();
+  }
+});
+```
+
+适合暂停轮询、动画、视频播放等。
+
+### pagehide 和 pageshow
+
+`pagehide` 和 `pageshow` 对 bfcache 更友好。
+
+当页面从浏览器前进后退缓存恢复时，`pageshow` 会触发，并且 `event.persisted` 可以判断是否来自缓存。
+
+### 注意事项
+
+- 不要滥用 `beforeunload`，它可能影响 bfcache。
+- 页面隐藏时应减少轮询和计算。
+- 恢复页面时要检查数据是否过期。
+- 移动端浏览器可能随时冻结或回收后台页面。
+:::
