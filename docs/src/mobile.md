@@ -906,3 +906,58 @@ iOS Universal Links 和 Android App Links 使用 HTTPS 链接唤起 App。
 - 参数要做签名或校验，避免被篡改。
 - 不要频繁弹唤起，容易打扰用户。
 :::
+
+## 17、H5 和 App WebView 如何通信
+H5 和 App WebView 通信通常通过 JSBridge 实现。H5 调用原生能力，原生也可以向 H5 注入回调或触发事件。
+
+::: details 详情
+### 常见方式
+
+常见通信方式：
+
+- URL Scheme 拦截。
+- 注入全局对象。
+- `postMessage`。
+- WebView 提供的 bridge API。
+- 原生执行 JS 回调。
+
+不同平台和容器实现细节不同，需要约定统一协议。
+
+### 调用示例
+
+H5 可以封装统一方法：
+
+```js
+window.NativeBridge.call("getUserInfo", {
+  callbackId: "cb_001",
+});
+```
+
+原生处理后再回调：
+
+```js
+window.__bridgeCallback("cb_001", {
+  name: "Tom",
+});
+```
+
+### 协议设计
+
+Bridge 协议通常包括：
+
+- 方法名。
+- 参数。
+- callbackId。
+- 成功或失败状态。
+- 错误码。
+- 版本号。
+
+这样可以支持异步回调、错误处理和能力演进。
+
+### 注意事项
+
+- H5 调用原生能力前要判断 bridge 是否 ready。
+- 参数要校验，不能让任意页面调用敏感能力。
+- 原生能力要做权限控制和域名白名单。
+- Bridge 调用要有超时处理，避免 Promise 永远 pending。
+:::
