@@ -1054,3 +1054,65 @@ function backtrack(path, choices) {
 - 去重问题要先排序，再结合同层跳过重复元素。
 - 回溯复杂度往往较高，要关注剪枝条件。
 :::
+
+## 18、归并排序的思路是什么
+归并排序是一种分治排序算法，核心是把数组不断拆成更小的部分，分别排序后再合并成有序数组。
+
+::: details 详情
+### 基本思路
+
+归并排序分为两步：
+
+- 分：把数组拆成左右两半。
+- 合：把两个有序数组合并成一个有序数组。
+
+递归到数组长度为 1 时，可以认为天然有序。
+
+### 示例
+
+```js
+function mergeSort(nums) {
+  if (nums.length <= 1) return nums;
+
+  const mid = Math.floor(nums.length / 2);
+  const left = mergeSort(nums.slice(0, mid));
+  const right = mergeSort(nums.slice(mid));
+
+  return merge(left, right);
+}
+
+function merge(left, right) {
+  const result = [];
+  let i = 0;
+  let j = 0;
+
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) result.push(left[i++]);
+    else result.push(right[j++]);
+  }
+
+  return result.concat(left.slice(i), right.slice(j));
+}
+```
+
+### 复杂度
+
+- 时间复杂度：`O(n log n)`。
+- 空间复杂度：通常是 `O(n)`。
+- 稳定性：归并排序是稳定排序。
+
+### 适合场景
+
+归并排序适合：
+
+- 需要稳定排序。
+- 链表排序。
+- 外部排序。
+- 统计逆序对。
+
+### 注意事项
+
+- 数组版本通常需要额外空间。
+- 面试中可能要求优化空间或手写合并过程。
+- 归并排序性能稳定，不会像快排那样退化到 `O(n^2)`。
+:::
