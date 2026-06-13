@@ -703,3 +703,57 @@ spec:
 - 路由规则变更要灰度验证，避免误转发。
 - 大流量场景要关注 Ingress Controller 本身的性能和高可用。
 :::
+
+## 14、Helm 在 Kubernetes 中有什么作用
+Helm 是 Kubernetes 的包管理工具，用于把 Deployment、Service、Ingress、ConfigMap 等资源模板化，并通过 values 配置实现不同环境的复用部署。
+
+::: details 详情
+### 为什么需要 Helm
+
+一个应用通常不只有一个 YAML。
+
+可能包含：
+
+- Deployment。
+- Service。
+- Ingress。
+- ConfigMap。
+- Secret。
+- HPA。
+- ServiceAccount。
+
+手工维护大量 YAML 容易重复、出错，也不方便多环境配置。
+
+### Chart
+
+Helm 使用 Chart 描述一个应用的部署包。
+
+常见结构：
+
+```txt
+my-chart/
+  Chart.yaml
+  values.yaml
+  templates/
+```
+
+`templates` 中是资源模板，`values.yaml` 中是默认配置。
+
+### 常见命令
+
+```bash
+helm install app ./chart
+helm upgrade app ./chart
+helm rollback app 1
+helm uninstall app
+```
+
+Helm 会记录 release 历史，方便升级和回滚。
+
+### 注意事项
+
+- values 要分环境管理，避免生产配置误用测试值。
+- Secret 不应明文提交到仓库。
+- 模板不要写得过度复杂，否则难以排查。
+- 升级前可以使用 `helm template` 或 `helm diff` 查看实际变更。
+:::
