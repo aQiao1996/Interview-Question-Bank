@@ -1167,3 +1167,63 @@ window.addEventListener("pageshow", event => {
 - 定时器、轮询、播放器等要在隐藏和恢复时正确处理。
 - bfcache 优化要用真实浏览器验证。
 :::
+
+## 21、浏览器长任务是什么，如何优化
+长任务是指主线程上执行时间较长的任务，通常会阻塞用户输入、渲染和脚本执行。浏览器中常把超过 50ms 的主线程任务视为 long task。
+
+::: details 详情
+### 为什么有问题
+
+主线程负责很多工作：
+
+- 执行 JavaScript。
+- 样式计算。
+- 布局。
+- 绘制调度。
+- 处理用户输入。
+
+如果一个任务长时间占用主线程，用户点击、滚动和输入就会延迟响应。
+
+### 常见原因
+
+- 大量同步计算。
+- 一次性渲染大量 DOM。
+- 大 JSON 解析。
+- 复杂正则。
+- 大列表排序或过滤。
+- 第三方脚本执行过久。
+
+### 如何发现
+
+可以使用：
+
+- Chrome DevTools Performance。
+- Long Tasks API。
+- INP 指标。
+- 线上性能监控。
+
+Long Tasks API 示例：
+
+```js
+new PerformanceObserver(list => {
+  for (const entry of list.getEntries()) {
+    console.log(entry.duration);
+  }
+}).observe({ entryTypes: ["longtask"] });
+```
+
+### 优化方式
+
+- 拆分大任务，分片执行。
+- 使用 Web Worker。
+- 虚拟列表。
+- 减少同步布局读写。
+- 延迟执行非关键逻辑。
+- 优化第三方脚本加载。
+
+### 注意事项
+
+- 长任务优化要结合用户交互路径。
+- 不要只看平均耗时，要关注低端设备和 P95/P99。
+- 拆分任务时要避免破坏业务一致性。
+:::
