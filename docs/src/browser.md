@@ -1277,3 +1277,56 @@ navigator.locks.request(
 - 锁内任务要尽量短，避免长时间占用。
 - 不要把它当作服务端分布式锁使用。
 :::
+
+## 23、SharedWorker 有什么作用
+SharedWorker 是可以被同源多个页面共享的 Worker。它适合在多个标签页之间共享连接、状态或后台计算逻辑。
+
+::: details 详情
+### 和 Web Worker 的区别
+
+普通 Web Worker 通常只服务于创建它的页面。
+
+SharedWorker 可以被多个同源页面连接和复用。
+
+这意味着多个标签页可以通过同一个 SharedWorker 共享某些后台能力。
+
+### 基本用法
+
+页面中创建：
+
+```js
+const worker = new SharedWorker("/shared-worker.js");
+
+worker.port.start();
+worker.port.postMessage({ type: "hello" });
+
+worker.port.onmessage = event => {
+  console.log(event.data);
+};
+```
+
+Worker 中通过 `connect` 接收连接：
+
+```js
+onconnect = event => {
+  const port = event.ports[0];
+  port.onmessage = message => {
+    port.postMessage(message.data);
+  };
+};
+```
+
+### 适合场景
+
+- 多标签页共享 WebSocket 连接。
+- 多页面状态同步。
+- 后台计算复用。
+- 减少重复轮询。
+
+### 注意事项
+
+- SharedWorker 有兼容性限制，使用前要确认目标浏览器。
+- 生命周期受所有连接页面影响。
+- 通信需要通过 `port`。
+- 简单广播场景可以优先考虑 `BroadcastChannel`。
+:::
