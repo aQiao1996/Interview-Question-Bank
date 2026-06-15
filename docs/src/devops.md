@@ -922,3 +922,52 @@ HPA 可以使用：
 - 缩容要谨慎，避免流量抖动导致频繁扩缩。
 - 对队列消费类服务，队列长度通常比 CPU 更能反映压力。
 :::
+
+## 18、Kubernetes Secret 如何使用更安全
+Secret 用于保存密码、Token、证书等敏感配置，并以环境变量或挂载文件的方式提供给 Pod 使用。它比 ConfigMap 更适合敏感数据，但默认并不等于绝对安全。
+
+::: details 详情
+### 基本用法
+
+创建 Secret：
+
+```bash
+kubectl create secret generic app-secret \
+  --from-literal=DB_PASSWORD=xxx
+```
+
+在 Pod 中引用：
+
+```yaml
+env:
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: app-secret
+        key: DB_PASSWORD
+```
+
+### 安全风险
+
+Secret 默认只是 base64 编码，不是加密。
+
+如果没有额外配置，能读取 Secret 的用户或服务账号就可能看到敏感值。
+
+### 安全实践
+
+建议：
+
+- 开启 etcd 加密。
+- 使用 RBAC 限制 Secret 读取权限。
+- 不把 Secret 明文提交到 Git。
+- 使用外部密钥管理系统。
+- 定期轮换密钥。
+- 避免在日志中输出环境变量。
+
+### 注意事项
+
+- 环境变量形式可能被进程信息或错误日志泄露。
+- 文件挂载形式更便于热更新，但应用要支持重新读取。
+- CI/CD 注入 Secret 时也要控制权限和审计。
+- Secret 变更后 Pod 不一定自动重启，需要结合部署策略处理。
+:::
