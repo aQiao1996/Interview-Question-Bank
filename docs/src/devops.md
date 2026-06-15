@@ -867,3 +867,58 @@ kubectl rollout undo deployment <name>
 - 新旧版本要兼容同一套数据结构。
 - 失败排查要保留日志和事件，不要只重启解决。
 :::
+
+## 17、Kubernetes HPA 是什么
+HPA 是 Horizontal Pod Autoscaler，用于根据 CPU、内存或自定义指标自动调整 Pod 副本数，提升资源利用率和应对流量波动。
+
+::: details 详情
+### 基本作用
+
+HPA 会根据指标判断是否扩容或缩容。
+
+例如当 CPU 使用率持续高于目标值时，HPA 会增加副本数。
+
+当负载下降后，再逐步缩容。
+
+### 示例
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+```
+
+### 指标来源
+
+HPA 可以使用：
+
+- CPU。
+- 内存。
+- QPS。
+- 队列长度。
+- 自定义业务指标。
+
+自定义指标通常需要 Prometheus Adapter 等组件支持。
+
+### 注意事项
+
+- HPA 依赖 requests 配置，CPU 利用率基于 requests 计算。
+- 扩容不是瞬时完成，应用启动时间会影响效果。
+- 缩容要谨慎，避免流量抖动导致频繁扩缩。
+- 对队列消费类服务，队列长度通常比 CPU 更能反映压力。
+:::
