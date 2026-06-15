@@ -971,3 +971,50 @@ Secret 默认只是 base64 编码，不是加密。
 - CI/CD 注入 Secret 时也要控制权限和审计。
 - Secret 变更后 Pod 不一定自动重启，需要结合部署策略处理。
 :::
+
+## 19、livenessProbe、readinessProbe 和 startupProbe 有什么区别
+Kubernetes 中三类探针分别解决存活、就绪和启动过程判断问题。合理配置探针可以避免流量打到不可用实例，也能减少误重启。
+
+::: details 详情
+### livenessProbe
+
+`livenessProbe` 用于判断容器是否还活着。
+
+如果连续失败，Kubernetes 会重启容器。
+
+适合检测应用死锁、事件循环卡死、无法继续处理请求等问题。
+
+### readinessProbe
+
+`readinessProbe` 用于判断 Pod 是否准备好接收流量。
+
+如果失败，Pod 会从 Service 后端摘除，但不会因此自动重启。
+
+适合检测应用是否完成初始化、依赖是否可用、实例是否处于下线状态。
+
+### startupProbe
+
+`startupProbe` 用于判断应用是否启动完成。
+
+启动探针成功前，其他探针可以暂时不生效，避免启动慢的应用被 livenessProbe 误杀。
+
+适合启动时间较长的服务。
+
+### 如何配置
+
+要根据应用特征设置：
+
+- `initialDelaySeconds`
+- `periodSeconds`
+- `timeoutSeconds`
+- `failureThreshold`
+
+探针接口要轻量，不能执行昂贵逻辑。
+
+### 注意事项
+
+- liveness 不宜检查过多外部依赖，否则下游故障会导致本服务被反复重启。
+- readiness 可以比 liveness 更严格，用于控制流量。
+- startupProbe 适合解决慢启动问题。
+- 探针失败原因要有日志和指标可查。
+:::
