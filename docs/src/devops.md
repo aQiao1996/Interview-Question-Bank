@@ -1018,3 +1018,53 @@ Kubernetes 中三类探针分别解决存活、就绪和启动过程判断问题
 - startupProbe 适合解决慢启动问题。
 - 探针失败原因要有日志和指标可查。
 :::
+
+## 20、Kubernetes 中 taint 和 toleration 有什么作用
+taint 和 toleration 用于控制 Pod 是否可以调度到某些节点。节点通过 taint 表示“不欢迎普通 Pod”，Pod 通过 toleration 表示“可以容忍这个 taint”。
+
+::: details 详情
+### taint
+
+给节点打污点：
+
+```bash
+kubectl taint nodes node1 dedicated=gpu:NoSchedule
+```
+
+含义是没有对应 toleration 的 Pod 不能调度到该节点。
+
+### toleration
+
+Pod 中配置容忍：
+
+```yaml
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "gpu"
+    effect: "NoSchedule"
+```
+
+这样 Pod 就可以被调度到带有该 taint 的节点。
+
+### 常见 effect
+
+- `NoSchedule`：不调度新的不容忍 Pod。
+- `PreferNoSchedule`：尽量不调度。
+- `NoExecute`：不容忍的 Pod 会被驱逐。
+
+### 适合场景
+
+- GPU 节点只给特定任务使用。
+- 独占节点。
+- 系统组件专用节点。
+- 故障节点临时驱逐业务 Pod。
+- 不同业务隔离部署。
+
+### 注意事项
+
+- toleration 只是允许调度，不保证一定调度到目标节点。
+- 如果想指定调度位置，还需要配合 nodeSelector、nodeAffinity。
+- taint 配置错误可能导致 Pod 一直 Pending。
+- 专用节点要结合资源配额和监控一起管理。
+:::
