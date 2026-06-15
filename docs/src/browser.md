@@ -1227,3 +1227,53 @@ new PerformanceObserver(list => {
 - 不要只看平均耗时，要关注低端设备和 P95/P99。
 - 拆分任务时要避免破坏业务一致性。
 :::
+
+## 22、Web Locks API 有什么作用
+Web Locks API 用于在同源的多个标签页、iframe 或 Worker 之间协调互斥任务，避免多个上下文同时执行同一段关键逻辑。
+
+::: details 详情
+### 适合场景
+
+常见场景：
+
+- 多标签页只允许一个页面刷新 Token。
+- 只允许一个页面执行同步任务。
+- 避免多个标签页同时写 IndexedDB。
+- 控制后台数据迁移任务。
+
+它解决的是同源浏览器上下文之间的协调问题。
+
+### 基本用法
+
+```js
+navigator.locks.request("refresh-token", async lock => {
+  await refreshToken();
+});
+```
+
+同一时间只有拿到 `refresh-token` 锁的上下文会执行回调。
+
+### 非阻塞尝试
+
+可以使用 `ifAvailable`：
+
+```js
+navigator.locks.request(
+  "sync-task",
+  { ifAvailable: true },
+  async lock => {
+    if (!lock) return;
+    await syncData();
+  }
+);
+```
+
+拿不到锁时直接放弃。
+
+### 注意事项
+
+- 只适用于同源上下文。
+- 兼容性需要确认，必要时要有降级方案。
+- 锁内任务要尽量短，避免长时间占用。
+- 不要把它当作服务端分布式锁使用。
+:::
