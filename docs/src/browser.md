@@ -1460,3 +1460,49 @@ Set-Cookie: token=abc; SameSite=None; Secure
 - `None` 必须配合 `Secure`。
 - Cookie 还应结合 `HttpOnly`、`Secure` 和合理的过期时间。
 :::
+
+## 27、CORS 预检请求什么时候会发生
+CORS 预检请求是浏览器在正式跨域请求前发送的 `OPTIONS` 请求，用来确认服务器是否允许当前跨域操作。它通常发生在非简单请求场景。
+
+::: details 详情
+### 简单请求
+
+简单请求通常满足：
+
+- 方法是 `GET`、`POST` 或 `HEAD`。
+- 请求头只包含简单请求头。
+- `Content-Type` 是 `text/plain`、`application/x-www-form-urlencoded` 或 `multipart/form-data`。
+
+简单请求一般不会触发预检。
+
+### 触发预检的情况
+
+常见触发条件包括：
+
+- 使用 `PUT`、`DELETE`、`PATCH` 等方法。
+- 请求头包含自定义字段。
+- `Content-Type` 是 `application/json`。
+- 携带复杂认证头。
+
+浏览器会先发送 `OPTIONS` 请求。
+
+### 服务端响应
+
+服务端需要返回类似：
+
+```http
+Access-Control-Allow-Origin: https://example.com
+Access-Control-Allow-Methods: GET, POST, PUT
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Max-Age: 600
+```
+
+预检通过后，浏览器才会发送正式请求。
+
+### 注意事项
+
+- 预检失败时，正式请求不会发出。
+- `Access-Control-Max-Age` 可以减少频繁预检。
+- 携带 Cookie 时不能把 `Access-Control-Allow-Origin` 设置为 `*`。
+- CORS 是浏览器安全策略，服务端之间调用不受浏览器 CORS 限制。
+:::
