@@ -1416,3 +1416,47 @@ If-Modified-Since: Mon, 15 Jun 2026 10:00:00 GMT
 - `no-store` 表示不存储缓存。
 - 缓存问题排查时要同时看请求头、响应头和 DevTools 来源。
 :::
+
+## 26、Cookie 的 SameSite 属性有什么作用
+`SameSite` 用于控制浏览器在跨站请求中是否携带 Cookie，主要用来降低 CSRF 风险。它可以设置为 `Strict`、`Lax` 或 `None`。
+
+::: details 详情
+### Strict
+
+`Strict` 最严格。
+
+只有同站请求才会携带 Cookie。
+
+用户从外部链接跳转到网站时，也不会携带该 Cookie。
+
+适合非常敏感的操作，但可能影响登录体验。
+
+### Lax
+
+`Lax` 是更常见的折中策略。
+
+同站请求会携带 Cookie。
+
+部分安全的顶级导航请求也会携带 Cookie，例如从外部链接打开页面。
+
+它能减少 CSRF 风险，同时保留较好的用户体验。
+
+### None
+
+`None` 表示允许跨站携带 Cookie。
+
+通常需要同时设置：
+
+```http
+Set-Cookie: token=abc; SameSite=None; Secure
+```
+
+也就是说必须使用 HTTPS。
+
+### 注意事项
+
+- `SameSite` 不能替代 CSRF Token。
+- 第三方登录、嵌入 iframe 和跨站业务要特别测试。
+- `None` 必须配合 `Secure`。
+- Cookie 还应结合 `HttpOnly`、`Secure` 和合理的过期时间。
+:::
