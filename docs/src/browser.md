@@ -1123,3 +1123,47 @@ document.addEventListener("visibilitychange", () => {
 - 恢复页面时要检查数据是否过期。
 - 移动端浏览器可能随时冻结或回收后台页面。
 :::
+
+## 20、bfcache 是什么
+bfcache 是 back-forward cache，浏览器在用户前进或后退时可能把整个页面状态保存在内存中，从而快速恢复页面，减少重新加载和重新执行脚本。
+
+::: details 详情
+### 基本效果
+
+用户从 A 页面跳到 B 页面后，再点击返回。
+
+如果 A 页面命中 bfcache，浏览器可以直接恢复之前的 DOM、滚动位置和 JavaScript 状态，而不是重新请求和渲染页面。
+
+### 如何判断
+
+可以监听 `pageshow`：
+
+```js
+window.addEventListener("pageshow", event => {
+  if (event.persisted) {
+    console.log("from bfcache");
+  }
+});
+```
+
+`event.persisted` 为 true 表示页面从 bfcache 恢复。
+
+### 影响命中的因素
+
+可能影响 bfcache 的因素：
+
+- 使用 `unload` 事件。
+- 某些未关闭的连接或锁。
+- 页面使用不兼容的浏览器 API。
+- 响应头策略限制。
+- 浏览器内存压力。
+
+不同浏览器规则可能不同。
+
+### 注意事项
+
+- 尽量使用 `pagehide` 替代 `unload`。
+- 页面恢复时要检查数据是否过期。
+- 定时器、轮询、播放器等要在隐藏和恢复时正确处理。
+- bfcache 优化要用真实浏览器验证。
+:::
