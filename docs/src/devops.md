@@ -1293,3 +1293,52 @@ Helm 主要解决：
 - Chart 版本和应用版本要清晰区分。
 - 回滚前要确认数据库变更是否兼容。
 :::
+
+## 26、Kubernetes Ingress 解决什么问题
+Ingress 用于管理集群外部访问集群内部服务的 HTTP 和 HTTPS 流量。它可以基于域名、路径等规则把请求转发到不同 Service。
+
+::: details 详情
+### 和 Service 的关系
+
+Service 负责在集群内部暴露一组 Pod。
+
+Ingress 负责定义外部流量如何进入集群。
+
+真正执行转发的是 Ingress Controller，例如 Nginx Ingress Controller。
+
+### 常见能力
+
+Ingress 常用于：
+
+- 域名路由。
+- 路径路由。
+- TLS 证书终止。
+- 统一入口。
+- 限流和访问控制。
+- 灰度流量控制。
+
+它可以减少每个服务都单独暴露公网入口的复杂度。
+
+### 示例
+
+可以把不同路径转发到不同服务：
+
+```txt
+/api  -> api-service
+/web  -> web-service
+```
+
+也可以按域名区分：
+
+```txt
+admin.example.com -> admin-service
+www.example.com   -> web-service
+```
+
+### 注意事项
+
+- 创建 Ingress 资源不等于自动生效，需要有对应 Controller。
+- TLS 证书要关注过期和自动续签。
+- 网关层配置错误会影响多个服务。
+- 生产环境要监控入口延迟、错误率和连接数。
+:::
