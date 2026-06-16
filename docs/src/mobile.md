@@ -1504,3 +1504,54 @@ WebView 缓存可以提升页面加载速度，但如果缓存策略不清晰，
 - 不能绕过平台政策做违规更新。
 - 热修复应作为应急手段，不应替代正常发版质量。
 :::
+
+## 29、Deep Link 和 Universal Link 有什么区别
+Deep Link 用于从外部唤起 App 并进入指定页面，Universal Link 是 iOS 提供的基于 HTTPS 域名的深链能力。它们都用于提升跨端跳转体验。
+
+::: details 详情
+### Deep Link
+
+传统 Deep Link 常用自定义 Scheme：
+
+```txt
+myapp://product/123
+```
+
+优点是实现简单。
+
+缺点是容易被其他 App 抢占 Scheme，且未安装 App 时体验较差。
+
+### Universal Link
+
+Universal Link 使用普通 HTTPS 链接：
+
+```txt
+https://example.com/product/123
+```
+
+如果用户安装了 App，系统可以直接打开 App。
+
+如果未安装 App，就打开网页。
+
+Android 上类似能力是 App Links。
+
+### 关键设计
+
+需要处理：
+
+- 路由映射。
+- 参数校验。
+- 未登录跳转。
+- 未安装 App 兜底。
+- 页面不存在的降级。
+- 跳转来源统计。
+
+外部参数不能直接信任。
+
+### 注意事项
+
+- Scheme 要避免和其他 App 冲突。
+- Universal Link 需要配置域名关联文件。
+- 登录后要能继续跳转到原目标页。
+- 关键业务跳转要防止恶意参数和钓鱼链接。
+:::
