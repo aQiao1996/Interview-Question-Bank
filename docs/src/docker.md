@@ -462,3 +462,50 @@ CMD ["--port", "3000"]
 - 容器主进程退出后，容器也会退出。
 - 需要可覆盖命令时，优先考虑 `CMD`。
 :::
+
+## 10、Dockerfile 中 COPY 和 ADD 有什么区别
+`COPY` 和 `ADD` 都可以把文件复制进镜像，但 `ADD` 额外支持自动解压本地 tar 文件和从 URL 获取内容。大多数场景推荐优先使用 `COPY`。
+
+::: details 详情
+### COPY
+
+`COPY` 语义简单，只做复制：
+
+```dockerfile
+COPY package.json pnpm-lock.yaml ./
+COPY src ./src
+```
+
+它更容易理解和维护。
+
+### ADD
+
+`ADD` 除了复制，还支持一些额外能力：
+
+```dockerfile
+ADD app.tar.gz /app/
+ADD https://example.com/file.txt /tmp/file.txt
+```
+
+本地 tar 文件会被自动解压。
+
+URL 下载能力虽然存在，但通常不建议依赖它。
+
+### 为什么优先 COPY
+
+优先使用 `COPY` 的原因：
+
+- 语义明确。
+- 行为更可预测。
+- 不会意外解压文件。
+- 更容易审查 Dockerfile。
+
+只有确实需要 `ADD` 的特殊能力时，再使用 `ADD`。
+
+### 注意事项
+
+- 复制路径受构建上下文限制。
+- `.dockerignore` 会影响哪些文件能被复制。
+- 不要复制无关目录，避免镜像过大。
+- 远程文件建议用 `curl` 或包管理工具下载，并校验完整性。
+:::
