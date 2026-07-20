@@ -651,3 +651,65 @@ docker run --pids-limit 100 app
 - 资源限制要结合压测和线上监控调整。
 - 容器资源限制不能替代应用自身的限流和降级。
 :::
+
+## 14、Docker 镜像和容器如何安全清理
+Docker 长期使用后会积累停止的容器、未使用镜像、构建缓存和无用 Volume。清理可以释放磁盘，但要避免误删仍有价值的数据。
+
+::: details 详情
+### 查看占用
+
+可以先查看 Docker 磁盘占用：
+
+```bash
+docker system df
+```
+
+它会展示镜像、容器、Volume 和构建缓存的占用情况。
+
+### 常见清理命令
+
+清理停止的容器：
+
+```bash
+docker container prune
+```
+
+清理悬空镜像：
+
+```bash
+docker image prune
+```
+
+清理构建缓存：
+
+```bash
+docker builder prune
+```
+
+清理未使用资源：
+
+```bash
+docker system prune
+```
+
+### Volume 要谨慎
+
+Volume 可能保存数据库或业务数据。
+
+不要随意执行会删除 Volume 的清理命令。
+
+例如：
+
+```bash
+docker system prune --volumes
+```
+
+这个命令可能删除未被容器引用的 Volume。
+
+### 注意事项
+
+- 清理前先确认资源是否仍被使用。
+- 生产环境不要盲目执行全量 prune。
+- 重要 Volume 要有备份。
+- CI 机器可以定期清理构建缓存和旧镜像。
+:::
