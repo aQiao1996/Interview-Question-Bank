@@ -1020,3 +1020,60 @@ docker exec -it <container> sh
 - 调试工具会增加镜像体积和攻击面，生产镜像要克制。
 - 容器退出太快时，可以临时覆盖启动命令排查。
 :::
+
+## 22、多容器项目如何共享网络和配置
+多容器项目通常通过自定义网络实现服务互通，通过环境变量、配置文件或 Compose 统一管理配置。关键是让服务发现稳定、配置来源清晰。
+
+::: details 详情
+### 共享网络
+
+可以创建自定义网络：
+
+```bash
+docker network create app-net
+docker run --network app-net --name api api-image
+docker run --network app-net --name redis redis:7
+```
+
+同一网络内，容器可以通过容器名访问。
+
+例如 api 可以连接：
+
+```txt
+redis:6379
+```
+
+### Compose 管理
+
+Docker Compose 默认会为项目创建网络。
+
+服务之间可以通过 service 名称访问：
+
+```yaml
+services:
+  api:
+    environment:
+      REDIS_URL: redis://redis:6379
+  redis:
+    image: redis:7-alpine
+```
+
+### 配置来源
+
+常见配置来源包括：
+
+- 环境变量。
+- `.env` 文件。
+- 挂载配置文件。
+- Secret 管理系统。
+- Compose profiles。
+
+敏感配置不要明文提交到仓库。
+
+### 注意事项
+
+- 不要在配置中写死容器 IP。
+- 容器重建后 IP 可能变化。
+- 配置变更要能区分开发、测试和生产环境。
+- 服务启动顺序不等于服务已经可用，要有重试机制。
+:::
