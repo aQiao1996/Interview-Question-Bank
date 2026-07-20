@@ -264,3 +264,45 @@ dist
 - 频繁变化的文件不要放在 Dockerfile 前面的层。
 - CI 中可以配合远程缓存或 BuildKit 提升构建速度。
 :::
+
+## 6、Docker Volume 和 bind mount 有什么区别
+Docker Volume 和 bind mount 都可以把数据挂载到容器中，但管理方式不同。Volume 由 Docker 管理，bind mount 直接挂载宿主机路径。
+
+::: details 详情
+### Volume
+
+Volume 由 Docker 创建和管理。
+
+常见命令：
+
+```bash
+docker volume create app-data
+docker run -v app-data:/var/lib/mysql mysql
+```
+
+它适合数据库数据、应用持久化数据等不希望随容器删除而丢失的内容。
+
+### bind mount
+
+bind mount 直接使用宿主机目录：
+
+```bash
+docker run -v $(pwd):/app node:20
+```
+
+它适合本地开发，把源码目录挂进容器中实时调试。
+
+### 主要区别
+
+- Volume 更便于 Docker 统一管理。
+- bind mount 依赖宿主机具体路径。
+- Volume 更适合生产持久化。
+- bind mount 更适合开发调试。
+
+### 注意事项
+
+- 容器删除不等于 Volume 自动删除。
+- bind mount 路径权限不对会导致容器读写失败。
+- 不要把宿主机敏感目录随意挂进容器。
+- 生产环境要有 Volume 备份和恢复方案。
+:::
