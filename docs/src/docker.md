@@ -880,3 +880,48 @@ CMD ["node", "server.js"]
 - 停止超时时间要结合业务处理时长设置。
 - 优雅退出逻辑要在发布和回滚流程中验证。
 :::
+
+## 19、Docker BuildKit 有什么作用
+BuildKit 是 Docker 的现代构建引擎，用于提升构建性能、缓存能力和安全性。它支持更强的并行构建、缓存挂载和构建密钥处理。
+
+::: details 详情
+### 启用方式
+
+可以通过环境变量启用：
+
+```bash
+DOCKER_BUILDKIT=1 docker build -t app .
+```
+
+现在很多 Docker 版本已经默认使用 BuildKit。
+
+### 常见能力
+
+BuildKit 常见能力包括：
+
+- 并行执行可并行的构建步骤。
+- 更清晰的构建输出。
+- 缓存挂载。
+- secret 挂载。
+- SSH 转发。
+- 更灵活的远程缓存。
+
+这些能力对 CI 构建很有帮助。
+
+### 缓存挂载
+
+例如缓存包管理器目录：
+
+```dockerfile
+RUN --mount=type=cache,target=/root/.npm npm ci
+```
+
+这样可以减少重复下载依赖。
+
+### 注意事项
+
+- BuildKit 特性需要 Dockerfile 前端版本支持。
+- secret 挂载不会持久写入镜像层，更适合处理构建期密钥。
+- CI 中使用远程缓存要注意缓存污染和权限。
+- 构建结果仍要通过扫描和测试验证。
+:::
