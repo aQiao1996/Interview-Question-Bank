@@ -306,3 +306,55 @@ docker run -v $(pwd):/app node:20
 - 不要把宿主机敏感目录随意挂进容器。
 - 生产环境要有 Volume 备份和恢复方案。
 :::
+
+## 7、Docker 常见网络模式有哪些
+Docker 网络模式决定容器如何和宿主机、其他容器以及外部网络通信。常见模式包括 bridge、host、none 和自定义网络。
+
+::: details 详情
+### bridge
+
+bridge 是默认网络模式。
+
+容器会连接到 Docker 创建的虚拟网桥，通过 NAT 访问外部网络。
+
+常见用法：
+
+```bash
+docker run -p 8080:80 nginx
+```
+
+这里把宿主机 `8080` 端口映射到容器 `80` 端口。
+
+### host
+
+host 模式让容器直接使用宿主机网络栈。
+
+优点是网络开销更低。
+
+缺点是隔离性更弱，端口也会和宿主机直接冲突。
+
+### none
+
+none 模式表示容器没有默认网络。
+
+它适合极少数需要手动配置网络或完全隔离网络的场景。
+
+### 自定义网络
+
+推荐多个容器互相通信时使用自定义 bridge 网络：
+
+```bash
+docker network create app-net
+docker run --network app-net --name api api-image
+docker run --network app-net --name web web-image
+```
+
+同一网络内可以通过容器名访问。
+
+### 注意事项
+
+- 端口映射只影响宿主机访问容器，不影响容器间通信。
+- 生产环境要限制不必要的端口暴露。
+- 容器名解析通常依赖自定义网络。
+- host 模式要谨慎使用，避免破坏隔离边界。
+:::
