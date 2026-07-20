@@ -358,3 +358,56 @@ docker run --network app-net --name web web-image
 - 容器名解析通常依赖自定义网络。
 - host 模式要谨慎使用，避免破坏隔离边界。
 :::
+
+## 8、Docker Compose 适合什么场景
+Docker Compose 用于用一个 YAML 文件编排多个容器，适合本地开发、测试环境和轻量级部署。它可以统一描述服务、网络、Volume 和环境变量。
+
+::: details 详情
+### 基本示例
+
+```yaml
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+
+  redis:
+    image: redis:7-alpine
+```
+
+启动命令：
+
+```bash
+docker compose up -d
+```
+
+Compose 会创建服务、网络，并按配置启动容器。
+
+### 适合场景
+
+Docker Compose 常用于：
+
+- 本地开发环境。
+- 前后端联调。
+- 集成测试依赖。
+- 单机部署小型应用。
+- 快速启动数据库、缓存、消息队列。
+
+它能降低新成员搭建环境的成本。
+
+### 和 Kubernetes 的区别
+
+Compose 更偏单机和开发体验。
+
+Kubernetes 更适合集群调度、弹性扩缩容、服务发现和生产级编排。
+
+复杂生产环境通常不会只依赖 Compose。
+
+### 注意事项
+
+- 不要把生产密钥明文写进 compose 文件。
+- 本地端口映射要避免冲突。
+- 数据库服务要配置 Volume 持久化。
+- `depends_on` 只表示启动顺序，不代表服务已经可用。
+:::
