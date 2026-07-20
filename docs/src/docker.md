@@ -212,3 +212,55 @@ CI/CD 中可以加入镜像扫描：
 - 基础镜像要有维护来源。
 - 镜像构建产物要可追溯到代码版本和构建记录。
 :::
+
+## 5、Dockerfile 构建缓存如何优化
+Dockerfile 构建缓存优化的核心是让变化少的步骤尽量放在前面，变化频繁的业务代码尽量放在后面。这样可以复用已有镜像层，减少重复安装依赖和构建时间。
+
+::: details 详情
+### 缓存规则
+
+Docker 构建镜像时会按 Dockerfile 指令从上到下匹配缓存。
+
+如果某一层缓存失效，它后面的层通常也会重新构建。
+
+所以指令顺序会直接影响构建速度。
+
+### 常见优化
+
+Node 项目中常见写法：
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm build
+```
+
+这样只有业务代码变化时，不会重复安装依赖。
+
+如果先 `COPY . .` 再安装依赖，任意代码变化都可能让依赖安装层失效。
+
+### .dockerignore
+
+`.dockerignore` 用于排除不需要进入构建上下文的文件，例如：
+
+```txt
+node_modules
+dist
+.git
+.env
+```
+
+构建上下文越小，上传给 Docker daemon 的内容越少，构建也更稳定。
+
+### 注意事项
+
+- 锁文件要一起复制，保证依赖版本可复现。
+- 不要把 `.env`、私钥、Token 放进构建上下文。
+- 频繁变化的文件不要放在 Dockerfile 前面的层。
+- CI 中可以配合远程缓存或 BuildKit 提升构建速度。
+:::
