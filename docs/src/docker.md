@@ -713,3 +713,44 @@ docker system prune --volumes
 - 重要 Volume 要有备份。
 - CI 机器可以定期清理构建缓存和旧镜像。
 :::
+
+## 15、Docker 为什么建议使用非 root 用户运行容器
+容器内使用非 root 用户运行应用，可以降低容器逃逸、文件误写和权限滥用带来的风险。即使应用被攻击，攻击者获得的权限也会更受限制。
+
+::: details 详情
+### 默认风险
+
+很多基础镜像默认使用 root 用户。
+
+如果容器内进程以 root 身份运行，一旦应用存在漏洞，攻击者可能拥有更高的容器内权限。
+
+在挂载宿主机目录或配置过高权限时，风险会进一步放大。
+
+### Dockerfile 配置
+
+可以在 Dockerfile 中创建普通用户：
+
+```dockerfile
+RUN addgroup -S app && adduser -S app -G app
+USER app
+```
+
+这样后续容器启动时会使用 `app` 用户运行。
+
+如果应用需要写目录，要提前设置目录权限。
+
+### rootless Docker
+
+Rootless Docker 是让 Docker daemon 和容器尽量在非 root 权限下运行的模式。
+
+它可以降低 Docker daemon 高权限带来的风险。
+
+但 rootless 模式也可能有网络、存储和兼容性限制。
+
+### 注意事项
+
+- 不要为了省事给容器加 `--privileged`。
+- 避免挂载 Docker socket 到业务容器。
+- 只授予应用真正需要的目录写权限。
+- 非 root 运行要在构建和启动阶段都测试通过。
+:::
