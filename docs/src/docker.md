@@ -411,3 +411,54 @@ Kubernetes 更适合集群调度、弹性扩缩容、服务发现和生产级编
 - 数据库服务要配置 Volume 持久化。
 - `depends_on` 只表示启动顺序，不代表服务已经可用。
 :::
+
+## 9、Dockerfile 中 CMD 和 ENTRYPOINT 有什么区别
+`CMD` 和 `ENTRYPOINT` 都可以定义容器启动时执行的命令。区别在于 `ENTRYPOINT` 更像固定入口，`CMD` 更像默认参数或默认命令。
+
+::: details 详情
+### CMD
+
+`CMD` 提供容器启动时的默认命令：
+
+```dockerfile
+CMD ["node", "server.js"]
+```
+
+运行容器时如果传入新命令，`CMD` 会被覆盖：
+
+```bash
+docker run app-image node worker.js
+```
+
+### ENTRYPOINT
+
+`ENTRYPOINT` 定义更固定的入口：
+
+```dockerfile
+ENTRYPOINT ["node", "server.js"]
+```
+
+运行时传入的参数通常会追加到 `ENTRYPOINT` 后面。
+
+适合把镜像做成一个固定命令工具。
+
+### 配合使用
+
+常见组合：
+
+```dockerfile
+ENTRYPOINT ["node", "server.js"]
+CMD ["--port", "3000"]
+```
+
+`ENTRYPOINT` 固定执行程序，`CMD` 提供默认参数。
+
+用户可以覆盖默认参数。
+
+### 注意事项
+
+- 推荐使用 exec 格式，避免信号处理问题。
+- shell 格式可能影响容器接收 SIGTERM。
+- 容器主进程退出后，容器也会退出。
+- 需要可覆盖命令时，优先考虑 `CMD`。
+:::
