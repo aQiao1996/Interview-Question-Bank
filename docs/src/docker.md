@@ -1222,3 +1222,90 @@ Kubernetes 负责编排和管理多个容器实例
 - 镜像规范、标签管理和健康检查都要和编排平台配合设计。
 - 生产问题排查时要区分是镜像、容器还是编排层的问题。
 :::
+
+## 26、Docker 常用命令大全
+Docker 常用命令可以按镜像、容器、网络、Volume、Compose 和排障几个维度来记。面试里不要求背所有参数，但要知道这些命令分别解决什么问题。
+
+::: details 详情
+### 镜像
+
+```bash
+docker images
+docker pull nginx:alpine
+docker build -t app:1.0 .
+docker rmi app:1.0
+docker tag app:1.0 registry.example.com/app:1.0
+docker push registry.example.com/app:1.0
+```
+
+### 容器
+
+```bash
+docker ps
+docker ps -a
+docker run -d --name app nginx
+docker stop app
+docker start app
+docker restart app
+docker rm app
+docker exec -it app sh
+docker logs -f app
+```
+
+### 网络
+
+```bash
+docker network ls
+docker network create app-net
+docker network inspect app-net
+docker network rm app-net
+```
+
+### Volume
+
+```bash
+docker volume ls
+docker volume create app-data
+docker volume inspect app-data
+docker volume rm app-data
+```
+
+### Compose
+
+```bash
+docker compose up -d
+docker compose down
+docker compose ps
+docker compose logs -f
+docker compose build
+```
+
+### 排障和清理
+
+```bash
+docker inspect app
+docker stats
+docker system df
+docker system prune
+docker image prune
+docker container prune
+docker builder prune
+```
+
+### 常用思路
+
+- `docker pull` 拉镜像。
+- `docker build` 构建镜像。
+- `docker run` 创建并启动容器。
+- `docker exec` 进入运行中的容器。
+- `docker logs` 看日志。
+- `docker inspect` 看详细配置。
+- `docker compose` 管理多容器应用。
+
+### 注意事项
+
+- 生产环境清理前先确认资源是否还在使用。
+- 进入容器排查时要保留现场。
+- `docker compose down` 可能会删除容器，是否删除 Volume 要特别确认。
+- 命令只是入口，真正重要的是知道每个命令对应的生命周期阶段。
+:::
